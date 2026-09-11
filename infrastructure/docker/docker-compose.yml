@@ -1,0 +1,17 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: rhc
+      POSTGRES_PASSWORD: rhc
+      POSTGRES_DB: rhc_local
+    ports:
+      - "5432:5432"
+    volumes:
+      - rhc_pg:/var/lib/postgresql/data
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+volumes:
+  rhc_pg:

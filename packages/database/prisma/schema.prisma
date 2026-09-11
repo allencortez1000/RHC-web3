@@ -1,0 +1,595 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum CompanyStatus {
+  ACTIVE
+  INACTIVE
+  PREPARED
+  SUSPENDED
+}
+
+enum IntegrationStatus {
+  NOT_CONFIGURED
+  PREPARED
+  ACTIVE
+  SUSPENDED
+  ERROR
+}
+
+enum AccountStatus {
+  PENDING
+  ACTIVE
+  DISABLED
+  LOCKED
+}
+
+enum VerificationStatus {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum ProjectStatus {
+  PLANNED
+  ACTIVE
+  ON_HOLD
+  COMPLETED
+  ARCHIVED
+}
+
+enum AssetType {
+  RESIDENTIAL
+  COMMERCIAL
+  PARKING
+}
+
+enum PropertyStatus {
+  AVAILABLE
+  HELD
+  RESERVED
+  CONTRACTED
+  SOLD
+  FOR_TURNOVER
+  TURNED_OVER
+  BLOCKED
+}
+
+enum CustomerPropertyRelationship {
+  RESERVEE
+  BUYER
+  CO_BUYER
+  OWNER
+  TENANT
+  AUTHORIZED_REPRESENTATIVE
+}
+
+enum RelationshipStatus {
+  ACTIVE
+  INACTIVE
+  EXPIRED
+  REVOKED
+}
+
+enum ServiceStatus {
+  ACTIVE
+  PREPARED
+  COMING_SOON
+  DISABLED
+}
+
+enum ConsentType {
+  PRIVACY_POLICY
+  TERMS
+  MARKETING
+  COMPANY_SERVICE
+  DATA_SHARING
+}
+
+enum RewardsAccountStatus {
+  DISABLED
+  ACTIVE
+  SUSPENDED
+  CLOSED
+}
+
+enum RewardsTransactionType {
+  EARN
+  REDEEM
+  ADJUSTMENT_CREDIT
+  ADJUSTMENT_DEBIT
+  EXPIRY
+  REVERSAL
+}
+
+enum RewardsTransactionStatus {
+  PENDING
+  APPROVED
+  POSTED
+  REVERSED
+  REJECTED
+}
+
+enum RedemptionStatus {
+  REQUESTED
+  APPROVED
+  REJECTED
+  FULFILLED
+  CANCELLED
+}
+
+enum EventStatus {
+  PENDING
+  PROCESSED
+  FAILED
+}
+
+model User {
+  id                String              @id @default(uuid()) @db.Uuid
+  supabase_user_id  String?             @unique
+  email             String              @unique
+  mobile_number     String?             @unique
+  password_hash      String?
+  account_status    AccountStatus       @default(PENDING)
+  verification_status VerificationStatus @default(UNVERIFIED)
+  last_login_at     DateTime?
+  created_at        DateTime            @default(now())
+  updated_at        DateTime            @updatedAt
+  profile           UserProfile?
+  roles             UserRole[]
+  consent_records   ConsentRecord[]
+  customer_properties CustomerProperty[]
+  rewards_accounts  RewardsAccount[]
+  notifications     Notification[]
+  audit_logs        AuditLog[]          @relation("AuditActor")
+  activity_events   ActivityEvent[]     @relation("ActivityActor")
+
+  @@index([email])
+  @@index([account_status, verification_status])
+  @@map("users")
+}
+
+model RhcIdSequence {
+  year       Int     @id
+  last_value Int     @default(0)
+  updated_at DateTime @updatedAt
+  @@map("rhc_id_sequences")
+}
+
+model UserProfile {
+  id                  String             @id @default(uuid()) @db.Uuid
+  user_id             String             @unique @db.Uuid
+  first_name          String?
+  middle_name         String?
+  last_name           String?
+  suffix              String?
+  birth_date          DateTime?
+  nationality         String?
+  address_line        String?
+  barangay            String?
+  city                String?
+  province            String?
+  postal_code         String?
+  country             String             @default("Philippines")
+  email               String
+  mobile_number       String?
+  rhc_id              String?            @unique
+  rhc_id_issued_at    DateTime?
+  account_status      AccountStatus      @default(PENDING)
+  verification_status VerificationStatus @default(UNVERIFIED)
+  created_at          DateTime           @default(now())
+  updated_at          DateTime           @updatedAt
+  user                User               @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([rhc_id])
+  @@index([last_name, first_name])
+  @@map("user_profiles")
+}
+
+model Company {
+  id                       String             @id @default(uuid()) @db.Uuid
+  company_code             String             @unique
+  legal_name               String
+  display_name             String
+  description              String?
+  business_type            String?
+  status                   CompanyStatus      @default(ACTIVE)
+  logo_url                 String?
+  integration_status       IntegrationStatus  @default(NOT_CONFIGURED)
+  rewards_enabled          Boolean            @default(false)
+  digital_services_enabled Boolean            @default(true)
+  api_enabled              Boolean            @default(false)
+  created_at               DateTime           @default(now())
+  updated_at               DateTime           @updatedAt
+  projects                 Project[]
+  roles                    Role[]
+  user_roles               UserRole[]
+  services                 BusinessService[]
+  api_clients              CompanyApiClient[]
+  integrations             CompanyIntegration[]
+  allowed_events           CompanyEvent[]
+
+  @@index([status])
+  @@map("companies")
+}
+
+model Project {
+  id                String        @id @default(uuid()) @db.Uuid
+  company_id        String        @db.Uuid
+  project_code      String        @unique
+  project_name      String
+  description       String?
+  location          String?
+  status            ProjectStatus @default(PLANNED)
+  start_date        DateTime?
+  target_completion DateTime?
+  created_at        DateTime      @default(now())
+  updated_at        DateTime      @updatedAt
+  company           Company       @relation(fields: [company_id], references: [id])
+  properties        Property[]
+  user_roles        UserRole[]
+
+  @@index([company_id, status])
+  @@map("projects")
+}
+
+model Permission {
+  id          String           @id @default(uuid()) @db.Uuid
+  code        String           @unique
+  description String?
+  created_at  DateTime         @default(now())
+  role_permissions RolePermission[]
+
+  @@map("permissions")
+}
+
+model Role {
+  id          String           @id @default(uuid()) @db.Uuid
+  company_id  String?          @db.Uuid
+  code        String
+  name        String
+  description String?
+  is_system   Boolean          @default(false)
+  created_at  DateTime         @default(now())
+  updated_at  DateTime         @updatedAt
+  company     Company?         @relation(fields: [company_id], references: [id])
+  role_permissions RolePermission[]
+  user_roles  UserRole[]
+
+  @@unique([company_id, code])
+  @@index([code])
+  @@map("roles")
+}
+
+model RolePermission {
+  id            String     @id @default(uuid()) @db.Uuid
+  role_id       String     @db.Uuid
+  permission_id String     @db.Uuid
+  created_at    DateTime   @default(now())
+  role          Role       @relation(fields: [role_id], references: [id], onDelete: Cascade)
+  permission    Permission @relation(fields: [permission_id], references: [id], onDelete: Cascade)
+
+  @@unique([role_id, permission_id])
+  @@map("role_permissions")
+}
+
+model UserRole {
+  id          String    @id @default(uuid()) @db.Uuid
+  user_id     String    @db.Uuid
+  role_id     String    @db.Uuid
+  company_id  String?   @db.Uuid
+  project_id  String?   @db.Uuid
+  created_at  DateTime  @default(now())
+  expires_at  DateTime?
+  user        User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  role        Role      @relation(fields: [role_id], references: [id], onDelete: Cascade)
+  company     Company?  @relation(fields: [company_id], references: [id])
+  project     Project?  @relation(fields: [project_id], references: [id])
+
+  @@unique([user_id, role_id, company_id, project_id])
+  @@index([user_id])
+  @@index([company_id, project_id])
+  @@map("user_roles")
+}
+
+model Property {
+  id            String          @id @default(uuid()) @db.Uuid
+  project_id    String          @db.Uuid
+  property_code String          @unique
+  tower         String?
+  floor         String?
+  unit_number   String?
+  asset_type    AssetType
+  area          Decimal?        @db.Decimal(12,2)
+  list_price    Decimal?        @db.Decimal(16,2)
+  currency      String          @default("PHP")
+  status        PropertyStatus  @default(AVAILABLE)
+  metadata      Json            @default("{}")
+  created_at    DateTime        @default(now())
+  updated_at    DateTime        @updatedAt
+  project       Project         @relation(fields: [project_id], references: [id])
+  customer_properties CustomerProperty[]
+
+  @@index([project_id, status])
+  @@index([asset_type])
+  @@map("properties")
+}
+
+model CustomerProperty {
+  id                String                        @id @default(uuid()) @db.Uuid
+  customer_id       String                        @db.Uuid
+  property_id       String                        @db.Uuid
+  relationship_type CustomerPropertyRelationship
+  status            RelationshipStatus            @default(ACTIVE)
+  effective_from    DateTime                      @default(now())
+  effective_to      DateTime?
+  created_at        DateTime                      @default(now())
+  updated_at        DateTime                      @updatedAt
+  customer          User                          @relation(fields: [customer_id], references: [id], onDelete: Cascade)
+  property          Property                      @relation(fields: [property_id], references: [id], onDelete: Cascade)
+
+  @@unique([customer_id, property_id, relationship_type, effective_from])
+  @@index([customer_id, status])
+  @@index([property_id, status])
+  @@map("customer_properties")
+}
+
+model BusinessService {
+  id                       String            @id @default(uuid()) @db.Uuid
+  company_id               String            @db.Uuid
+  service_code             String
+  service_name             String
+  service_type             String
+  description              String?
+  status                   ServiceStatus     @default(PREPARED)
+  rewards_eligible         Boolean           @default(false)
+  wallet_eligible          Boolean           @default(false)
+  requires_property        Boolean           @default(false)
+  requires_resident_status Boolean           @default(false)
+  integration_status       IntegrationStatus @default(PREPARED)
+  created_at               DateTime          @default(now())
+  updated_at               DateTime          @updatedAt
+  company                  Company           @relation(fields: [company_id], references: [id])
+
+  @@unique([company_id, service_code])
+  @@index([status])
+  @@map("business_services")
+}
+
+model CompanyIntegration {
+  id             String            @id @default(uuid()) @db.Uuid
+  company_id     String            @db.Uuid
+  integration_key String
+  name           String
+  status         IntegrationStatus @default(PREPARED)
+  config         Json              @default("{}")
+  created_at     DateTime          @default(now())
+  updated_at     DateTime          @updatedAt
+  company        Company           @relation(fields: [company_id], references: [id])
+  logs           IntegrationLog[]
+
+  @@unique([company_id, integration_key])
+  @@map("company_integrations")
+}
+
+model CompanyApiClient {
+  id               String        @id @default(uuid()) @db.Uuid
+  company_id       String        @db.Uuid
+  client_name      String
+  client_id        String        @unique
+  credential_ref   String?
+  scopes           String[]
+  status           CompanyStatus @default(ACTIVE)
+  last_used_at     DateTime?
+  created_at       DateTime      @default(now())
+  updated_at       DateTime      @updatedAt
+  company          Company       @relation(fields: [company_id], references: [id])
+
+  @@index([company_id, status])
+  @@map("company_api_clients")
+}
+
+model CompanyEvent {
+  id          String   @id @default(uuid()) @db.Uuid
+  company_id  String   @db.Uuid
+  event_type  String
+  enabled     Boolean  @default(true)
+  created_at  DateTime @default(now())
+  company     Company  @relation(fields: [company_id], references: [id])
+
+  @@unique([company_id, event_type])
+  @@map("company_events")
+}
+
+model IntegrationLog {
+  id             String             @id @default(uuid()) @db.Uuid
+  integration_id String?            @db.Uuid
+  company_id      String?           @db.Uuid
+  direction       String
+  event_type      String
+  status          EventStatus       @default(PENDING)
+  request_ref     String?
+  error_code      String?
+  error_message   String?
+  metadata        Json              @default("{}")
+  created_at      DateTime          @default(now())
+  integration     CompanyIntegration? @relation(fields: [integration_id], references: [id])
+
+  @@index([company_id, event_type])
+  @@map("integration_logs")
+}
+
+model Notification {
+  id          String   @id @default(uuid()) @db.Uuid
+  user_id     String   @db.Uuid
+  channel     String
+  subject     String
+  body        String
+  status      String   @default("QUEUED")
+  created_at  DateTime @default(now())
+  sent_at      DateTime?
+  user        User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, status])
+  @@map("notifications")
+}
+
+model ConsentRecord {
+  id              String      @id @default(uuid()) @db.Uuid
+  user_id          String      @db.Uuid
+  consent_type     ConsentType
+  company_id       String?     @db.Uuid
+  consent_version  String
+  granted          Boolean
+  granted_at       DateTime?
+  withdrawn_at     DateTime?
+  metadata         Json        @default("{}")
+  created_at       DateTime    @default(now())
+  user             User        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, consent_type, company_id])
+  @@map("consent_records")
+}
+
+model FeatureFlag {
+  id          String   @id @default(uuid()) @db.Uuid
+  key         String   @unique
+  description String?
+  enabled     Boolean  @default(false)
+  scope        String   @default("GLOBAL")
+  metadata     Json     @default("{}")
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  @@map("feature_flags")
+}
+
+model AuditLog {
+  id             String   @id @default(uuid()) @db.Uuid
+  actor_user_id  String?  @db.Uuid
+  actor_role     String?
+  company_id     String?  @db.Uuid
+  project_id     String?  @db.Uuid
+  action         String
+  entity_type    String
+  entity_id      String?
+  before_data    Json?
+  after_data     Json?
+  ip_address     String?
+  user_agent     String?
+  request_id     String?
+  correlation_id String?
+  created_at     DateTime @default(now())
+  actor          User?    @relation("AuditActor", fields: [actor_user_id], references: [id])
+
+  @@index([entity_type, entity_id])
+  @@index([actor_user_id])
+  @@index([created_at])
+  @@map("audit_logs")
+}
+
+model ActivityEvent {
+  id             String      @id @default(uuid()) @db.Uuid
+  event_type     String
+  actor_user_id  String?     @db.Uuid
+  company_id     String?     @db.Uuid
+  project_id     String?     @db.Uuid
+  entity_type    String?
+  entity_id      String?
+  payload        Json        @default("{}")
+  status         EventStatus @default(PENDING)
+  request_id     String?
+  correlation_id String?
+  created_at     DateTime    @default(now())
+  processed_at   DateTime?
+  actor          User?       @relation("ActivityActor", fields: [actor_user_id], references: [id])
+
+  @@index([event_type, status])
+  @@index([company_id, project_id])
+  @@map("activity_events")
+}
+
+model RewardsAccount {
+  id          String               @id @default(uuid()) @db.Uuid
+  customer_id String               @db.Uuid
+  company_id  String?              @db.Uuid
+  status      RewardsAccountStatus @default(DISABLED)
+  balance     Decimal              @default(0) @db.Decimal(18,2)
+  created_at  DateTime             @default(now())
+  updated_at  DateTime             @updatedAt
+  customer    User                 @relation(fields: [customer_id], references: [id], onDelete: Cascade)
+  transactions RewardsTransaction[]
+
+  @@unique([customer_id, company_id])
+  @@map("rewards_accounts")
+}
+
+model RewardsRule {
+  id             String   @id @default(uuid()) @db.Uuid
+  company_id      String?  @db.Uuid
+  rule_code       String   @unique
+  description     String?
+  active          Boolean  @default(false)
+  rule_definition Json     @default("{}")
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+  transactions    RewardsTransaction[]
+
+  @@map("rewards_rules")
+}
+
+model RewardsTransaction {
+  id                String                   @id @default(uuid()) @db.Uuid
+  rewards_account_id String                  @db.Uuid
+  customer_id        String                  @db.Uuid
+  source_company_id  String?                 @db.Uuid
+  rule_id            String?                 @db.Uuid
+  source_reference   String?
+  transaction_type   RewardsTransactionType
+  amount             Decimal                 @db.Decimal(18,2)
+  reason             String
+  authorization_ref  String?
+  status             RewardsTransactionStatus @default(PENDING)
+  reversal_of_id     String?                 @db.Uuid
+  created_at         DateTime                @default(now())
+  posted_at          DateTime?
+  account            RewardsAccount          @relation(fields: [rewards_account_id], references: [id])
+  rule               RewardsRule?            @relation(fields: [rule_id], references: [id])
+
+  @@index([customer_id, created_at])
+  @@index([source_company_id])
+  @@map("rewards_transactions")
+}
+
+model RewardsRedemption {
+  id                String           @id @default(uuid()) @db.Uuid
+  customer_id        String           @db.Uuid
+  rewards_account_id String           @db.Uuid
+  amount             Decimal          @db.Decimal(18,2)
+  status             RedemptionStatus @default(REQUESTED)
+  reason             String?
+  authorization_ref  String?
+  created_at         DateTime         @default(now())
+  updated_at         DateTime         @updatedAt
+
+  @@index([customer_id, status])
+  @@map("rewards_redemptions")
+}
+
+model SystemSetting {
+  id          String   @id @default(uuid()) @db.Uuid
+  key         String   @unique
+  value       Json
+  description String?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@map("system_settings")
+}

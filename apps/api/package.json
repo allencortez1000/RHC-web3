@@ -1,0 +1,45 @@
+{
+  "name": "@rhc/api",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/main.js",
+  "dependencies": {
+    "@nestjs/common": "^10.3.10",
+    "@nestjs/core": "^10.3.10",
+    "@nestjs/platform-express": "^10.3.10",
+    "@nestjs/swagger": "^7.4.0",
+    "@nestjs/throttler": "^5.1.2",
+    "@prisma/client": "^5.16.1",
+    "@rhc/config": "0.1.0",
+    "@rhc/shared": "0.1.0",
+    "@rhc/types": "0.1.0",
+    "@rhc/validation": "0.1.0",
+    "bcryptjs": "^2.4.3",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@nestjs/testing": "^10.3.10",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jest": "^29.5.12",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/supertest": "^6.0.2",
+    "jest": "^29.7.0",
+    "supertest": "^7.0.0",
+    "ts-jest": "^29.2.2",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.16.2"
+  },
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node dist/apps/api/src/main.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint src test --ext .ts",
+    "test": "jest --passWithNoTests",
+    "test:e2e": "jest --config ./test/jest-e2e.json --passWithNoTests"
+  }
+}

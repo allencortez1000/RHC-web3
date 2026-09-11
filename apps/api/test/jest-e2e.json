@@ -1,0 +1,10 @@
+{
+  "preset": "ts-jest",
+  "testEnvironment": "node",
+  "rootDir": "..",
+  "roots": ["<rootDir>/test"],
+  "testRegex": ".*\\.e2e-spec\\.ts$",
+  "moduleNameMapper": {
+    "^@rhc/(.*)$": "<rootDir>/../../packages/$1/src"
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "name": "rhc-digital",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Rabino Holdings Corporation Digital & Web3 Ecosystem - Month 1 foundation",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n api,customer,admin -c blue,green,magenta \"npm run dev -w @rhc/api\" \"npm run dev -w @rhc/customer-web\" \"npm run dev -w @rhc/admin-web\"",
+    "dev:mock": "npm run dev",
+    "free:admin-port": "npx kill-port 3002",
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "test:e2e": "npm run test:e2e --workspaces --if-present",
+    "format": "prettier --write .",
+    "db:generate": "npm run db:generate -w @rhc/database",
+    "db:migrate": "npm run db:migrate -w @rhc/database",
+    "db:seed": "npm run db:seed -w @rhc/database",
+    "validate": "npm run lint && npm run typecheck && npm run test && npm run build"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^10.4.9",
+    "@types/express": "^5.0.6",
+    "@types/node": "^20.14.10",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "concurrently": "^10.0.5",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "^14.2.4",
+    "kill-port": "^2.0.1",
+    "prettier": "^3.3.2",
+    "typescript": "^5.5.3"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  }
+}
