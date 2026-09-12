@@ -132,26 +132,26 @@ enum EventStatus {
 }
 
 model User {
-  id                String              @id @default(uuid()) @db.Uuid
-  supabase_user_id  String?             @unique
-  email             String              @unique
-  mobile_number     String?             @unique
+  id               String  @id @default(uuid()) @db.Uuid
+  supabase_user_id String? @unique
+  email            String  @unique
+  mobile_number    String? @unique
 
-  account_status    AccountStatus       @default(PENDING)
-  verification_status VerificationStatus @default(UNVERIFIED)
-  last_login_at     DateTime?
-  created_at        DateTime            @default(now())
-  updated_at        DateTime            @updatedAt
-  profile           UserProfile?
-  roles             UserRole[]
-  consent_records   ConsentRecord[]
-  customer_properties CustomerProperty[]
-  rewards_accounts  RewardsAccount[]
+  account_status       AccountStatus        @default(PENDING)
+  verification_status  VerificationStatus   @default(UNVERIFIED)
+  last_login_at        DateTime?
+  created_at           DateTime             @default(now())
+  updated_at           DateTime             @updatedAt
+  profile              UserProfile?
+  roles                UserRole[]
+  consent_records      ConsentRecord[]
+  customer_properties  CustomerProperty[]
+  rewards_accounts     RewardsAccount[]
   rewards_transactions RewardsTransaction[]
-  rewards_redemptions RewardsRedemption[]
-  notifications     Notification[]
-  audit_logs        AuditLog[]          @relation("AuditActor")
-  activity_events   ActivityEvent[]     @relation("ActivityActor")
+  rewards_redemptions  RewardsRedemption[]
+  notifications        Notification[]
+  audit_logs           AuditLog[]           @relation("AuditActor")
+  activity_events      ActivityEvent[]      @relation("ActivityActor")
 
   @@index([email])
   @@index([account_status, verification_status])
@@ -159,9 +159,10 @@ model User {
 }
 
 model RhcIdSequence {
-  year       Int     @id
-  last_value Int     @default(0)
+  year       Int      @id
+  last_value Int      @default(0)
   updated_at DateTime @updatedAt
+
   @@map("rhc_id_sequences")
 }
 
@@ -196,20 +197,20 @@ model UserProfile {
 }
 
 model Company {
-  id                       String             @id @default(uuid()) @db.Uuid
-  company_code             String             @unique
+  id                       String               @id @default(uuid()) @db.Uuid
+  company_code             String               @unique
   legal_name               String
   display_name             String
   description              String?
   business_type            String?
-  status                   CompanyStatus      @default(ACTIVE)
+  status                   CompanyStatus        @default(ACTIVE)
   logo_url                 String?
-  integration_status       IntegrationStatus  @default(NOT_CONFIGURED)
-  rewards_enabled          Boolean            @default(false)
-  digital_services_enabled Boolean            @default(true)
-  api_enabled              Boolean            @default(false)
-  created_at               DateTime           @default(now())
-  updated_at               DateTime           @updatedAt
+  integration_status       IntegrationStatus    @default(NOT_CONFIGURED)
+  rewards_enabled          Boolean              @default(false)
+  digital_services_enabled Boolean              @default(true)
+  api_enabled              Boolean              @default(false)
+  created_at               DateTime             @default(now())
+  updated_at               DateTime             @updatedAt
   projects                 Project[]
   roles                    Role[]
   user_roles               UserRole[]
@@ -248,27 +249,27 @@ model Project {
 }
 
 model Permission {
-  id          String           @id @default(uuid()) @db.Uuid
-  code        String           @unique
-  description String?
-  created_at  DateTime         @default(now())
+  id               String           @id @default(uuid()) @db.Uuid
+  code             String           @unique
+  description      String?
+  created_at       DateTime         @default(now())
   role_permissions RolePermission[]
 
   @@map("permissions")
 }
 
 model Role {
-  id          String           @id @default(uuid()) @db.Uuid
-  company_id  String?          @db.Uuid
-  code        String
-  name        String
-  description String?
-  is_system   Boolean          @default(false)
-  created_at  DateTime         @default(now())
-  updated_at  DateTime         @updatedAt
-  company     Company?         @relation(fields: [company_id], references: [id])
+  id               String           @id @default(uuid()) @db.Uuid
+  company_id       String?          @db.Uuid
+  code             String
+  name             String
+  description      String?
+  is_system        Boolean          @default(false)
+  created_at       DateTime         @default(now())
+  updated_at       DateTime         @updatedAt
+  company          Company?         @relation(fields: [company_id], references: [id])
   role_permissions RolePermission[]
-  user_roles  UserRole[]
+  user_roles       UserRole[]
 
   @@unique([company_id, code])
   @@index([code])
@@ -288,17 +289,17 @@ model RolePermission {
 }
 
 model UserRole {
-  id          String    @id @default(uuid()) @db.Uuid
-  user_id     String    @db.Uuid
-  role_id     String    @db.Uuid
-  company_id  String?   @db.Uuid
-  project_id  String?   @db.Uuid
-  created_at  DateTime  @default(now())
-  expires_at  DateTime?
-  user        User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  role        Role      @relation(fields: [role_id], references: [id], onDelete: Cascade)
-  company     Company?  @relation(fields: [company_id], references: [id])
-  project     Project?  @relation(fields: [project_id], references: [id])
+  id         String    @id @default(uuid()) @db.Uuid
+  user_id    String    @db.Uuid
+  role_id    String    @db.Uuid
+  company_id String?   @db.Uuid
+  project_id String?   @db.Uuid
+  created_at DateTime  @default(now())
+  expires_at DateTime?
+  user       User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  role       Role      @relation(fields: [role_id], references: [id], onDelete: Cascade)
+  company    Company?  @relation(fields: [company_id], references: [id])
+  project    Project?  @relation(fields: [project_id], references: [id])
 
   @@unique([user_id, role_id, company_id, project_id])
   @@index([user_id])
@@ -307,21 +308,21 @@ model UserRole {
 }
 
 model Property {
-  id            String          @id @default(uuid()) @db.Uuid
-  project_id    String          @db.Uuid
-  property_code String          @unique
-  tower         String?
-  floor         String?
-  unit_number   String?
-  asset_type    AssetType
-  area          Decimal?        @db.Decimal(12,2)
-  list_price    Decimal?        @db.Decimal(16,2)
-  currency      String          @default("PHP")
-  status        PropertyStatus  @default(AVAILABLE)
-  metadata      Json            @default("{}")
-  created_at    DateTime        @default(now())
-  updated_at    DateTime        @updatedAt
-  project       Project         @relation(fields: [project_id], references: [id])
+  id                  String             @id @default(uuid()) @db.Uuid
+  project_id          String             @db.Uuid
+  property_code       String             @unique
+  tower               String?
+  floor               String?
+  unit_number         String?
+  asset_type          AssetType
+  area                Decimal?           @db.Decimal(12, 2)
+  list_price          Decimal?           @db.Decimal(16, 2)
+  currency            String             @default("PHP")
+  status              PropertyStatus     @default(AVAILABLE)
+  metadata            Json               @default("{}")
+  created_at          DateTime           @default(now())
+  updated_at          DateTime           @updatedAt
+  project             Project            @relation(fields: [project_id], references: [id])
   customer_properties CustomerProperty[]
 
   @@index([project_id, status])
@@ -330,17 +331,17 @@ model Property {
 }
 
 model CustomerProperty {
-  id                String                        @id @default(uuid()) @db.Uuid
-  customer_id       String                        @db.Uuid
-  property_id       String                        @db.Uuid
+  id                String                       @id @default(uuid()) @db.Uuid
+  customer_id       String                       @db.Uuid
+  property_id       String                       @db.Uuid
   relationship_type CustomerPropertyRelationship
-  status            RelationshipStatus            @default(ACTIVE)
-  effective_from    DateTime                      @default(now())
+  status            RelationshipStatus           @default(ACTIVE)
+  effective_from    DateTime                     @default(now())
   effective_to      DateTime?
-  created_at        DateTime                      @default(now())
-  updated_at        DateTime                      @updatedAt
-  customer          User                          @relation(fields: [customer_id], references: [id], onDelete: Cascade)
-  property          Property                      @relation(fields: [property_id], references: [id], onDelete: Cascade)
+  created_at        DateTime                     @default(now())
+  updated_at        DateTime                     @updatedAt
+  customer          User                         @relation(fields: [customer_id], references: [id], onDelete: Cascade)
+  property          Property                     @relation(fields: [property_id], references: [id], onDelete: Cascade)
 
   @@unique([customer_id, property_id, relationship_type, effective_from])
   @@index([customer_id, status])
@@ -371,79 +372,79 @@ model BusinessService {
 }
 
 model CompanyIntegration {
-  id             String            @id @default(uuid()) @db.Uuid
-  company_id     String            @db.Uuid
+  id              String            @id @default(uuid()) @db.Uuid
+  company_id      String            @db.Uuid
   integration_key String
-  name           String
-  status         IntegrationStatus @default(PREPARED)
-  config         Json              @default("{}")
-  created_at     DateTime          @default(now())
-  updated_at     DateTime          @updatedAt
-  company        Company           @relation(fields: [company_id], references: [id])
-  logs           IntegrationLog[]
+  name            String
+  status          IntegrationStatus @default(PREPARED)
+  config          Json              @default("{}")
+  created_at      DateTime          @default(now())
+  updated_at      DateTime          @updatedAt
+  company         Company           @relation(fields: [company_id], references: [id])
+  logs            IntegrationLog[]
 
   @@unique([company_id, integration_key])
   @@map("company_integrations")
 }
 
 model CompanyApiClient {
-  id               String        @id @default(uuid()) @db.Uuid
-  company_id       String        @db.Uuid
-  client_name      String
-  client_id        String        @unique
-  credential_ref   String?
-  scopes           String[]
-  status           CompanyStatus @default(ACTIVE)
-  last_used_at     DateTime?
-  created_at       DateTime      @default(now())
-  updated_at       DateTime      @updatedAt
-  company          Company           @relation(fields: [company_id], references: [id])
+  id             String        @id @default(uuid()) @db.Uuid
+  company_id     String        @db.Uuid
+  client_name    String
+  client_id      String        @unique
+  credential_ref String?
+  scopes         String[]
+  status         CompanyStatus @default(ACTIVE)
+  last_used_at   DateTime?
+  created_at     DateTime      @default(now())
+  updated_at     DateTime      @updatedAt
+  company        Company       @relation(fields: [company_id], references: [id])
 
   @@index([company_id, status])
   @@map("company_api_clients")
 }
 
 model CompanyEvent {
-  id          String   @id @default(uuid()) @db.Uuid
-  company_id  String   @db.Uuid
-  event_type  String
-  enabled     Boolean  @default(true)
-  created_at  DateTime @default(now())
-  company     Company  @relation(fields: [company_id], references: [id])
+  id         String   @id @default(uuid()) @db.Uuid
+  company_id String   @db.Uuid
+  event_type String
+  enabled    Boolean  @default(true)
+  created_at DateTime @default(now())
+  company    Company  @relation(fields: [company_id], references: [id])
 
   @@unique([company_id, event_type])
   @@map("company_events")
 }
 
 model IntegrationLog {
-  id             String             @id @default(uuid()) @db.Uuid
-  integration_id String?            @db.Uuid
-  company_id      String?           @db.Uuid
-  direction       String
-  event_type      String
-  status          EventStatus       @default(PENDING)
-  request_ref     String?
-  error_code      String?
-  error_message   String?
-  metadata        Json              @default("{}")
-  created_at      DateTime          @default(now())
-  integration     CompanyIntegration? @relation(fields: [integration_id], references: [id])
-  company         Company?             @relation(fields: [company_id], references: [id], onDelete: Restrict)
+  id             String              @id @default(uuid()) @db.Uuid
+  integration_id String?             @db.Uuid
+  company_id     String?             @db.Uuid
+  direction      String
+  event_type     String
+  status         EventStatus         @default(PENDING)
+  request_ref    String?
+  error_code     String?
+  error_message  String?
+  metadata       Json                @default("{}")
+  created_at     DateTime            @default(now())
+  integration    CompanyIntegration? @relation(fields: [integration_id], references: [id])
+  company        Company?            @relation(fields: [company_id], references: [id], onDelete: Restrict)
 
   @@index([company_id, event_type])
   @@map("integration_logs")
 }
 
 model Notification {
-  id          String   @id @default(uuid()) @db.Uuid
-  user_id     String   @db.Uuid
-  channel     String
-  subject     String
-  body        String
-  status      String   @default("QUEUED")
-  created_at  DateTime @default(now())
-  sent_at      DateTime?
-  user        User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  id         String    @id @default(uuid()) @db.Uuid
+  user_id    String    @db.Uuid
+  channel    String
+  subject    String
+  body       String
+  status     String    @default("QUEUED")
+  created_at DateTime  @default(now())
+  sent_at    DateTime?
+  user       User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@index([user_id, status])
   @@map("notifications")
@@ -451,17 +452,17 @@ model Notification {
 
 model ConsentRecord {
   id              String      @id @default(uuid()) @db.Uuid
-  user_id          String      @db.Uuid
-  consent_type     ConsentType
-  company_id       String?     @db.Uuid
-  consent_version  String
-  granted          Boolean
-  granted_at       DateTime?
-  withdrawn_at     DateTime?
-  metadata         Json        @default("{}")
-  created_at       DateTime    @default(now())
-  user             User        @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  company          Company?    @relation(fields: [company_id], references: [id], onDelete: Restrict)
+  user_id         String      @db.Uuid
+  consent_type    ConsentType
+  company_id      String?     @db.Uuid
+  consent_version String
+  granted         Boolean
+  granted_at      DateTime?
+  withdrawn_at    DateTime?
+  metadata        Json        @default("{}")
+  created_at      DateTime    @default(now())
+  user            User        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  company         Company?    @relation(fields: [company_id], references: [id], onDelete: Restrict)
 
   @@index([user_id, consent_type, company_id])
   @@map("consent_records")
@@ -472,10 +473,10 @@ model FeatureFlag {
   key         String   @unique
   description String?
   enabled     Boolean  @default(false)
-  scope        String   @default("GLOBAL")
-  metadata     Json     @default("{}")
-  created_at   DateTime @default(now())
-  updated_at   DateTime @updatedAt
+  scope       String   @default("GLOBAL")
+  metadata    Json     @default("{}")
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
 
   @@map("feature_flags")
 }
@@ -526,60 +527,60 @@ model ActivityEvent {
 }
 
 model RewardsAccount {
-  id          String               @id @default(uuid()) @db.Uuid
-  customer_id String               @db.Uuid
-  company_id  String?              @db.Uuid
-  status      RewardsAccountStatus @default(DISABLED)
-  balance     Decimal              @default(0) @db.Decimal(18,2)
-  created_at  DateTime             @default(now())
-  updated_at  DateTime             @updatedAt
-  customer    User                 @relation(fields: [customer_id], references: [id], onDelete: Restrict)
-  company     Company?             @relation(fields: [company_id], references: [id], onDelete: Restrict)
+  id           String               @id @default(uuid()) @db.Uuid
+  customer_id  String               @db.Uuid
+  company_id   String?              @db.Uuid
+  status       RewardsAccountStatus @default(DISABLED)
+  balance      Decimal              @default(0) @db.Decimal(18, 2)
+  created_at   DateTime             @default(now())
+  updated_at   DateTime             @updatedAt
+  customer     User                 @relation(fields: [customer_id], references: [id], onDelete: Restrict)
+  company      Company?             @relation(fields: [company_id], references: [id], onDelete: Restrict)
   transactions RewardsTransaction[]
-  redemptions RewardsRedemption[]
+  redemptions  RewardsRedemption[]
 
   @@unique([customer_id, company_id])
   @@map("rewards_accounts")
 }
 
 model RewardsRule {
-  id             String   @id @default(uuid()) @db.Uuid
-  company_id      String?  @db.Uuid
-  rule_code       String   @unique
+  id              String               @id @default(uuid()) @db.Uuid
+  company_id      String?              @db.Uuid
+  rule_code       String               @unique
   description     String?
-  active          Boolean  @default(false)
-  rule_definition Json     @default("{}")
-  created_at      DateTime @default(now())
-  updated_at      DateTime @updatedAt
+  active          Boolean              @default(false)
+  rule_definition Json                 @default("{}")
+  created_at      DateTime             @default(now())
+  updated_at      DateTime             @updatedAt
   transactions    RewardsTransaction[]
-  company         Company? @relation(fields: [company_id], references: [id], onDelete: Restrict)
+  company         Company?             @relation(fields: [company_id], references: [id], onDelete: Restrict)
 
   @@map("rewards_rules")
 }
 
 model RewardsTransaction {
-  id                String                   @id @default(uuid()) @db.Uuid
-  rewards_account_id String                  @db.Uuid
-  customer_id        String                  @db.Uuid
-  source_company_id  String?                 @db.Uuid
-  rule_id            String?                 @db.Uuid
+  id                 String                   @id @default(uuid()) @db.Uuid
+  rewards_account_id String                   @db.Uuid
+  customer_id        String                   @db.Uuid
+  source_company_id  String?                  @db.Uuid
+  rule_id            String?                  @db.Uuid
   transaction_number String                   @unique
   idempotency_key    String?                  @unique
   source_reference   String?
   transaction_type   RewardsTransactionType
-  amount             Decimal                 @db.Decimal(18,2)
+  amount             Decimal                  @db.Decimal(18, 2)
   reason             String
   authorization_ref  String?
   status             RewardsTransactionStatus @default(PENDING)
-  reversal_of_id     String?                 @db.Uuid
-  created_at         DateTime                @default(now())
+  reversal_of_id     String?                  @db.Uuid
+  created_at         DateTime                 @default(now())
   posted_at          DateTime?
-  account            RewardsAccount          @relation(fields: [rewards_account_id], references: [id], onDelete: Restrict)
-  customer           User                    @relation(fields: [customer_id], references: [id], onDelete: Restrict)
+  account            RewardsAccount           @relation(fields: [rewards_account_id], references: [id], onDelete: Restrict)
+  customer           User                     @relation(fields: [customer_id], references: [id], onDelete: Restrict)
   source_company     Company?                 @relation("RewardsSourceCompany", fields: [source_company_id], references: [id], onDelete: Restrict)
-  rule               RewardsRule?            @relation(fields: [rule_id], references: [id], onDelete: Restrict)
-  reversal_of        RewardsTransaction?     @relation("RewardsReversal", fields: [reversal_of_id], references: [id], onDelete: Restrict)
-  reversals          RewardsTransaction[]    @relation("RewardsReversal")
+  rule               RewardsRule?             @relation(fields: [rule_id], references: [id], onDelete: Restrict)
+  reversal_of        RewardsTransaction?      @relation("RewardsReversal", fields: [reversal_of_id], references: [id], onDelete: Restrict)
+  reversals          RewardsTransaction[]     @relation("RewardsReversal")
 
   @@index([customer_id, created_at])
   @@index([source_company_id])
@@ -587,10 +588,10 @@ model RewardsTransaction {
 }
 
 model RewardsRedemption {
-  id                String           @id @default(uuid()) @db.Uuid
+  id                 String           @id @default(uuid()) @db.Uuid
   customer_id        String           @db.Uuid
   rewards_account_id String           @db.Uuid
-  amount             Decimal          @db.Decimal(18,2)
+  amount             Decimal          @db.Decimal(18, 2)
   status             RedemptionStatus @default(REQUESTED)
   reason             String?
   authorization_ref  String?
