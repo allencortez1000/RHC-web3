@@ -22,7 +22,7 @@ export const envSchema = z.object({
   CUSTOMER_WEB_URL: z.string().optional(),
   ADMIN_WEB_URL: z.string().optional(),
   API_URL: z.string().optional(),
-  CORS_ORIGINS: z.string().default('http://localhost:3000,http://localhost:3002'),
+  CORS_ORIGINS: z.string().default('http://localhost:3002'),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
 });
 

@@ -1,15 +1,11 @@
-import { Badge, Card, Web3Shell } from '@rhc/ui';
+import { AppShell, Card, SecurityStatus } from '@rhc/ui';
+import { navFor } from '../web3-nav';
 
 export default function Page() {
   return (
-    <Web3Shell>
-      <section className="mx-auto max-w-4xl px-6 py-10">
-        <Badge tone="info">Customer Portal</Badge>
-        <h1 className="mt-5 text-4xl font-black text-white md:text-6xl">Security</h1>
-        <Card className="mt-8">
-          <p className="text-base leading-7 text-slate-300">Security is connected to the Month 1 API contract and designed for validation, error, loading, and empty states.</p>
-        </Card>
-      </section>
-    </Web3Shell>
+    <AppShell title="Security Center" navItems={navFor('Settings')}>
+      <SecurityStatus />
+      <section className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">{['Password','Two-Factor Authentication','Login Sessions','Connected Devices','Wallet Security','Recovery Options'].map((item) => <Card key={item}><h3 className="text-xl font-black text-white">{item}</h3><p className="mt-2 text-sm text-slate-400">Prepared for secure backend enforcement and future step-up authentication.</p></Card>)}</section>
+    </AppShell>
   );
 }

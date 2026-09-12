@@ -10,7 +10,7 @@ import { RequestContextMiddleware } from './platform/request-context.middleware'
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
   app.use(helmet());
-  app.enableCors({ origin: (process.env.CORS_ORIGINS ?? 'http://localhost:3000,http://localhost:3002').split(','), credentials: true });
+  app.enableCors({ origin: (process.env.CORS_ORIGINS ?? 'http://localhost:3002').split(','), credentials: true });
   app.setGlobalPrefix('api/v1');
   app.use(new RequestContextMiddleware().use);
   app.useGlobalInterceptors(new ResponseEnvelopeInterceptor());

@@ -49,10 +49,9 @@ export default function CustomerLoginStart() {
               <label className="block">
                 <span className="text-sm font-semibold text-slate-200">Email address</span>
                 <input
-                  name="email"
                   type="email"
                   required
-                  defaultValue="customer@rhc.local"
+                  autoComplete="email"
                   className="mt-2 w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white outline-none ring-cyan-300/40 placeholder:text-slate-500 focus:border-cyan-300/60 focus:ring-4"
                   placeholder="you@example.com"
                 />
@@ -61,10 +60,9 @@ export default function CustomerLoginStart() {
               <label className="block">
                 <span className="text-sm font-semibold text-slate-200">Password</span>
                 <input
-                  name="password"
                   type="password"
                   required
-                  defaultValue="mock-password"
+                  autoComplete="current-password"
                   className="mt-2 w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white outline-none ring-cyan-300/40 placeholder:text-slate-500 focus:border-cyan-300/60 focus:ring-4"
                   placeholder="Enter your password"
                 />

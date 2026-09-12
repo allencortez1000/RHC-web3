@@ -8,7 +8,7 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "concurrently -n api,customer,admin -c blue,green,magenta \"npm run dev -w @rhc/api\" \"npm run dev -w @rhc/customer-web\" \"npm run dev -w @rhc/admin-web\"",
+    "dev": "npm run dev -w @rhc/customer-web",
     "dev:mock": "npm run dev",
     "free:admin-port": "npx kill-port 3002",
     "build": "npm run build --workspaces --if-present",

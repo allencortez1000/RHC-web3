@@ -46,13 +46,13 @@ npm run dev
 
 Local development runs with mock data automatically when no `DATABASE_URL` is configured, so you can open the system without Supabase/PostgreSQL credentials.
 
-Default local URLs:
+Default local URL:
 
 ```text
-Customer Portal: http://localhost:3000
-Admin Command Center: http://localhost:3002
-API: http://localhost:4000/api/v1
+RHC Web3 System: http://localhost:3002
 ```
+
+`npm run dev` intentionally starts only one local port: `3002`.
 
 If port `3002` is already occupied, stop the other process or run:
 
