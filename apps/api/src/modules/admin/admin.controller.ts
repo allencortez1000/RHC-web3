@@ -70,7 +70,7 @@ export class AdminController {
   @RequirePermission('customer.view')
   customers() {
     if (this.prisma.mockMode) return mockUsers;
-    return this.prisma.user.findMany({ include: { profile: true } });
+    return this.prisma.user.findMany({ select: { id: true, email: true, account_status: true, verification_status: true, created_at: true, profile: { select: { first_name: true, last_name: true, rhc_id: true } } } });
   }
 
   @Get('companies')
@@ -180,7 +180,7 @@ export class AdminController {
   @Get('roles') @RequirePermission('role.view') roles() { if (this.prisma.mockMode) return mockRoles; return this.prisma.role.findMany({ include: { role_permissions: { include: { permission: true } } } }); }
   @Get('permissions') @RequirePermission('permission.view') permissions() { if (this.prisma.mockMode) return mockPermissions; return this.prisma.permission.findMany(); }
   @Get('integrations') @RequirePermission('integration.view') integrations() { if (this.prisma.mockMode) return mockIntegrations; return this.prisma.companyIntegration.findMany({ include: { company: true } }); }
-  @Get('business-services') @RequirePermission('integration.view') businessServices() { return mockBusinessServices; }
+  @Get('business-services') @RequirePermission('integration.view') businessServices() { if (this.prisma.mockMode) return mockBusinessServices; return this.prisma.businessService.findMany({ include: { company: { select: { company_code: true, display_name: true } } }, orderBy: { service_code: 'asc' } }); }
   @Get('feature-flags') @RequirePermission('feature_flag.view') flags() { if (this.prisma.mockMode) return mockFeatureFlags; return this.prisma.featureFlag.findMany({ orderBy: { key: 'asc' } }); }
 
   @Patch('feature-flags/:id')

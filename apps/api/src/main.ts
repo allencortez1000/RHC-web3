@@ -6,11 +6,16 @@ import { AppModule } from './modules/app.module';
 import { ResponseEnvelopeInterceptor } from './platform/response-envelope.interceptor';
 import { ApiExceptionFilter } from './platform/api-exception.filter';
 import { RequestContextMiddleware } from './platform/request-context.middleware';
+import { loadEnv } from '@rhc/config';
 
 async function bootstrap() {
+  const env = loadEnv();
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
   app.use(helmet());
-  app.enableCors({ origin: (process.env.CORS_ORIGINS ?? 'http://localhost:3002').split(','), credentials: true });
+  const configuredOrigins = env.CORS_ORIGINS.split(',').map((origin) => origin.trim()).filter(Boolean);
+  const localOrigins = env.NODE_ENV === 'development' ? ['http://localhost:3000', 'http://localhost:3002'] : [];
+  const allowedOrigins = [...new Set([...configuredOrigins, ...localOrigins])];
+  app.enableCors({ origin: allowedOrigins, credentials: true });
   app.setGlobalPrefix('api/v1');
   app.use(new RequestContextMiddleware().use);
   app.useGlobalInterceptors(new ResponseEnvelopeInterceptor());
@@ -27,7 +32,7 @@ async function bootstrap() {
     SwaggerModule.setup('api/docs', app, document);
   }
 
-  await app.listen(Number(process.env.PORT ?? 4000));
+  await app.listen(env.PORT);
 }
 
 bootstrap();

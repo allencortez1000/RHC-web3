@@ -55,5 +55,9 @@ export const mockIntegrations = mockCompanies.map((company) => ({ id: `mock-inte
 export const mockSystemSettings = [{ id: 'mock-setting-month1', key: 'mock_data_mode', value: { enabled: true }, description: 'Local development mock data mode', created_at: mockNow, updated_at: mockNow }];
 
 export function isMockDataEnabled(): boolean {
-  return process.env.USE_MOCK_DATA !== 'false' && (!process.env.DATABASE_URL || process.env.USE_MOCK_DATA === 'true');
+  const environment = process.env.NODE_ENV;
+  if ((environment === 'staging' || environment === 'production') && process.env.USE_MOCK_DATA === 'true') {
+    throw new Error('USE_MOCK_DATA is prohibited in staging and production');
+  }
+  return process.env.USE_MOCK_DATA === 'true';
 }

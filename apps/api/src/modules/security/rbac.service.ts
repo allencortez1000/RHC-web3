@@ -10,8 +10,11 @@ export class RbacService {
       include: { role: { include: { role_permissions: { include: { permission: true } } } } },
     });
     return roles.some((ur) => {
-      const companyOk = !ur.company_id || !companyId || ur.company_id === companyId;
-      const projectOk = !ur.project_id || !projectId || ur.project_id === projectId;
+      // Scoped grants are valid only when the protected resource has supplied
+      // the matching, resource-derived scope. Missing query parameters never
+      // broaden a grant.
+      const companyOk = !ur.company_id || ur.company_id === companyId;
+      const projectOk = !ur.project_id || ur.project_id === projectId;
       return companyOk && projectOk && ur.role.role_permissions.some((rp) => rp.permission.code === permission);
     });
   }

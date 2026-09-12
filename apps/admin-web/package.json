@@ -5,7 +5,8 @@
   "dependencies": {
     "@rhc/ui": "0.1.0",
     "@rhc/types": "0.1.0",
-    "next": "^14.2.4",
+    "@supabase/supabase-js": "^2.49.8",
+    "next": "^14.2.4"
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
@@ -24,6 +25,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "next lint",
     "test": "echo 'admin-web unit tests: covered by component typecheck'",
-    "test:e2e": "playwright test --pass-with-no-tests"
+    "test:e2e": "playwright test --pass-with-no-tests",
+    "build:customer": "npm run build -w @rhc/ui && npm run build -w @rhc/types && npm run build -w @rhc/customer-web",
+    "build:admin": "npm run build -w @rhc/ui && npm run build -w @rhc/types && npm run build -w @rhc/admin-web"
   }
 }

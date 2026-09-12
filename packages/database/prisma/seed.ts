@@ -47,8 +47,8 @@ async function main() {
   for (const [company_code, legal_name, display_name, business_type, description] of companies) {
     await prisma.company.upsert({
       where: { company_code },
-      update: { legal_name, display_name, business_type, description },
-      create: { company_code, legal_name, display_name, business_type, description, status: 'ACTIVE', integration_status: company_code === 'AMICA_CONDO' ? 'PREPARED' : 'PREPARED' },
+      update: { legal_name, display_name, business_type, description, status: company_code === 'RHC' || company_code === 'AMICA_CONDO' ? 'ACTIVE' : 'PREPARED' },
+      create: { company_code, legal_name, display_name, business_type, description, status: company_code === 'RHC' || company_code === 'AMICA_CONDO' ? 'ACTIVE' : 'PREPARED', integration_status: 'PREPARED' },
     });
   }
 
@@ -77,14 +77,24 @@ async function main() {
     });
   }
 
-  const customerRole = await prisma.role.findFirstOrThrow({ where: { code: 'CUSTOMER', company_id: null } });
-  const customerPerms = await prisma.permission.findMany({ where: { code: { in: ['customer.view', 'customer.edit', 'company.view', 'project.view', 'property.view'] } } });
-  for (const p of customerPerms) {
-    await prisma.rolePermission.upsert({
-      where: { role_id_permission_id: { role_id: customerRole.id, permission_id: p.id } },
-      update: {},
-      create: { role_id: customerRole.id, permission_id: p.id },
-    });
+  const rolePermissions: Record<string, string[]> = {
+    CUSTOMER: ['customer.view', 'customer.edit', 'company.view', 'project.view', 'property.view'],
+    SALES_AGENT: ['customer.view', 'project.view', 'property.view', 'customer_property.view'],
+    SALES_MANAGER: ['customer.view', 'customer.edit', 'project.view', 'property.view', 'property.edit', 'customer_property.view', 'customer_property.manage'],
+    FINANCE_STAFF: ['customer.view', 'property.view', 'customer_property.view'],
+    FINANCE_MANAGER: ['customer.view', 'customer.edit', 'property.view', 'customer_property.view'],
+    PROPERTY_ADMIN: ['company.view', 'project.view', 'project.create', 'project.edit', 'property.view', 'property.create', 'property.edit', 'property.change_status', 'customer_property.view', 'customer_property.manage'],
+    DOCUMENT_OFFICER: ['customer.view', 'customer.edit', 'customer_property.view'],
+    REWARDS_ADMIN: ['customer.view', 'company.view', 'integration.view'],
+    COMPLIANCE_OFFICER: ['customer.view', 'user.view', 'audit.view'],
+    DPO: ['customer.view', 'customer.edit', 'audit.view'],
+    AUDITOR: ['company.view', 'project.view', 'property.view', 'customer_property.view', 'role.view', 'permission.view', 'integration.view', 'feature_flag.view', 'audit.view', 'user.view', 'system_settings.view'],
+    SYSTEM_ADMIN: ['company.view', 'project.view', 'property.view', 'role.view', 'permission.view', 'integration.view', 'integration.manage', 'feature_flag.view', 'feature_flag.manage', 'user.view', 'user.manage', 'system_settings.view', 'system_settings.manage'],
+  };
+  for (const [roleCode, permissionCodes] of Object.entries(rolePermissions)) {
+    const role = await prisma.role.findFirstOrThrow({ where: { code: roleCode, company_id: null } });
+    const granted = await prisma.permission.findMany({ where: { code: { in: permissionCodes } } });
+    for (const permission of granted) await prisma.rolePermission.upsert({ where: { role_id_permission_id: { role_id: role.id, permission_id: permission.id } }, update: {}, create: { role_id: role.id, permission_id: permission.id } });
   }
 
   for (const [key, enabled] of Object.entries(featureFlags)) {

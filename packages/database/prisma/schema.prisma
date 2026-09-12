@@ -136,7 +136,7 @@ model User {
   supabase_user_id  String?             @unique
   email             String              @unique
   mobile_number     String?             @unique
-  password_hash      String?
+
   account_status    AccountStatus       @default(PENDING)
   verification_status VerificationStatus @default(UNVERIFIED)
   last_login_at     DateTime?
@@ -147,6 +147,8 @@ model User {
   consent_records   ConsentRecord[]
   customer_properties CustomerProperty[]
   rewards_accounts  RewardsAccount[]
+  rewards_transactions RewardsTransaction[]
+  rewards_redemptions RewardsRedemption[]
   notifications     Notification[]
   audit_logs        AuditLog[]          @relation("AuditActor")
   activity_events   ActivityEvent[]     @relation("ActivityActor")
@@ -215,6 +217,11 @@ model Company {
   api_clients              CompanyApiClient[]
   integrations             CompanyIntegration[]
   allowed_events           CompanyEvent[]
+  consent_records          ConsentRecord[]
+  integration_logs         IntegrationLog[]
+  rewards_accounts         RewardsAccount[]
+  rewards_rules            RewardsRule[]
+  rewards_transactions     RewardsTransaction[] @relation("RewardsSourceCompany")
 
   @@index([status])
   @@map("companies")
@@ -390,7 +397,7 @@ model CompanyApiClient {
   last_used_at     DateTime?
   created_at       DateTime      @default(now())
   updated_at       DateTime      @updatedAt
-  company          Company       @relation(fields: [company_id], references: [id])
+  company          Company           @relation(fields: [company_id], references: [id])
 
   @@index([company_id, status])
   @@map("company_api_clients")
@@ -421,6 +428,7 @@ model IntegrationLog {
   metadata        Json              @default("{}")
   created_at      DateTime          @default(now())
   integration     CompanyIntegration? @relation(fields: [integration_id], references: [id])
+  company         Company?             @relation(fields: [company_id], references: [id], onDelete: Restrict)
 
   @@index([company_id, event_type])
   @@map("integration_logs")
@@ -453,6 +461,7 @@ model ConsentRecord {
   metadata         Json        @default("{}")
   created_at       DateTime    @default(now())
   user             User        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  company          Company?    @relation(fields: [company_id], references: [id], onDelete: Restrict)
 
   @@index([user_id, consent_type, company_id])
   @@map("consent_records")
@@ -524,8 +533,10 @@ model RewardsAccount {
   balance     Decimal              @default(0) @db.Decimal(18,2)
   created_at  DateTime             @default(now())
   updated_at  DateTime             @updatedAt
-  customer    User                 @relation(fields: [customer_id], references: [id], onDelete: Cascade)
+  customer    User                 @relation(fields: [customer_id], references: [id], onDelete: Restrict)
+  company     Company?             @relation(fields: [company_id], references: [id], onDelete: Restrict)
   transactions RewardsTransaction[]
+  redemptions RewardsRedemption[]
 
   @@unique([customer_id, company_id])
   @@map("rewards_accounts")
@@ -541,6 +552,7 @@ model RewardsRule {
   created_at      DateTime @default(now())
   updated_at      DateTime @updatedAt
   transactions    RewardsTransaction[]
+  company         Company? @relation(fields: [company_id], references: [id], onDelete: Restrict)
 
   @@map("rewards_rules")
 }
@@ -551,6 +563,8 @@ model RewardsTransaction {
   customer_id        String                  @db.Uuid
   source_company_id  String?                 @db.Uuid
   rule_id            String?                 @db.Uuid
+  transaction_number String                   @unique
+  idempotency_key    String?                  @unique
   source_reference   String?
   transaction_type   RewardsTransactionType
   amount             Decimal                 @db.Decimal(18,2)
@@ -560,8 +574,12 @@ model RewardsTransaction {
   reversal_of_id     String?                 @db.Uuid
   created_at         DateTime                @default(now())
   posted_at          DateTime?
-  account            RewardsAccount          @relation(fields: [rewards_account_id], references: [id])
-  rule               RewardsRule?            @relation(fields: [rule_id], references: [id])
+  account            RewardsAccount          @relation(fields: [rewards_account_id], references: [id], onDelete: Restrict)
+  customer           User                    @relation(fields: [customer_id], references: [id], onDelete: Restrict)
+  source_company     Company?                 @relation("RewardsSourceCompany", fields: [source_company_id], references: [id], onDelete: Restrict)
+  rule               RewardsRule?            @relation(fields: [rule_id], references: [id], onDelete: Restrict)
+  reversal_of        RewardsTransaction?     @relation("RewardsReversal", fields: [reversal_of_id], references: [id], onDelete: Restrict)
+  reversals          RewardsTransaction[]    @relation("RewardsReversal")
 
   @@index([customer_id, created_at])
   @@index([source_company_id])
@@ -578,6 +596,8 @@ model RewardsRedemption {
   authorization_ref  String?
   created_at         DateTime         @default(now())
   updated_at         DateTime         @updatedAt
+  customer           User             @relation(fields: [customer_id], references: [id], onDelete: Restrict)
+  account            RewardsAccount   @relation(fields: [rewards_account_id], references: [id], onDelete: Restrict)
 
   @@index([customer_id, status])
   @@map("rewards_redemptions")
