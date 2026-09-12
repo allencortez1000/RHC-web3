@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { PrismaService } from '../platform/prisma.service';
 import { AuthController } from './auth/auth.controller';
-import { AuthService } from './auth/auth.service';
+
 import { RbacService } from './security/rbac.service';
 import { AuditService } from './security/audit.service';
 import { EventsService } from './events/events.service';
@@ -18,6 +18,6 @@ import { PermissionGuard } from './security/permission.guard';
 @Module({
   imports: [ThrottlerModule.forRoot([{ ttl: 60_000, limit: 20 }])],
   controllers: [AuthController, MeController, DirectoryController, AdminController],
-  providers: [PrismaService, AuthService, RbacService, AuditService, EventsService, RhcIdService, SupabaseJwtService, ApplicationUserService, AuthGuard, PermissionGuard],
+  providers: [PrismaService, RbacService, AuditService, EventsService, RhcIdService, SupabaseJwtService, ApplicationUserService, AuthGuard, PermissionGuard],
 })
 export class AppModule {}

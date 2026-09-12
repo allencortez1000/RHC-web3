@@ -29,6 +29,6 @@ export class ApplicationUserService {
       select: { id: true, email: true, supabase_user_id: true, account_status: true, verification_status: true },
     });
     if (user.account_status === 'DISABLED' || user.account_status === 'LOCKED') throw new UnauthorizedException('Account is unavailable');
-    return user;
+    return { ...user, supabase_user_id: user.supabase_user_id ?? identity.subject };
   }
 }
