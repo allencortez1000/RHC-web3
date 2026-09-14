@@ -1,4 +1,5 @@
 {
+  "$schema": "./schemas/package.schema.json",
   "name": "rhc-digital",
   "version": "0.1.0",
   "private": true,
@@ -9,7 +10,12 @@
   ],
   "scripts": {
     "dev": "npm run dev -w @rhc/customer-web",
-    "dev:mock": "npm run dev",
+    "dev:customer": "npm run dev -w @rhc/customer-web",
+    "dev:admin": "npm run dev -w @rhc/admin-web",
+    "dev:api": "npm run dev -w @rhc/api",
+    "dev:all": "concurrently \"npm run dev:api\" \"npm run dev:customer\" \"npm run dev:admin\"",
+    "dev:mock": "npm run dev:all",
+    "free:customer-port": "npx kill-port 3000",
     "free:admin-port": "npx kill-port 3002",
     "build:shared": "npm run build -w @rhc/config && npm run build -w @rhc/types && npm run build -w @rhc/shared && npm run build -w @rhc/validation && npm run build -w @rhc/ui && npm run build -w @rhc/database",
     "build:customer": "npm run build:shared && npm run build -w @rhc/customer-web",

@@ -1,5 +1,7 @@
 {
   "css.lint.unknownAtRules": "ignore",
   "scss.lint.unknownAtRules": "ignore",
-  "less.lint.unknownAtRules": "ignore"
+  "less.lint.unknownAtRules": "ignore",
+  "json.schemaDownload.enable": false,
+  "json.validate.enable": false
 }

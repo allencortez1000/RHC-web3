@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RHC workspace package manifest",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["name", "version", "private", "workspaces", "scripts"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "name": { "type": "string" },
+    "version": { "type": "string" },
+    "private": { "type": "boolean" },
+    "description": { "type": "string" },
+    "workspaces": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "scripts": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "dependencies": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "devDependencies": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "overrides": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "engines": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    }
+  }
+}
