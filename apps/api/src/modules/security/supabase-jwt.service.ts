@@ -26,7 +26,8 @@ export class SupabaseJwtService {
         issuer,
         audience: process.env.JWT_AUDIENCE ?? 'authenticated',
       });
-      return this.toIdentity(payload);
+      const identity = this.toIdentity(payload);
+      return { ...identity, emailConfirmed: await this.isEmailConfirmed(identity.subject) };
     } catch {
       throw new UnauthorizedException('Invalid or expired access token');
     }
@@ -37,7 +38,28 @@ export class SupabaseJwtService {
     return {
       subject: payload.sub,
       email: payload.email.toLowerCase(),
-      emailConfirmed: typeof payload.email_confirmed_at === 'string',
+      // Supabase access-token claims do not provide a portable, authoritative
+      // email confirmation field. Confirmation is verified below through the
+      // server-only Auth admin API after JWT signature validation.
+      emailConfirmed: false,
     };
+  }
+
+  private async isEmailConfirmed(subject: string): Promise<boolean> {
+    const baseUrl = process.env.SUPABASE_URL;
+    const secret = process.env.SUPABASE_SECRET_KEY;
+    if (!baseUrl || !secret) throw new UnauthorizedException('Account verification is not configured');
+    try {
+      const response = await fetch(`${baseUrl.replace(/\/$/, '')}/auth/v1/admin/users/${encodeURIComponent(subject)}`, {
+        headers: { Authorization: `Bearer ${secret}`, apikey: secret },
+      });
+      if (!response.ok) throw new Error('Supabase Auth lookup failed');
+      const user = await response.json() as { email_confirmed_at?: unknown };
+      return typeof user.email_confirmed_at === 'string';
+    } catch {
+      // Failing closed prevents an unavailable identity provider from issuing
+      // verified RHC identities or Digital IDs.
+      throw new UnauthorizedException('Account verification is unavailable');
+    }
   }
 }

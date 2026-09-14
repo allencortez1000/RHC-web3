@@ -36,7 +36,7 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): RhcEnv {
   const nonDevelopment = env.NODE_ENV === 'staging' || env.NODE_ENV === 'production';
   if (nonDevelopment) {
     if (env.USE_MOCK_DATA === 'true') throw new Error('USE_MOCK_DATA is not allowed outside development or test');
-    for (const key of ['DATABASE_URL', 'DIRECT_URL', 'SUPABASE_URL', 'SUPABASE_JWKS_URL', 'JWT_ISSUER', 'UPSTASH_REDIS_REST_URL', 'UPSTASH_REDIS_REST_TOKEN'] as const) {
+    for (const key of ['DATABASE_URL', 'DIRECT_URL', 'SUPABASE_URL', 'SUPABASE_SECRET_KEY', 'SUPABASE_JWKS_URL', 'JWT_ISSUER', 'UPSTASH_REDIS_REST_URL', 'UPSTASH_REDIS_REST_TOKEN'] as const) {
       if (!env[key]) throw new Error(`Missing required environment variable: ${key}`);
     }
   }
