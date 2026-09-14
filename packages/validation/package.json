@@ -4,11 +4,12 @@
   "private": true,
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "dependencies": { "zod": "^3.23.8" },
+  "dependencies": {
+    "zod": "^3.23.8"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "lint": "eslint src --ext .ts",
-    "test": "echo 'validation: no tests'"
+    "lint": "eslint src --ext .ts"
   }
 }

@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { Badge, Card, ThemeToggle, Web3Button, Web3Shell } from '@rhc/ui';
 import { LoginForm } from '../components/login-form';
 
@@ -16,7 +17,7 @@ export default function CustomerLoginStart() {
               <Card key={item} className="rhc-card-token">
                 <div className="flex items-center justify-between gap-3">
                   <p className="font-bold text-[var(--rhc-heading)]">{item}</p>
-                  <Badge tone="gold">Prepared</Badge>
+                  <Badge tone="gold">Coming soon</Badge>
                 </div>
               </Card>
             ))}
@@ -25,13 +26,13 @@ export default function CustomerLoginStart() {
 
         <Card className="mx-auto w-full max-w-xl rhc-card-token p-0">
           <div className="flex items-center justify-between border-b border-[var(--rhc-border)] p-6">
-            <a href="/" className="flex items-center gap-3">
+            <Link href="/" className="flex items-center gap-3">
               <div className="rhc-token-mini grid h-11 w-11 place-items-center rounded-full font-extrabold">R</div>
               <div>
                 <p className="text-sm font-extrabold uppercase tracking-[0.14em] text-[var(--rhc-heading)]">RHC Digital</p>
                 <p className="text-xs text-[var(--rhc-muted)]">Secure customer sign in</p>
               </div>
-            </a>
+            </Link>
             <ThemeToggle />
           </div>
 

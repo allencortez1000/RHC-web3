@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useState, type MouseEvent, type ReactNode } from 'react';
+import { AuthForm, SignOutButton, type AuthMode } from './runtime';
+export * from './runtime';
 
 type BadgeTone = 'neutral' | 'success' | 'warning' | 'danger' | 'info' | 'gold';
 type Theme = 'dark' | 'light';
@@ -54,7 +56,7 @@ export function Badge({ children, tone = 'neutral' }: { children: ReactNode; ton
   return <span className={`inline-flex items-center rounded-md border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.14em] ${tones[tone]}`}>{children}</span>;
 }
 
-export function Web3Button({ children, variant = 'primary', className = '', href }: { children: ReactNode; variant?: 'primary' | 'secondary' | 'danger' | 'tertiary'; className?: string; href?: string }) {
+export function Web3Button({ children, variant = 'primary', className = '', href, onClick, disabled, type = 'button' }: { children: ReactNode; variant?: 'primary' | 'secondary' | 'danger' | 'tertiary'; className?: string; href?: string; onClick?: () => void; disabled?: boolean; type?: 'button' | 'submit' }) {
   const classes = {
     primary: 'rhc-web3-btn-primary',
     secondary: 'rhc-web3-btn-secondary',
@@ -62,7 +64,11 @@ export function Web3Button({ children, variant = 'primary', className = '', href
     tertiary: 'border border-transparent bg-transparent text-[var(--rhc-secondary-text)] hover:text-[var(--rhc-heading)]',
   }[variant];
   const content = <span className={`inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-bold transition ${classes} ${className}`}>{children}</span>;
-  return href ? <a href={href}>{content}</a> : <button type="button">{content}</button>;
+  return href && !disabled ? <a href={href}>{content}</a> : <button type={type} onClick={onClick} disabled={disabled ?? (!onClick && type !== 'submit')} title={!onClick && !href && type !== 'submit' ? 'Coming soon — Month 2' : undefined} className="disabled:cursor-not-allowed disabled:opacity-60">{content}</button>;
+}
+
+export function AuthPage({ mode, title, admin = false }: { mode: AuthMode; title: string; admin?: boolean }) {
+  return <Web3Shell variant={admin ? 'admin' : 'customer'}><section className="mx-auto max-w-4xl px-6 py-10"><div className="flex items-center justify-between"><Badge tone="gold">{admin ? 'RHC Administration' : 'RHC Web3 Platform'}</Badge><ThemeToggle /></div><h1 className="rhc-page-title mt-5">{title}</h1><Card className="mt-8 rhc-card-token"><p className="rhc-body-copy">{admin ? 'Use your authorized RHC account. Administrative permissions are enforced by the API.' : 'Secure account access powered by Supabase Auth.'}</p><AuthForm mode={mode} /></Card></section></Web3Shell>;
 }
 
 export function EmptyState({ title, description }: { title: string; description: string }) {
@@ -129,25 +135,25 @@ export function Web3Shell({ children, variant = 'customer' }: { children: ReactN
       <div className="rhc-bg-grid pointer-events-none fixed inset-0" />
       <div className="relative z-10">{children}</div>
       <div className="rhc-mode-pill pointer-events-none fixed bottom-4 right-4 hidden rounded-lg border px-3 py-2 text-xs md:block">
-        {variant === 'admin' ? 'Command Center' : 'RHC Web3 Platform'} · Demo Data
+        {variant === 'admin' ? 'Command Center' : 'RHC Web3 Platform'} · Month 1
       </div>
     </main>
   );
 }
 
 export function NetworkBadge() {
-  return <span className="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-bold rhc-network-badge"><span className="h-2 w-2 rounded-full bg-[var(--rhc-success)]" /> RHC Network · Demo</span>;
+  return <span className="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-bold rhc-network-badge"><span className="h-2 w-2 rounded-full bg-[var(--rhc-muted)]" /> Network · Coming soon</span>;
 }
 
 export function WalletAddress({ address = 'Not connected' }: { address?: string }) {
-  return <span className="inline-flex items-center gap-2 rounded-md border px-3 py-2 font-mono text-sm font-semibold rhc-address"><span>{address}</span><span className="font-sans text-[var(--rhc-primary)]">Copy</span></span>;
+  return <span className="inline-flex items-center gap-2 rounded-md border px-3 py-2 font-mono text-sm font-semibold rhc-address"><span>{address}</span><span className="font-sans text-[var(--rhc-primary)]">Coming soon</span></span>;
 }
 
 export function HashDisplay({ hash }: { hash: string }) {
   return <span className="inline-flex items-center gap-2 font-mono text-sm text-[var(--rhc-heading)]"><span>{hash}</span><span className="text-[var(--rhc-primary)]">Copy</span></span>;
 }
 
-export function TokenBalance({ amount = '12,850', symbol = 'RHC Points', label = 'Rewards Balance' }: { amount?: string; symbol?: string; label?: string }) {
+export function TokenBalance({ amount = '—', symbol = 'RHC Points', label = 'Rewards Balance' }: { amount?: string; symbol?: string; label?: string }) {
   return <div><p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--rhc-muted)]">{label}</p><p className="mt-1 text-2xl font-extrabold text-[var(--rhc-heading)]">{amount} <span className="text-base text-[var(--rhc-primary)]">{symbol}</span></p></div>;
 }
 
@@ -197,9 +203,9 @@ export function TokenHero() {
   const facts = [
     ['Token Symbol', 'RHC'],
     ['Network', 'Awaiting integration'],
-    ['Token Supply', 'Demo display only'],
+    ['Token Supply', 'Coming soon'],
     ['Circulating Supply', 'Not connected'],
-    ['Current Utility', 'Properties · Marketplace · Rewards'],
+    ['Future Utility', 'Properties · Marketplace · Rewards'],
     ['Contract Address', 'Not deployed in Month 1'],
   ];
   return (
@@ -228,7 +234,7 @@ export function TokenCard() {
         <div>
           <Badge tone="gold">RHC Token Inspired</Badge>
           <h3 className="mt-3 text-xl font-bold text-[var(--rhc-heading)]">RHC Ecosystem Asset Layer</h3>
-          <p className="mt-1 text-sm leading-6 text-[var(--rhc-muted)]">Demo interface for token, rewards, wallet, property, and marketplace flows. Real token transfers remain disabled in Month 1.</p>
+          <p className="mt-1 text-sm leading-6 text-[var(--rhc-muted)]">Token, rewards, wallet, and marketplace transactions are coming soon. Real token transfers remain disabled in Month 1.</p>
         </div>
       </div>
     </Card>
@@ -241,7 +247,7 @@ export function PortfolioChart() {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--rhc-muted)]">Total Ecosystem Value</p>
-          <p className="rhc-value mt-2 text-3xl">Demo Mode</p>
+          <p className="rhc-value mt-2 text-3xl">Coming soon</p>
           <Badge tone="warning">Awaiting live valuation</Badge>
         </div>
         <div className="flex flex-wrap gap-2">{['24H','7D','30D','3M','1Y','ALL'].map((f) => <span key={f} className="rounded-md border border-[var(--rhc-border)] bg-[var(--rhc-surface-secondary)] px-2.5 py-1.5 text-xs font-bold text-[var(--rhc-secondary-text)]">{f}</span>)}</div>
@@ -251,21 +257,21 @@ export function PortfolioChart() {
   );
 }
 
-export function DigitalIDCard() {
+export function DigitalIDCard({ name = 'Complete your profile', rhcId, verification = 'Not available', account = 'Not available' }: { name?: string; rhcId?: string | null; verification?: string; account?: string }) {
   return (
     <Card className="rhc-card-token p-0">
       <div className="p-6">
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="rhc-eyebrow">RHC Digital ID</p>
-            <h3 className="mt-5 text-xl font-bold text-[var(--rhc-heading)]">Juan Dela Cruz</h3>
-            <p className="mt-1 font-mono text-sm font-semibold text-[var(--rhc-secondary-text)]">RHC-2026-00000001</p>
+            <h3 className="mt-5 text-xl font-bold text-[var(--rhc-heading)]">{name}</h3>
+            <p className="mt-1 font-mono text-sm font-semibold text-[var(--rhc-secondary-text)]">{rhcId || 'Not issued'}</p>
           </div>
-          <div className="grid h-16 w-16 place-items-center rounded-lg border border-[var(--rhc-border)] bg-[var(--rhc-surface-secondary)] text-xs font-bold text-[var(--rhc-primary)]">QR</div>
+          <div className="grid h-16 w-16 place-items-center rounded-lg border border-[var(--rhc-border)] bg-[var(--rhc-surface-secondary)] text-xs font-bold text-[var(--rhc-primary)]">RHC ID</div>
         </div>
         <div className="mt-8 grid gap-3 sm:grid-cols-2">
-          <Badge tone="warning">Demo Verification</Badge>
-          <Badge tone="gold">Account Prepared</Badge>
+          <Badge tone="warning">{verification}</Badge>
+          <Badge tone="gold">{account}</Badge>
         </div>
         <p className="mt-5 font-mono text-sm text-[var(--rhc-secondary-text)]">Wallet: Not connected</p>
       </div>
@@ -277,36 +283,33 @@ export function BlockchainStatus() {
   return (
     <Card title="RHC Network Status">
       <div className="grid gap-4 sm:grid-cols-2">
-        {[['Demo','Network Mode'], ['Not live','Block Height'], ['Disabled','Gas / Fee'], ['Pending','Integration']].map(([value,label]) => <div key={label} className="rounded-lg border border-[var(--rhc-border)] bg-[var(--rhc-surface-secondary)] p-4"><p className="text-lg font-bold text-[var(--rhc-heading)]">{value}</p><p className="mt-1 text-sm text-[var(--rhc-muted)]">{label}</p></div>)}
+        {[['Coming soon','Network Mode'], ['Not live','Block Height'], ['Disabled','Gas / Fee'], ['Pending','Integration']].map(([value,label]) => <div key={label} className="rounded-lg border border-[var(--rhc-border)] bg-[var(--rhc-surface-secondary)] p-4"><p className="text-lg font-bold text-[var(--rhc-heading)]">{value}</p><p className="mt-1 text-sm text-[var(--rhc-muted)]">{label}</p></div>)}
       </div>
     </Card>
   );
 }
 
-export function PropertyAssetCard() {
+export function PropertyAssetCard({ name = 'No linked property', description = 'Your authorized property records will appear here.', status = 'Not linked', href }: { name?: string; description?: string; status?: string; href?: string }) {
   return (
     <Card className="p-0">
       <div className="rhc-property-strip h-28" />
       <div className="p-6">
-        <Badge tone="warning">Demo Property Record</Badge>
-        <h3 className="mt-4 text-xl font-bold text-[var(--rhc-heading)]">AMICA Tower · Unit 1205</h3>
-        <p className="mt-2 text-sm text-[var(--rhc-muted)]">Residential · Cebu City · Digital Property ID RHC-PROP-0001205</p>
-        <div className="mt-5 flex flex-wrap gap-2"><Web3Button variant="secondary">View Property</Web3Button><Web3Button variant="secondary">Digital Asset Info</Web3Button></div>
+        <Badge tone="warning">{status}</Badge>
+        <h3 className="mt-4 text-xl font-bold text-[var(--rhc-heading)]">{name}</h3>
+        <p className="mt-2 text-sm text-[var(--rhc-muted)]">{description}</p>
+        <div className="mt-5 flex flex-wrap gap-2"><Web3Button href={href} variant="secondary">View Property</Web3Button><Web3Button variant="secondary">Digital Asset Info</Web3Button></div>
       </div>
     </Card>
   );
 }
 
 export function TransactionTable() {
-  const rows = [
-    ['DEMO-84B2-93F1','Points Entry','RHC Demo Ledger','Juan','850 RHC Points','Demo Confirmed','Development Data'],
-    ['DEMO-13AF-22D8','Identity Status','RHC Digital ID','Juan','Credential','Demo Confirmed','Development Data'],
-    ['DEMO-91B0-77AC','Property Link','AMICA','Juan','Unit 1205','Pending Review','Development Data'],
-  ];
+  const rows: string[][] = [];
   return (
     <Card title="Transaction Activity">
+      <p className="mb-4 text-sm text-[var(--rhc-muted)]">Coming soon — Month 2. No transaction ledger or blockchain activity is connected.</p>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <input aria-label="Search transactions" placeholder="Search transaction, wallet, or asset" className="min-w-[260px] rounded-lg border px-3 py-2 text-sm" />
+        <input disabled aria-label="Search transactions" placeholder="Search transaction, wallet, or asset" className="min-w-[260px] rounded-lg border px-3 py-2 text-sm" />
         <div className="flex flex-wrap gap-2"><Web3Button variant="secondary">Filter</Web3Button><Web3Button variant="secondary">Date</Web3Button><Web3Button variant="secondary">Export</Web3Button></div>
       </div>
       <div className="overflow-x-auto">
@@ -320,7 +323,7 @@ export function TransactionTable() {
 }
 
 export function SecurityStatus() {
-  return <Card title="Security Center"><div className="flex items-center justify-between gap-5"><div><p className="rhc-value text-3xl">92<span className="text-base text-[var(--rhc-muted)]">/100</span></p><Badge tone="success">Prepared</Badge></div><p className="max-w-sm text-sm leading-6 text-[var(--rhc-muted)]">Password, session, wallet confirmation, privacy preferences, and future MFA readiness are prepared for secure backend enforcement.</p></div></Card>;
+  return <Card title="Security Center"><div className="flex items-center justify-between gap-5"><div><p className="rhc-value text-3xl">Account</p><Badge tone="info">Supabase Auth</Badge></div><p className="max-w-sm text-sm leading-6 text-[var(--rhc-muted)]">Manage your password and sign out of this browser. Wallet security and multi-factor authentication controls are coming soon.</p></div></Card>;
 }
 
 function groupedNav(navItems: NavItem[]) {
@@ -346,11 +349,8 @@ export function AppShell({ children, navItems, title = 'Dashboard', admin = fals
               {groups.map((group) => <div key={group.section}><p className="rhc-nav-section mb-2 px-3">{group.section}</p><div className="space-y-1">{group.items.map((item) => <a key={`${group.section}-${item.label}`} href={item.href} className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold ${item.active ? 'rhc-nav-active' : 'text-slate-300 hover:bg-white/5 hover:text-white'}`}><span className="grid h-5 w-5 place-items-center rounded text-[10px] text-[var(--rhc-primary)]">{item.icon}</span><span>{item.label}</span></a>)}</div></div>)}
             </nav>
             <div className="mt-auto border-t border-[rgba(212,175,55,.18)] pt-4">
-              <a href="/login" className="rhc-sign-out flex items-center justify-between rounded-lg border px-3 py-2.5 text-sm font-bold">
-                <span>Sign out</span>
-                <span aria-hidden="true">→</span>
-              </a>
-              <p className="mt-3 text-xs leading-5 text-slate-400">Local preview mode. No live blockchain or custody session is ended.</p>
+              <SignOutButton className="rhc-sign-out flex w-full items-center justify-between rounded-lg border px-3 py-2.5 text-sm font-bold" />
+              <p className="mt-3 text-xs leading-5 text-slate-400">End your session on this browser.</p>
             </div>
           </div>
         </aside>
@@ -358,9 +358,10 @@ export function AppShell({ children, navItems, title = 'Dashboard', admin = fals
           <header className="mb-5 rounded-xl border border-[var(--rhc-border)] bg-[var(--rhc-surface)] p-4 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div><p className="rhc-eyebrow">{admin ? 'Administration' : 'RHC Web3 Platform'}</p><h1 className="text-xl font-bold text-[var(--rhc-heading)]">{title}</h1></div>
-              <div className="flex flex-wrap items-center gap-3"><input aria-label="Global search" placeholder="Search RHC ecosystem" className="hidden min-w-[240px] rounded-lg border px-3 py-2 text-sm xl:block" /><NetworkBadge /><WalletAddress /><ThemeToggle /><div className="grid h-10 w-10 place-items-center rounded-lg border border-[var(--rhc-border)] bg-[var(--rhc-surface-secondary)] font-bold text-[var(--rhc-primary)]">A</div></div>
+              <div className="flex flex-wrap items-center gap-3"><input disabled aria-label="Global search (coming soon)" placeholder="Search RHC ecosystem" className="hidden min-w-[240px] rounded-lg border px-3 py-2 text-sm xl:block" /><NetworkBadge /><WalletAddress /><ThemeToggle /><div className="grid h-10 w-10 place-items-center rounded-lg border border-[var(--rhc-border)] bg-[var(--rhc-surface-secondary)] font-bold text-[var(--rhc-primary)]">RHC</div><div className="lg:hidden"><SignOutButton /></div></div>
             </div>
           </header>
+          <nav aria-label="Mobile navigation" className="mb-5 flex gap-3 overflow-x-auto lg:hidden">{navItems.map((item) => <a key={item.label} href={item.href} className="whitespace-nowrap rounded-lg border p-2 text-sm">{item.label}</a>)}</nav>
           {children}
         </main>
       </div>

@@ -2,6 +2,14 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "jsx": "preserve",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "declaration": false,
+    "paths": {
+      "@rhc/types": ["packages/types/src"],
+      "@rhc/types/*": ["packages/types/src/*"],
+      "@rhc/ui": ["packages/ui/src"]
+    },
     "noEmit": true,
     "allowJs": true,
     "incremental": true,
@@ -12,13 +20,6 @@
     ],
     "isolatedModules": true
   },
-  "include": [
-    "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
 }

@@ -10,8 +10,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "lint": "eslint src --ext .ts,.tsx",
-    "test": "echo 'ui: no tests'"
+    "lint": "eslint src --ext .ts,.tsx"
   },
   "devDependencies": {
     "@types/react": "^19.1.16",

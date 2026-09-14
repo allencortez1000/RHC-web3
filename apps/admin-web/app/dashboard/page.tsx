@@ -1,27 +1,20 @@
-import { Badge, Card, EmptyState, MetricCard, Web3Shell } from '@rhc/ui';
-
-const metrics = [
-  ['Users', 'Mock directory', 'Authentication and authorization foundation'],
-  ['Companies', '8 seeded', 'RHC corporate ecosystem'],
-  ['Project', 'AMICA-T1', 'Amica Residences Tower 1'],
-  ['Audit', 'Enabled', 'Sensitive operations tracked'],
-];
+import Link from 'next/link';
+import { Badge, Card, SignOutButton, Web3Shell } from '@rhc/ui';
+import { AdminMetrics } from '../admin-data';
 
 export default function Page() {
   return (
     <Web3Shell variant="admin">
       <section className="mx-auto max-w-7xl px-6 py-10">
-        <Badge tone="warning">Admin Dashboard</Badge>
+        <div className="flex justify-between"><Badge tone="warning">Admin Dashboard</Badge><Link href="/">Command Center</Link><SignOutButton /></div>
         <h1 className="mt-5 text-4xl font-black text-white md:text-6xl">Secure operations console.</h1>
         <p className="mt-4 max-w-3xl text-lg leading-8 text-slate-300">Backed by /api/v1/admin endpoints with explicit server-side permissions and audit logging for sensitive changes.</p>
 
-        <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-          {metrics.map(([label, value, detail]) => <MetricCard key={label} label={label} value={value} detail={detail} />)}
-        </div>
+        <div className="mt-8"><AdminMetrics /></div>
 
         <div className="mt-8 grid gap-6 lg:grid-cols-[.9fr_1.1fr]">
           <Card title="Permission Boundary">
-            <EmptyState title="Dashboard" description="Backed by /api/v1/admin endpoints with explicit server-side permissions and audit logging for sensitive changes." />
+            <p className="rhc-body-copy">The API enforces permissions for each operation. Access-denied responses are shown without exposing restricted records.</p>
           </Card>
           <Card title="Operational Modules">
             <div className="grid gap-3 sm:grid-cols-2">

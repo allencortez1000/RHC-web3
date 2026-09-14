@@ -1,20 +1,34 @@
 # Security Baseline
 
-Implemented Month 1 controls:
+## Implemented application controls
 
-- Backend authorization for protected and admin routes
-- Database-managed roles and permissions
-- Company/project scoped user roles
-- 401 for missing auth and 403 for insufficient permission
-- Request IDs and correlation IDs
-- Helmet secure headers
-- CORS allow-list configuration
-- Rate limiting on login and registration
-- Zod input validation
-- Prisma safe query layer
-- Sensitive field redaction for audit/log payloads
-- Audit logging for sensitive admin changes
-- Consent records for privacy/terms/marketing/company/data-sharing use cases
-- Feature flags disabling public token, wallet, blockchain, token transfer, sale, crypto payment, and staking functionality
+These are repository implementation claims, not certification of a deployed environment. See [acceptance gates](../month-1/acceptance-validation.md) before any live work.
 
-Production Supabase Auth JWT verification should be enabled with issuer/JWKS configuration before public launch. The local opaque-token path is for development/testing only.
+- **Real Supabase authentication:** ES256/RS256 JWT verification with configured JWKS, issuer, audience, expiry and required claims, followed by a server-only Supabase Auth Admin identity lookup. No opaque UUID bearer-token path and no runtime mock fallback. Invalid credentials/provider verification failures fail closed.
+- **Separate authentication and business approval:** authoritative `auth_email_confirmed_at` is synchronized independently of account/business status. New users start business `PENDING`; confirmation/login does not approve compliance, issue an ID, or reactivate disabled/locked accounts. Reviewed global-admin approval uses expected state, an external review reference, and transactionally recorded audit/event evidence; self-approval is denied.
+- **Identity integrity:** RHC ID issuance requires active account, confirmed email, business `VERIFIED`, and the issuance flag; allocation is server-side and idempotent with transactional evidence. Self-service identity updates are locked after approval or ID issuance, with only `mobile_number` allowed. A public ID is not a secret, bearer credential, or proof of ownership.
+- **Browser auth:** customer/admin confirmation and recovery use same-browser PKCE code exchange with a locally stored verifier. Implicit access/refresh-token links and token-hash fallback are rejected; an existing session does not rescue an invalid recovery link. Supabase SDK browser session storage remains an XSS-sensitive boundary, not an HttpOnly-cookie architecture.
+- **Registration controls:** no-store `GET /auth/config` is a registration UX precheck; new application provisioning independently checks `ENABLE_REGISTRATION`. This does not prevent direct calls to Supabase signup. Closing Auth signup requires an externally configured disable setting or approved Auth hook; CORS and a UI flag are not provider-side enforcement.
+- **Backend RBAC:** database roles/permissions, active-account and grant-expiry checks, company/project scopes resolved from actual resources, and tenant-filtered lists/metrics. Query/body tenant IDs cannot expand rights. Customer self-service is ownership-based and cannot inherit admin authority from a `CUSTOMER` role. Global status/role/permission governance has separate unscoped permission and delegation checks.
+- **Management controls:** strict body/query/ID schemas, expected-state checks where applicable, protected system roles, no self-assignment/disable, bootstrap-admin safeguards, and typed settings allowlists. Admin reference lists do not substitute for backend target/permission validation.
+- **Machine authentication:** random company-bound API keys stored as versioned SHA-256 hashes, timing-safe comparison, one-time disclosure, rotation/revocation, active company/client checks, and explicit scopes. Issue/rotation requires company-wide delegable rights for every scope; machine credentials never become user JWT sessions.
+- **Consent and integrations:** append-only consent grants/withdrawals with purpose/version/company scope and transactional audit/events. Internal identity responses disclose only a boolean; current company consent and account availability are rechecked on replay. Allowlisted company events use idempotency receipts and do not authorize business/ledger transitions. Signup checkbox metadata alone is not a consent-history row.
+- **Rate limits:** Redis-backed global pre-auth IP limits and post-auth stable user/client limits are wired into the guards. Excess returns 429 with `Retry-After`; store failure is 503/fail-closed. Supabase's direct auth endpoints need provider-side limits; API limits cannot cover them.
+- **Request safety:** Helmet, explicit CORS allowlist, bounded Zod input, Prisma queries, request/correlation IDs, safe error envelopes, sensitive-data redaction and audit logging. Startup validation/errors avoid credential dumps; Nest framework logging is disabled by current bootstrap, so operational visibility needs review.
+- **Feature boundaries:** inactive Month 2 financial/Web3 features are not activated by preparing their schema or screens. Flags are enforced where implemented; a flag alone cannot implement a missing product.
+
+## Database boundary: migration prepared, not applied
+
+Application tables in `public` are intended for backend Prisma access, not browser PostgREST reads/writes. The fourth pending migration explicitly enables RLS and revokes direct table/column/owned-sequence privileges from `PUBLIC`, `anon`, and `authenticated` on an allowlisted set of application tables. **No deployed RLS/revocation protection has been established.**
+
+The migration deliberately does **not** use `FORCE ROW LEVEL SECURITY`: owners retain normal bypass. It creates no browser policies or new backend grants. Owner/service backend access is the intended boundary; a non-owner SQL backend needs explicit privileges **and** `BYPASSRLS` or deliberately approved backend-only policies. Existing `service_role` grants are unchanged; a Supabase service JWT is not a SQL role grant.
+
+Review actual target/creator/runtime roles, ownership, inherited and column grants, existing policies, exposed views and `SECURITY DEFINER` RPCs. Direct revocations do not close every inherited/view/RPC access path. Default ACL changes apply to objects subsequently created by `CURRENT_ROLE`; global default revocations affect that creator across schemas, while existing auth/storage/system objects are not modified. Prisma schema diff cannot establish ACL/RLS correctness. New application tables need their own explicit RLS migration.
+
+## Outstanding operational controls
+
+- **Staging migration NO GO:** four migrations pending; the prior check found invalid database URL syntax. No target/role/grants approval, disposable PostgreSQL migration execution, or live verification is established.
+- `TRUSTED_PROXY_CIDRS` must be an explicitly reviewed narrow ingress allowlist. Blank means no proxy trust. Do not guess Render ranges or hop counts; verify the real forwarding chain, header rewriting, and direct-ingress restrictions. See [proxy/environment hardening](../month-1/proxy-env-hardening.md).
+- Validate actual Supabase redirect/email templates, confirmation/recovery, signing-key configuration, signup policy, secret handling, and Redis failure/multi-instance behavior on an approved nonproduction environment.
+- Admin bootstrap is an explicit operator workflow, not seed/startup. Even its default dry run performs live Supabase and database operations; see the [bootstrap runbook](../month-1/targeted-completion-report.md#admin-bootstrap-cli-reviewed-not-executed).
+- Final frontend reruns, Node 22 runtime verification, Docker image/container checks, and current release validation remain pending. Fixture suites cannot prove PostgreSQL locking, provider delivery, RLS/ACL enforcement, or deployed IP attribution.

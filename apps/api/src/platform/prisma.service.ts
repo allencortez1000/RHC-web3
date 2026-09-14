@@ -1,25 +1,15 @@
-import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
-import { isMockDataEnabled } from './mock-data';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
-  private readonly logger = new Logger(PrismaService.name);
-
-  get mockMode(): boolean {
-    return isMockDataEnabled();
-  }
+  // Kept for the auth/identity service interface. Runtime authorization never uses
+  // fixture data; tests must explicitly replace the database provider instead.
+  get mockMode(): boolean { return false; }
 
   async onModuleInit() {
-    if (this.mockMode) {
-      this.logger.warn('Running API with mock data. No database connection will be opened.');
-      return;
-    }
+    if (process.env.USE_MOCK_DATA === 'true') throw new Error('API mock mode is not supported; configure a database');
     await this.$connect();
   }
-
-  async onModuleDestroy() {
-    if (this.mockMode) return;
-    await this.$disconnect();
-  }
+  async onModuleDestroy() { await this.$disconnect(); }
 }

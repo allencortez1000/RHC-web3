@@ -1,4 +1,5 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Header, UseGuards } from '@nestjs/common';
+import { PrismaService } from '../../platform/prisma.service';
 import { AuthGuard } from '../security/auth.guard';
 import { CurrentUser, AuthUser } from '../security/auth-user.decorator';
 
@@ -8,6 +9,15 @@ import { CurrentUser, AuthUser } from '../security/auth-user.decorator';
  */
 @Controller('auth')
 export class AuthController {
+  constructor(private readonly prisma: PrismaService) {}
+
+  @Get('config')
+  @Header('Cache-Control', 'no-store')
+  async config() {
+    const flag = await this.prisma.featureFlag.findUnique({ where: { key: 'ENABLE_REGISTRATION' }, select: { enabled: true } });
+    return { registration_enabled: flag?.enabled === true };
+  }
+
   @Get('session')
   @UseGuards(AuthGuard)
   session(@CurrentUser() user: AuthUser) {

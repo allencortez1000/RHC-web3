@@ -15,12 +15,13 @@
     "build:customer": "npm run build:shared && npm run build -w @rhc/customer-web",
     "build:admin": "npm run build:shared && npm run build -w @rhc/admin-web",
     "build:api": "npm run build:shared && npm run build -w @rhc/api",
-    "build:all": "npm run build:customer && npm run build:admin && npm run build:api",
+    "build:all": "npm run build:shared && npm run build -w @rhc/customer-web && npm run build -w @rhc/admin-web && npm run build -w @rhc/api",
     "start:api": "npm run start -w @rhc/api",
     "build": "npm run build:all",
-    "typecheck": "npm run typecheck --workspaces --if-present",
+    "typecheck": "npm run build:shared && npm run typecheck --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
-    "test": "npm run test --workspaces --if-present",
+    "test": "npm run test -w @rhc/api",
+    "audit:runtime": "npm audit --omit=dev --audit-level=high",
     "test:e2e": "npm run test:e2e --workspaces --if-present",
     "format": "prettier --write .",
     "db:generate": "npm run db:generate -w @rhc/database",
@@ -29,23 +30,26 @@
     "validate": "npm run lint && npm run typecheck && npm run test && npm run build"
   },
   "devDependencies": {
-    "@nestjs/cli": "^11.0.11",
-    "@nestjs/common": "^11.1.17",
-    "@nestjs/core": "^11.1.17",
-    "@nestjs/throttler": "^6.5.0",
+    "@nestjs/cli": "11.0.24",
     "@types/express": "^5.0.6",
-    "@types/node": "^20.14.10",
-    "@typescript-eslint/eslint-plugin": "^7.18.0",
-    "@typescript-eslint/parser": "^7.18.0",
+    "@types/node": "22.20.2",
+    "@typescript-eslint/eslint-plugin": "8.70.0",
+    "@typescript-eslint/parser": "8.70.0",
     "concurrently": "^10.0.5",
-    "eslint": "^8.57.0",
-    "eslint-config-next": "^14.2.4",
+    "eslint": "8.57.1",
+    "eslint-config-next": "15.5.25",
     "kill-port": "^2.0.1",
     "prettier": "^3.3.2",
-    "typescript": "^5.5.3"
+    "typescript": "5.9.3"
+  },
+  "overrides": {
+    "@nestjs/platform-express@11.2.3": {
+      "multer": "2.3.0"
+    },
+    "postcss@8.4.31": "8.5.28"
   },
   "engines": {
-    "node": ">=20.0.0",
+    "node": ">=22.13.0",
     "npm": ">=10.0.0"
   }
 }

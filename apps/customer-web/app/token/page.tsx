@@ -11,10 +11,10 @@ const utilityCards = [
 ];
 
 const allocation = [
-  ['Ecosystem Reserve', 'Development data'],
-  ['Property Utility', 'Development data'],
-  ['Marketplace Incentives', 'Development data'],
-  ['Rewards Programs', 'Development data'],
+  ['Ecosystem Reserve', 'Not allocated'],
+  ['Property Utility', 'Not allocated'],
+  ['Marketplace Incentives', 'Not allocated'],
+  ['Rewards Programs', 'Not allocated'],
 ];
 
 export default function Page() {
@@ -25,19 +25,19 @@ export default function Page() {
       <section className="mt-5 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
         <MetricCard label="Total Supply" value="Not live" detail="Awaiting token deployment" icon="◎" />
         <MetricCard label="Circulating Supply" value="Not connected" detail="No production chain data" icon="RHC" />
-        <MetricCard label="Holders" value="Demo" detail="No holder indexer active" icon="H" />
+        <MetricCard label="Holders" value="Not available" detail="No holder indexer active" icon="H" />
         <MetricCard label="Contract" value="Not deployed" detail="Month 1 foundation only" icon="SC" />
       </section>
 
       <section className="mt-5 grid gap-5 xl:grid-cols-[.95fr_1.05fr]">
         <Card title="Token Overview">
           <Badge tone="gold">Powering the RHC Web3 Ecosystem</Badge>
-          <p className="rhc-body-copy mt-4">The RHC Token interface represents the future token layer of the Rabino Holdings Corporation digital ecosystem. This local preview uses development data only and does not perform blockchain, custody, exchange, staking, or transfer operations.</p>
+          <p className="rhc-body-copy mt-4">The RHC Token interface represents the future token layer of the Rabino Holdings Corporation digital ecosystem. Token operations are coming soon. This interface does not perform blockchain, custody, exchange, staking, or transfer operations.</p>
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             {[
               ['Brand Message', 'Real assets. Digital possibilities.'],
               ['Asset Theme', 'Real-estate-backed ecosystem utility'],
-              ['Data Mode', 'Development Data'],
+              ['Data Mode', 'Not connected'],
               ['Blockchain Status', 'Awaiting Integration'],
             ].map(([label, value]) => <div key={label} className="rounded-lg border border-[var(--rhc-border)] bg-[var(--rhc-surface-secondary)] p-4"><p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--rhc-muted)]">{label}</p><p className="mt-1 font-bold text-[var(--rhc-heading)]">{value}</p></div>)}
           </div>
@@ -66,10 +66,10 @@ export default function Page() {
 
       <section className="mt-5 grid gap-5 xl:grid-cols-[.85fr_1.15fr]">
         <Card title="Token Allocation">
-          <div className="space-y-3">{allocation.map(([name, value]) => <div key={name} className="rounded-lg border border-[var(--rhc-border)] bg-[var(--rhc-surface-secondary)] p-4"><div className="flex justify-between gap-4"><span className="font-bold text-[var(--rhc-heading)]">{name}</span><span className="text-sm text-[var(--rhc-muted)]">{value}</span></div><div className="mt-3 h-2 rounded-full bg-[var(--rhc-bg-secondary)]"><div className="h-2 w-2/5 rounded-full bg-[var(--rhc-primary)]" /></div></div>)}</div>
+          <div className="space-y-3">{allocation.map(([name, value]) => <div key={name} className="rounded-lg border border-[var(--rhc-border)] bg-[var(--rhc-surface-secondary)] p-4"><div className="flex justify-between gap-4"><span className="font-bold text-[var(--rhc-heading)]">{name}</span><span className="text-sm text-[var(--rhc-muted)]">{value}</span></div><div className="mt-3 h-2 rounded-full bg-[var(--rhc-bg-secondary)]"><div className="h-2 w-0 rounded-full bg-[var(--rhc-primary)]" /></div></div>)}</div>
         </Card>
         <Card title="Token History">
-          <div className="space-y-3">{['Design system aligned to RHC Token identity', 'Month 1 UI foundation prepared', 'Blockchain deployment not active', 'Future token utility requires backend and contract integration'].map((item) => <div key={item} className="flex items-start gap-3 rounded-lg border border-[var(--rhc-border)] bg-[var(--rhc-surface-secondary)] p-4"><Badge tone="neutral">Demo</Badge><p className="text-sm leading-6 text-[var(--rhc-secondary-text)]">{item}</p></div>)}</div>
+          <div className="space-y-3">{['Design system aligned to RHC Token identity', 'Month 1 UI foundation prepared', 'Blockchain deployment not active', 'Future token utility requires backend and contract integration'].map((item) => <div key={item} className="flex items-start gap-3 rounded-lg border border-[var(--rhc-border)] bg-[var(--rhc-surface-secondary)] p-4"><Badge tone="neutral">Coming soon</Badge><p className="text-sm leading-6 text-[var(--rhc-secondary-text)]">{item}</p></div>)}</div>
           <div className="mt-5 flex flex-wrap gap-3"><Web3Button>View Token</Web3Button><Web3Button variant="secondary">Copy Contract</Web3Button></div>
         </Card>
       </section>

@@ -1,34 +1,28 @@
-import { Badge, Card, MetricCard, ThemeToggle, Web3Shell } from '@rhc/ui';
+'use client';
 
-const modules = ['Dashboard','Customers','RHC Digital IDs','Companies','Projects','Properties','Amica Tower Inventory','Business Services','Users','Roles','Permissions','Integrations','Feature Flags','Audit Logs','System Settings'];
-const cards = [
-  ['Total users', 'Seeded/demo data only', 'Mock identity directory'],
-  ['Verified customers', 'Live API metric', 'Verification-ready architecture'],
-  ['Companies', '8 seeded companies', 'No ninth company invented'],
-  ['Active projects', 'AMICA-T1 seeded', 'Unlimited future projects'],
-  ['Amica properties', 'Inventory foundation', 'Residential, commercial, parking'],
-  ['Available properties', 'Filtered by status', 'Permission-guarded changes'],
-  ['Reserved properties', '0 unless seeded/created', 'Audit-ready flow'],
-  ['Security/audit', 'Immutable audit view', 'Sensitive changes tracked'],
-];
+import Link from 'next/link';
+import { Badge, Card, SignOutButton, ThemeToggle, Web3Shell } from '@rhc/ui';
+import { AdminMetrics, modules } from './admin-data';
+
+
 
 export default function AdminHome() {
   return (
     <Web3Shell variant="admin">
       <aside className="fixed hidden h-full w-80 border-r border-white/10 bg-slate-950/75 p-6 backdrop-blur-xl lg:block">
-        <a href="/" className="flex items-center gap-3">
+        <Link href="/" className="flex items-center gap-3">
           <div className="grid h-12 w-12 place-items-center rounded-2xl border border-fuchsia-300/30 bg-fuchsia-400/10 font-black text-fuchsia-100 shadow-lg shadow-fuchsia-950/40">R</div>
           <div>
             <h1 className="text-lg font-black text-white">RHC Command Center</h1>
             <p className="text-xs text-slate-400">RBAC · Audit · Operations</p>
           </div>
-        </a>
-        <div className="mt-6 flex justify-start">
-          <ThemeToggle />
+        </Link>
+        <div className="mt-6 flex justify-start gap-3">
+          <ThemeToggle /><SignOutButton />
         </div>
         <div className="mt-6 rounded-3xl border border-cyan-300/20 bg-cyan-400/10 p-4">
-          <Badge tone="info">Mock Mode</Badge>
-          <p className="mt-3 text-sm leading-6 text-slate-300">Local system runs with governed mock data and no external credentials.</p>
+          <Badge tone="info">Authenticated access</Badge>
+          <p className="mt-3 text-sm leading-6 text-slate-300">Records are loaded from the API with your authenticated account and server-enforced permissions.</p>
         </div>
         <nav className="mt-6 space-y-1">
           {modules.map((m) => (
@@ -42,7 +36,7 @@ export default function AdminHome() {
 
       <section className="lg:pl-80">
         <div className="border-b border-white/10 bg-slate-950/50 px-6 py-8 backdrop-blur-xl md:px-10">
-          <div className="mb-6 flex justify-end lg:hidden"><ThemeToggle /></div>
+          <div className="mb-6 flex justify-end gap-3 lg:hidden"><ThemeToggle /><SignOutButton /></div><nav aria-label="Mobile admin modules" className="mb-5 flex gap-4 overflow-x-auto lg:hidden">{modules.map((label) => <a className="whitespace-nowrap" key={label} href={`/${label.toLowerCase().replaceAll(' ', '-')}`}>{label}</a>)}</nav>
           <div className="mx-auto max-w-7xl">
             <Badge tone="warning">Server-enforced RBAC required</Badge>
             <div className="mt-5 grid gap-6 lg:grid-cols-[1fr_360px] lg:items-end">
@@ -60,9 +54,7 @@ export default function AdminHome() {
         </div>
 
         <div className="mx-auto max-w-7xl p-6 md:p-10">
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-            {cards.map(([title, value, detail]) => <MetricCard key={title} label={title} value={value} detail={detail} />)}
-          </div>
+          <AdminMetrics />
 
           <div className="mt-8 grid gap-6 xl:grid-cols-[1.1fr_.9fr]">
             <Card title="Month 1 Control Plane">
@@ -78,7 +70,7 @@ export default function AdminHome() {
             <Card title="Future Web3 Boundary">
               <p className="text-sm leading-6 text-slate-400">Wallet, token, marketplace, and blockchain modules remain disabled in Month 1. This control plane keeps RHC business records authoritative and prepares governed extension points for Month 2.</p>
               <div className="mt-5 space-y-3">
-                {['ENABLE_WALLET=false', 'ENABLE_TOKEN=false', 'ENABLE_BLOCKCHAIN=false'].map((flag) => <div key={flag} className="rounded-2xl border border-amber-300/20 bg-amber-400/10 p-3 font-mono text-sm text-amber-100">{flag}</div>)}
+                {['Wallet actions: coming soon', 'Token actions: coming soon', 'Blockchain actions: coming soon'].map((flag) => <div key={flag} className="rounded-2xl border border-amber-300/20 bg-amber-400/10 p-3 font-mono text-sm text-amber-100">{flag}</div>)}
               </div>
             </Card>
           </div>

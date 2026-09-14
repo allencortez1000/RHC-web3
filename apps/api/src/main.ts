@@ -1,25 +1,29 @@
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';
-import { AppModule } from './modules/app.module';
-import { ResponseEnvelopeInterceptor } from './platform/response-envelope.interceptor';
-import { ApiExceptionFilter } from './platform/api-exception.filter';
-import { RequestContextMiddleware } from './platform/request-context.middleware';
-import { loadEnv } from '@rhc/config';
+import { loadEnv, loadLocalEnvFiles, type RhcEnv } from '@rhc/config';
 
-async function bootstrap() {
+export function configureTrustedProxy(app: Pick<NestExpressApplication, 'set'>, env: Pick<RhcEnv, 'TRUSTED_PROXY_CIDRS'>) {
+  app.set('trust proxy', env.TRUSTED_PROXY_CIDRS);
+}
+
+export async function bootstrap() {
+  loadLocalEnvFiles();
   const env = loadEnv();
-  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  // Load providers only after local files and validation, including import-time configuration.
+  const { AppModule } = await import('./modules/app.module');
+  // Nest's default startup exception logger can expose connection URLs and credentials.
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { logger: false, abortOnError: false });
+  configureTrustedProxy(app, env);
   app.use(helmet());
   const configuredOrigins = env.CORS_ORIGINS.split(',').map((origin) => origin.trim()).filter(Boolean);
   const localOrigins = env.NODE_ENV === 'development' ? ['http://localhost:3000', 'http://localhost:3002'] : [];
   const allowedOrigins = [...new Set([...configuredOrigins, ...localOrigins])];
   app.enableCors({ origin: allowedOrigins, credentials: true });
   app.setGlobalPrefix('api/v1');
-  app.use(new RequestContextMiddleware().use);
-  app.useGlobalInterceptors(new ResponseEnvelopeInterceptor());
-  app.useGlobalFilters(new ApiExceptionFilter());
+
 
   if (process.env.ENABLE_SWAGGER === 'true') {
     const config = new DocumentBuilder()
@@ -35,4 +39,13 @@ async function bootstrap() {
   await app.listen(env.PORT);
 }
 
-bootstrap();
+if (require.main === module) {
+  const startupTimeout = setTimeout(() => {
+    console.error('API startup timed out');
+    process.exit(1);
+  }, 30_000);
+  void bootstrap().then(() => clearTimeout(startupTimeout)).catch(() => {
+    console.error('API startup failed; check environment configuration and service availability');
+    process.exit(1);
+  });
+}

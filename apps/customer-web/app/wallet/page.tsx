@@ -8,10 +8,10 @@ export default function Page() {
         <Card title="Institutional Wallet Overview" className="rhc-card-token">
           <div className="flex flex-wrap items-start justify-between gap-5">
             <div>
-              <Badge tone="warning">Demo Wallet</Badge>
+              <Badge tone="warning">Coming soon — Month 2</Badge>
               <p className="mt-4 text-xs font-bold uppercase tracking-[0.14em] text-[var(--rhc-muted)]">Total Portfolio Value</p>
-              <p className="rhc-value mt-2 text-3xl">Demo Mode</p>
-              <p className="mt-2 text-sm text-[var(--rhc-muted)]">No crypto custody, real token balance, private keys, or live transfers are active in this local preview.</p>
+              <p className="rhc-value mt-2 text-3xl">Not connected</p>
+              <p className="mt-2 text-sm text-[var(--rhc-muted)]">No crypto custody, real token balance, private keys, or live transfers are active in Month 1.</p>
             </div>
             <WalletAddress address="Not connected" />
           </div>
@@ -19,10 +19,10 @@ export default function Page() {
         </Card>
         <Card title="Network & Custody Status">
           <Badge tone="warning">Awaiting Blockchain Integration</Badge>
-          <div className="mt-5 space-y-3">{[['Wallet Status','Not connected'], ['Network','Development mode'], ['Private Keys','Never stored in UI'], ['Transfer Status','Disabled']].map(([l,v]) => <div key={l} className="flex justify-between rounded-lg border border-[var(--rhc-border)] bg-[var(--rhc-surface-secondary)] p-4"><span className="text-[var(--rhc-muted)]">{l}</span><b className="text-[var(--rhc-heading)]">{v}</b></div>)}</div>
+          <div className="mt-5 space-y-3">{[['Wallet Status','Not connected'], ['Network','Not connected'], ['Private Keys','Never stored in UI'], ['Transfer Status','Disabled']].map(([l,v]) => <div key={l} className="flex justify-between rounded-lg border border-[var(--rhc-border)] bg-[var(--rhc-surface-secondary)] p-4"><span className="text-[var(--rhc-muted)]">{l}</span><b className="text-[var(--rhc-heading)]">{v}</b></div>)}</div>
         </Card>
       </section>
-      <section className="mt-5 grid gap-5 md:grid-cols-3"><MetricCard label="RHC Token" value="Not live" icon="◎" detail="No production token balance" /><MetricCard label="RHC Points" value="12,850" icon="PT" detail="Demo rewards ledger" /><MetricCard label="Supported Assets" value="Prepared" icon="◇" detail="Future Web3 assets" /></section>
+      <section className="mt-5 grid gap-5 md:grid-cols-3"><MetricCard label="RHC Token" value="Not live" icon="◎" detail="No production token balance" /><MetricCard label="RHC Points" value="—" icon="PT" detail="Coming soon — Month 2" /><MetricCard label="Supported Assets" value="Prepared" icon="◇" detail="Future Web3 assets" /></section>
       <section className="mt-5"><TransactionTable /></section>
     </AppShell>
   );

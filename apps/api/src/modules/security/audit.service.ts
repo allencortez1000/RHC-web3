@@ -1,13 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { redactSensitive } from '@rhc/shared';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../platform/prisma.service';
-import { mockNow } from '../../platform/mock-data';
+import { requestContext } from '../../platform/request-context.middleware';
+import { safeData } from '../../platform/safe-data';
+
+export type AuditInput = { actor_user_id?: string; actor_role?: string; company_id?: string; project_id?: string; action: string; entity_type: string; entity_id?: string; before_data?: unknown; after_data?: unknown; request_id?: string; correlation_id?: string; ip_address?: string; user_agent?: string };
 @Injectable()
 export class AuditService {
   constructor(private readonly prisma: PrismaService) {}
-  async record(input: { actor_user_id?: string; actor_role?: string; company_id?: string; project_id?: string; action: string; entity_type: string; entity_id?: string; before_data?: unknown; after_data?: unknown; request_id?: string; correlation_id?: string; ip_address?: string; user_agent?: string }) {
-    const data = { ...input, before_data: input.before_data === undefined ? undefined : (redactSensitive(input.before_data) as object), after_data: input.after_data === undefined ? undefined : (redactSensitive(input.after_data) as object) };
-    if (this.prisma.mockMode) return { id: `mock-audit-${Date.now()}`, ...data, created_at: mockNow };
-    return this.prisma.auditLog.create({ data });
+  async record(input: AuditInput, client: Pick<Prisma.TransactionClient, 'auditLog'> = this.prisma) {
+    const data = { ...input, ...requestContext.getStore(), before_data: input.before_data === undefined ? undefined : safeData(input.before_data) ?? Prisma.JsonNull, after_data: input.after_data === undefined ? undefined : safeData(input.after_data) ?? Prisma.JsonNull };
+    return client.auditLog.create({ data });
   }
 }

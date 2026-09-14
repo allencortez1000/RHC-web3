@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 enum CompanyStatus {
@@ -131,10 +132,11 @@ enum EventStatus {
 }
 
 model User {
-  id               String  @id @default(uuid()) @db.Uuid
-  supabase_user_id String? @unique
-  email            String  @unique
-  mobile_number    String? @unique
+  id                      String    @id @default(uuid()) @db.Uuid
+  supabase_user_id        String?   @unique
+  auth_email_confirmed_at DateTime?
+  email                   String    @unique
+  mobile_number           String?   @unique
 
   account_status       AccountStatus        @default(PENDING)
   verification_status  VerificationStatus   @default(UNVERIFIED)
@@ -270,6 +272,7 @@ model Role {
   role_permissions RolePermission[]
   user_roles       UserRole[]
 
+  // Global (company_id IS NULL) codes are unique via roles_global_code_key in SQL.
   @@unique([company_id, code])
   @@index([code])
   @@map("roles")
@@ -339,8 +342,8 @@ model CustomerProperty {
   effective_to      DateTime?
   created_at        DateTime                     @default(now())
   updated_at        DateTime                     @updatedAt
-  customer          User                         @relation(fields: [customer_id], references: [id], onDelete: Cascade)
-  property          Property                     @relation(fields: [property_id], references: [id], onDelete: Cascade)
+  customer          User                         @relation(fields: [customer_id], references: [id], onDelete: Restrict)
+  property          Property                     @relation(fields: [property_id], references: [id], onDelete: Restrict)
 
   @@unique([customer_id, property_id, relationship_type, effective_from])
   @@index([customer_id, status])
@@ -443,7 +446,7 @@ model Notification {
   status     String    @default("QUEUED")
   created_at DateTime  @default(now())
   sent_at    DateTime?
-  user       User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user       User      @relation(fields: [user_id], references: [id], onDelete: Restrict)
 
   @@index([user_id, status])
   @@map("notifications")
@@ -460,7 +463,7 @@ model ConsentRecord {
   withdrawn_at    DateTime?
   metadata        Json        @default("{}")
   created_at      DateTime    @default(now())
-  user            User        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user            User        @relation(fields: [user_id], references: [id], onDelete: Restrict)
   company         Company?    @relation(fields: [company_id], references: [id], onDelete: Restrict)
 
   @@index([user_id, consent_type, company_id])
@@ -538,6 +541,7 @@ model RewardsAccount {
   transactions RewardsTransaction[]
   redemptions  RewardsRedemption[]
 
+  @@unique([id, customer_id])
   @@unique([customer_id, company_id])
   @@map("rewards_accounts")
 }
@@ -574,7 +578,7 @@ model RewardsTransaction {
   reversal_of_id     String?                  @db.Uuid
   created_at         DateTime                 @default(now())
   posted_at          DateTime?
-  account            RewardsAccount           @relation(fields: [rewards_account_id], references: [id], onDelete: Restrict)
+  account            RewardsAccount           @relation(fields: [rewards_account_id, customer_id], references: [id, customer_id], onDelete: Restrict)
   customer           User                     @relation(fields: [customer_id], references: [id], onDelete: Restrict)
   source_company     Company?                 @relation("RewardsSourceCompany", fields: [source_company_id], references: [id], onDelete: Restrict)
   rule               RewardsRule?             @relation(fields: [rule_id], references: [id], onDelete: Restrict)
@@ -597,7 +601,7 @@ model RewardsRedemption {
   created_at         DateTime         @default(now())
   updated_at         DateTime         @updatedAt
   customer           User             @relation(fields: [customer_id], references: [id], onDelete: Restrict)
-  account            RewardsAccount   @relation(fields: [rewards_account_id], references: [id], onDelete: Restrict)
+  account            RewardsAccount   @relation(fields: [rewards_account_id, customer_id], references: [id, customer_id], onDelete: Restrict)
 
   @@index([customer_id, status])
   @@map("rewards_redemptions")

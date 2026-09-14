@@ -11,15 +11,6 @@
     "resolveJsonModule": true,
     "declaration": true,
     "sourceMap": true,
-    "baseUrl": ".",
-    "paths": {
-      "@rhc/types": ["packages/types/src"],
-      "@rhc/types/*": ["packages/types/src/*"],
-      "@rhc/validation": ["packages/validation/src"],
-      "@rhc/config": ["packages/config/src"],
-      "@rhc/shared": ["packages/shared/src"],
-      "@rhc/ui": ["packages/ui/src"],
-      "@rhc/database": ["packages/database/src"]
-    }
+    "baseUrl": "."
   }
 }
