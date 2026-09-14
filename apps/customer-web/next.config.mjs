@@ -3,9 +3,7 @@ import { fileURLToPath } from 'node:url';
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   transpilePackages: ['@rhc/ui', '@rhc/types'],
-  experimental: {
-    outputFileTracingRoot: fileURLToPath(new URL('../../', import.meta.url)),
-  },
+  outputFileTracingRoot: fileURLToPath(new URL('../../', import.meta.url)),
   webpack: (config, { dev }) => {
     if (dev) {
       config.cache = false;

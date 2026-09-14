@@ -1,10 +1,28 @@
 {
+  "lsp": {
+    "json-language-server": {
+      "settings": {
+        "json": {
+          "schemaDownload": {
+            "enable": false
+          },
+          "validate": {
+            "enable": false
+          },
+          "schemas": []
+        }
+      }
+    }
+  },
   "languages": {
     "CSS": {
       "language_servers": ["tailwindcss-language-server", "!vscode-css-language-server"]
     },
     "JSON": {
-      "language_servers": []
+      "language_servers": ["!json-language-server"]
+    },
+    "JSONC": {
+      "language_servers": ["!json-language-server"]
     },
     "Prisma": {
       "language_servers": []

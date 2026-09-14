@@ -1,4 +1,29 @@
 import { AppShell, Card, PropertyAssetCard } from '@rhc/ui';
-import { navFor } from '../web3-nav';
 import { LinkedProperties } from '../components/customer-data';
-export default function Page() { return <AppShell title="Digital Properties" navItems={navFor('Properties')}><section className="grid gap-5 xl:grid-cols-[1fr_1fr]"><PropertyAssetCard name="Your property records" status="Account relationships" description="View the authorized properties linked to your RHC account below." /><Card title="Property Access Summary"><p className="text-sm leading-6 text-[var(--rhc-muted)]">Only authorized customer-property relationships appear here. Ownership and legal records remain in RHC business systems. Personal and legal property data is not published on-chain.</p></Card></section><section className="mt-5"><LinkedProperties /></section></AppShell>; }
+import { navFor } from '../web3-nav';
+
+export default function Page() {
+  return (
+    <AppShell title="Digital Properties" navItems={navFor('Properties')}>
+      <section className="grid gap-5 xl:grid-cols-[1fr_1fr]">
+        <PropertyAssetCard
+          name="Your property records"
+          status="Account relationships"
+          description="View the authorized properties linked to your RHC account below."
+        />
+
+        <Card title="Property Access Summary">
+          <p className="text-sm leading-6 text-[var(--rhc-muted)]">
+            Only authorized customer-property relationships appear here. Ownership and legal records
+            remain in RHC business systems. Personal and legal property data is not published
+            on-chain.
+          </p>
+        </Card>
+      </section>
+
+      <section className="mt-5">
+        <LinkedProperties />
+      </section>
+    </AppShell>
+  );
+}
