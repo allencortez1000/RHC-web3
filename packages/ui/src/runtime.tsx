@@ -39,6 +39,74 @@ export type Account = {
   auth_email_confirmed_at?: string | null;
 };
 
+const demoAccessToken = 'rhc-demo-token';
+const demoAccount: Account = {
+  id: 'mock-user-customer',
+  email: 'demo@rhc.local',
+  account_status: 'ACTIVE',
+  verification_status: 'VERIFIED',
+  auth_email_confirmed_at: '2026-01-01T00:00:00.000Z',
+};
+const demoProfile = {
+  first_name: 'Demo',
+  last_name: 'Customer',
+  rhc_id: 'RHC-DEMO-0001',
+  mobile_number: '+639123456789',
+  country: 'Philippines',
+};
+const demoPropertyLinks = [
+  {
+    id: 'demo-property-link-1',
+    relationship_type: 'Authorized viewer',
+    status: 'ACTIVE',
+    property: {
+      id: 'demo-property-1',
+      property_code: 'RHC-DEMO-PROP-001',
+      asset_type: 'Condominium Unit',
+      status: 'Reserved',
+      tower: 'A',
+      floor: '12',
+      unit_number: '1208',
+      area: '42 sqm',
+      list_price: 'Coming soon',
+      currency: 'PHP',
+      project: { project_name: 'RHC Demo Residences', company: { display_name: 'Rabino Holdings Corporation' } },
+    },
+  },
+];
+
+function demoResponse(path: string): unknown {
+  const route = path.split('?')[0];
+  if (route === '/auth/session') return { authenticated: true, user: demoAccount };
+  if (route === '/me') return { user: demoAccount, profile: demoProfile };
+  if (route === '/me/rhc-id') return { rhc_id: demoProfile.rhc_id };
+  if (route === '/me/properties') return demoPropertyLinks;
+  if (route === '/me/notifications') {
+    return [
+      {
+        id: 'demo-notification-1',
+        subject: 'Welcome to the RHC Web3 demo',
+        body: 'This local sample account lets you preview the dashboard without connecting Supabase or the API.',
+        channel: 'IN_APP',
+        status: 'Unread',
+        created_at: '2026-01-01T08:00:00.000Z',
+      },
+    ];
+  }
+  if (route === '/business-services') {
+    return [
+      {
+        id: 'demo-service-1',
+        service_name: 'RHC Marketplace Preview',
+        description: 'Sample marketplace service for local dashboard testing.',
+        status: 'Coming soon',
+        company: { display_name: 'Rabino Holdings Corporation' },
+      },
+    ];
+  }
+  return null;
+}
+
 export function isAuthEmailConfirmed(value: unknown): boolean {
   if (typeof value !== 'string' || !value) return false;
   const timestamp = Date.parse(value);
@@ -120,7 +188,6 @@ export function PortalProvider({
   }, [auth]);
   const request = useCallback(
     async <T,>(path: string, init: RequestInit = {}): Promise<T> => {
-      if (!apiUrl) throw new Error('The public API URL is not configured.');
       if (!path.startsWith('/') || path.startsWith('//')) throw new Error('Invalid API path.');
       const current = await auth.session();
       if (!current) {
@@ -128,6 +195,11 @@ export function PortalProvider({
         setUser(null);
         throw new ApiError(401, 'Your session has ended. Please sign in again.');
       }
+      if (current.access_token === demoAccessToken) {
+        const localDemoResponse = demoResponse(path);
+        if (localDemoResponse !== null) return localDemoResponse as T;
+      }
+      if (!apiUrl) throw new Error('The public API URL is not configured.');
       const headers = new Headers(init.headers);
       headers.set('Authorization', `Bearer ${current.access_token}`);
       if (init.body) headers.set('Content-Type', 'application/json');
@@ -168,6 +240,11 @@ export function PortalProvider({
     if (isPublic || session === undefined) return;
     if (!session) {
       navigate('/login');
+      return;
+    }
+    if (session.access_token === demoAccessToken) {
+      setError('');
+      setUser(demoAccount);
       return;
     }
     setError('');

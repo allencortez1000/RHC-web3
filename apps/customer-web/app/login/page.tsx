@@ -43,6 +43,20 @@ export default function CustomerLoginStart() {
               Sign in with your confirmed RHC Digital account. Your password is processed only by Supabase Auth.
             </p>
 
+            <div className="mt-5 rounded-xl border border-[var(--rhc-border)] bg-[var(--rhc-surface-secondary)] p-4 text-sm">
+              <p className="font-bold text-[var(--rhc-heading)]">Local demo credentials</p>
+              <dl className="mt-3 space-y-2 text-[var(--rhc-muted)]">
+                <div className="flex flex-wrap gap-2">
+                  <dt>Email:</dt>
+                  <dd className="font-mono text-[var(--rhc-heading)]">demo@rhc.local</dd>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <dt>Password:</dt>
+                  <dd className="font-mono text-[var(--rhc-heading)]">Demo123456!</dd>
+                </div>
+              </dl>
+            </div>
+
             <LoginForm />
 
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
