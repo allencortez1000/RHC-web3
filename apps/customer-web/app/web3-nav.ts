@@ -6,6 +6,7 @@ export const customerNavItems = [
   { section: 'Web3', label: 'Transactions', href: '/transactions', icon: '⇄' },
   { section: 'Web3', label: 'Digital Assets', href: '/blockchain', icon: '▧' },
   { section: 'Web3', label: 'Properties', href: '/properties', icon: '⌂' },
+  { section: 'Web3', label: 'Reservations', href: '/reservations', icon: 'RS' },
 
   { section: 'Marketplace', label: 'RHC Marketplace', href: '/marketplace', icon: '□' },
   { section: 'Marketplace', label: 'Amica', href: '/marketplace#amica', icon: 'A' },
@@ -17,10 +18,8 @@ export const customerNavItems = [
   { section: 'Ecosystem', label: 'Rewards', href: '/rhc-points', icon: '★' },
   { section: 'Ecosystem', label: 'RHC Points', href: '/rhc-points', icon: 'PT' },
   { section: 'Ecosystem', label: 'Future Web3 Assets', href: '/blockchain', icon: 'FX' },
+  { section: 'Ecosystem', label: 'White Paper', href: '/white-paper', icon: 'WP' },
 
-  { section: 'Management', label: 'Users', href: '/profile', icon: 'U' },
-  { section: 'Management', label: 'Analytics', href: '/blockchain-activity', icon: '⌁' },
-  { section: 'Management', label: 'Reports', href: '/transactions', icon: 'R' },
 
   { section: 'System', label: 'Notifications', href: '/notifications', icon: '!' },
   { section: 'System', label: 'Security', href: '/security', icon: 'S' },
@@ -34,10 +33,12 @@ const activeAliases: Record<string, string[]> = {
   Transactions: ['Transactions'],
   'Digital Assets': ['Digital Assets', 'Blockchain Activity'],
   Properties: ['Properties'],
+  Reservations: ['Reservations'],
   'RHC Marketplace': ['RHC Marketplace', 'Marketplace'],
   'RHC Digital ID': ['RHC Digital ID'],
   Rewards: ['Rewards', 'RHC Points'],
   'RHC Points': ['RHC Points'],
+  'White Paper': ['White Paper'],
   Notifications: ['Notifications'],
   Security: ['Security'],
   Settings: ['Settings'],

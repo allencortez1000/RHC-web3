@@ -6,7 +6,7 @@ Do not reintroduce the old opaque-UUID authentication, API password endpoints, r
 
 - Supabase browser SDK auth, same-browser PKCE-only confirmation/recovery, server JWT verification and authoritative Auth Admin lookup. `auth_email_confirmed_at` is separate from business `PENDING`/reviewed `VERIFIED` and account status.
 - Explicit reviewed business approval and guarded/idempotent RHC ID issuance; approved/issued identity self-edits are locked except mobile contact changes.
-- Ownership-based customer routes; company/project-scoped admin lists and resource mutations; global status/role/permission/assignment governance with review references, delegation and protected-role checks; typed settings and API-backed reference selectors.
+- Ownership-based customer routes; company/project-scoped admin lists and resource mutations, including reservation transitions and property status history; global status/role/permission/assignment governance with review references, delegation and protected-role checks; typed settings and API-backed reference selectors.
 - Append-only consent history, transactional audit/activity evidence, and company-bound hashed machine keys with issue/rotation/revocation and delegated scopes.
 - Machine metadata reads plus `POST /internal/identity/verify` and `/internal/events`, using company consent, event allowlists and idempotency receipts. These are not a general webhook executor or trusted business/ledger commands.
 - Redis global IP and authenticated user/client limiting wired into guards. API environment loading and validation are implemented; trusted proxy topology is still a manual infrastructure task.
@@ -15,7 +15,7 @@ See [API overview](../api/api-overview.md) for actual method/path contracts. `GE
 
 ## Prerequisites before expanding or activating features
 
-**Staging migration NO GO / no deployment.** Four migrations are pending; no applied RLS/revocations are established. The prior database URL syntax check failed, and target roles/grants remain unknown. Complete target/role approval, approved disposable PostgreSQL migration verification, then separately approved live acceptance. Lockdown applies to allowlisted application tables in `public` with **no FORCE RLS**; owner/service access, non-owner backend privileges/bypass and indirect client access require actual review.
+**Staging migration NO GO / no deployment.** Five migrations are pending; no applied RLS/revocations are established. The prior database URL syntax check failed, and target roles/grants remain unknown. Complete target/role approval, approved disposable PostgreSQL migration verification, then separately approved live acceptance. Lockdown applies to allowlisted application tables in `public` with **no FORCE RLS**; owner/service access, non-owner backend privileges/bypass and indirect client access require actual review.
 
 Main reports 210 unit tests / 11 suites and 140 API tests / 8 suites passing with fixtures only. Final browser reruns are pending (approximately 55 customer / 65 admin). Node 22/runtime, Docker, provider, database concurrency and ingress checks are not inferred from those results. Preserve [the pending final-result record](targeted-completion-report.md#pending-final-result-main-to-update) rather than marking Month 1 accepted by assumption.
 

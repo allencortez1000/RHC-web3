@@ -15,6 +15,8 @@ import { CurrentUser, AuthUser } from '../security/auth-user.decorator';
 import { RbacService } from '../security/rbac.service';
 
 const userSelect = { id: true, email: true, account_status: true, verification_status: true, created_at: true, profile: { select: { first_name: true, last_name: true, rhc_id: true } } } satisfies Prisma.UserSelect;
+type AdminDelegates = { propertyStatusHistory: any };
+const adminDb = <T extends object>(client: T) => client as T & AdminDelegates;
 
 @Controller('admin')
 @UseGuards(AuthGuard, PermissionGuard)
@@ -158,6 +160,9 @@ export class AdminController {
       const before = await tx.property.findUniqueOrThrow({ where: { id } });
       const after = await tx.property.update({ where: { id }, data });
       const context = { actor_user_id: user.id, ...access.scope, entity_type: 'property', entity_id: id };
+      if (before.status !== after.status && adminDb(tx).propertyStatusHistory?.create) {
+        await adminDb(tx).propertyStatusHistory.create({ data: { property_id: id, previous_status: before.status, next_status: after.status, reason: 'Admin property status update', actor_user_id: user.id } });
+      }
       await this.audit.record({ ...context, action: before.status !== after.status ? 'property.change_status' : 'property.update', before_data: before, after_data: after }, tx);
       await this.events.publish(after.status === 'HELD' ? 'PROPERTY.HELD' : after.status === 'RESERVED' ? 'PROPERTY.RESERVED' : 'PROPERTY.UPDATED', after, context, tx);
       return after;

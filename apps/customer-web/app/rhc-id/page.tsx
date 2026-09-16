@@ -1,4 +1,5 @@
-import { AppShell, Badge, Card } from '@rhc/ui';
-import { navFor } from '../web3-nav';
-import { IdentityCard, IdentityDetails } from '../components/customer-data';
-export default function Page() { return <AppShell title="RHC Digital ID" navItems={navFor('RHC Digital ID')}><section className="grid gap-5 xl:grid-cols-[.95fr_1.05fr]"><IdentityCard /><IdentityDetails /></section><section className="mt-5 grid gap-5 md:grid-cols-3">{['No private keys exposed', 'Company-scoped data sharing', 'Off-chain personal records'].map((item) => <Card key={item}><Badge tone="gold">Security Principle</Badge><h3 className="mt-4 font-bold text-[var(--rhc-heading)]">{item}</h3><p className="mt-2 text-sm text-[var(--rhc-muted)]">Personal records remain off-chain. Blockchain verification is coming soon.</p></Card>)}</section></AppShell>; }
+import { DigitalIdPage } from '../components/digital-id-page';
+
+export default function Page() {
+  return <DigitalIdPage />;
+}

@@ -9,7 +9,7 @@ export default function Page() {
           <Badge tone="gold">Rewards Ledger</Badge>
           <div className="mt-5"><TokenBalance amount="—" symbol="Points" label="RHC Points Balance" /></div>
           <p className="mt-4 text-sm leading-6 text-[var(--rhc-muted)]">RHC Points are an ecosystem loyalty/rewards concept. They are not the same as the future RHC Token and are not presented as live blockchain assets.</p>
-          <div className="mt-6 flex flex-wrap gap-3"><Web3Button>Earn Points</Web3Button><Web3Button variant="secondary">Redeem</Web3Button><Web3Button variant="secondary">Reward History</Web3Button></div>
+          <div className="mt-6 flex flex-wrap gap-3"><Web3Button disabled>Earn Points — Month 2</Web3Button><Web3Button variant="secondary" disabled>Redeem — Month 2</Web3Button><Web3Button variant="secondary" disabled>Reward History — Month 2</Web3Button></div>
         </Card>
         <Card title="RHC Token vs RHC Points">
           <div className="grid gap-3 sm:grid-cols-2">

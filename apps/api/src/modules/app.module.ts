@@ -21,6 +21,8 @@ import { ConsentController } from './customers/consent.controller';
 import { DirectoryController } from './directory/directory.controller';
 import { AdminController } from './admin/admin.controller';
 import { ManagementController } from './admin/management.controller';
+import { CustomerReservationsController, AdminReservationsController } from './reservations/reservations.controller';
+import { ReservationsService } from './reservations/reservations.service';
 import { RhcIdService } from './identity/rhc-id.service';
 import { SupabaseJwtService } from './security/supabase-jwt.service';
 import { ApplicationUserService } from './security/application-user.service';
@@ -28,8 +30,8 @@ import { AuthGuard } from './security/auth.guard';
 import { PermissionGuard } from './security/permission.guard';
 
 @Module({
-  controllers: [AuthController, MeController, ConsentController, DirectoryController, AdminController, HealthController, ApiClientsController, CompanyApiController, InternalIntegrationController, ManagementController],
-  providers: [PrismaService, RbacService, AuditService, EventsService, RhcIdService, SupabaseJwtService, ApplicationUserService, AuthGuard, PermissionGuard, FeatureService, RateLimitStore, CompanyApiKeyService, CompanyApiGuard, InternalIntegrationService,
+  controllers: [AuthController, MeController, CustomerReservationsController, ConsentController, DirectoryController, AdminController, AdminReservationsController, HealthController, ApiClientsController, CompanyApiController, InternalIntegrationController, ManagementController],
+  providers: [PrismaService, RbacService, AuditService, EventsService, RhcIdService, ReservationsService, SupabaseJwtService, ApplicationUserService, AuthGuard, PermissionGuard, FeatureService, RateLimitStore, CompanyApiKeyService, CompanyApiGuard, InternalIntegrationService,
     { provide: APP_GUARD, useClass: RateLimitGuard },
     { provide: APP_GUARD, useClass: FeatureGuard },
     { provide: APP_FILTER, useClass: ApiExceptionFilter },

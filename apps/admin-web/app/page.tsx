@@ -1,10 +1,28 @@
 'use client';
 
 import Link from 'next/link';
-import { Badge, Card, SignOutButton, ThemeToggle, Web3Shell } from '@rhc/ui';
+import { Badge, Card, EmptyState, ResourceStatus, SignOutButton, ThemeToggle, Web3Shell, useResource } from '@rhc/ui';
 import { AdminMetrics, modules } from './admin-data';
+type AuditRow = { id: string; action: string; entity_type: string; entity_id?: string | null; created_at: string };
 
-
+function RecentActivity() {
+  const audit = useResource<AuditRow[]>('/admin/audit-logs?take=8');
+  return (
+    <Card title="Recent Activity">
+      <ResourceStatus {...audit} />
+      {audit.data && (audit.data.length ? (
+        <div className="space-y-3">
+          {audit.data.map((row) => (
+            <div key={row.id} className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+              <p className="font-semibold text-white">{row.action}</p>
+              <p className="mt-1 text-sm text-slate-400">{row.entity_type} · {new Date(row.created_at).toLocaleString()}</p>
+            </div>
+          ))}
+        </div>
+      ) : <EmptyState title="No audit activity" description="Audited actions will appear here after records are changed." />)}
+    </Card>
+  );
+}
 
 export default function AdminHome() {
   return (
@@ -59,20 +77,32 @@ export default function AdminHome() {
           <div className="mt-8 grid gap-6 xl:grid-cols-[1.1fr_.9fr]">
             <Card title="Month 1 Control Plane">
               <div className="grid gap-3 sm:grid-cols-2">
-                {['Identity', 'Companies', 'Projects', 'Properties', 'Services', 'Feature Flags', 'Integrations', 'Audit Archive'].map((item) => (
-                  <div key={item} className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                {[
+                  ['Customers', '/customers'],
+                  ['Digital IDs', '/rhc-digital-ids'],
+                  ['Companies', '/companies'],
+                  ['Projects', '/projects'],
+                  ['Properties', '/properties'],
+                  ['Reservations', '/reservations'],
+                  ['Feature Flags', '/feature-flags'],
+                  ['Audit Archive', '/audit-logs'],
+                ].map(([item, href]) => (
+                  <a key={item} href={href} className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 transition hover:bg-white/[0.08]">
                     <p className="font-semibold text-white">{item}</p>
-                    <p className="mt-1 text-sm text-slate-400">Permission guarded</p>
-                  </div>
+                    <p className="mt-1 text-sm text-slate-400">Open permission-guarded module</p>
+                  </a>
                 ))}
               </div>
             </Card>
-            <Card title="Future Web3 Boundary">
-              <p className="text-sm leading-6 text-slate-400">Wallet, token, marketplace, and blockchain modules remain disabled in Month 1. This control plane keeps RHC business records authoritative and prepares governed extension points for Month 2.</p>
-              <div className="mt-5 space-y-3">
-                {['Wallet actions: coming soon', 'Token actions: coming soon', 'Blockchain actions: coming soon'].map((flag) => <div key={flag} className="rounded-2xl border border-amber-300/20 bg-amber-400/10 p-3 font-mono text-sm text-amber-100">{flag}</div>)}
-              </div>
-            </Card>
+            <div className="space-y-6">
+              <Card title="Future Web3 Boundary">
+                <p className="text-sm leading-6 text-slate-400">Wallet, token, marketplace transactions, and blockchain modules remain disabled in Month 1. This control plane keeps RHC business records authoritative and prepares governed extension points for Month 2.</p>
+                <div className="mt-5 space-y-3">
+                  {['Wallet actions: not activated — Month 2', 'Token actions: not deployed — Month 2', 'Blockchain actions: not configured — Month 2'].map((flag) => <div key={flag} className="rounded-2xl border border-amber-300/20 bg-amber-400/10 p-3 font-mono text-sm text-amber-100">{flag}</div>)}
+                </div>
+              </Card>
+              <RecentActivity />
+            </div>
           </div>
         </div>
       </section>

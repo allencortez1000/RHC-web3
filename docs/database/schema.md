@@ -5,17 +5,18 @@ The schema is defined in `packages/database/prisma/schema.prisma` and includes n
 - users, user_profiles, rhc_id_sequences
 - companies, projects
 - roles, permissions, user_roles, role_permissions
-- properties, customer_properties
+- properties, property_status_history, customer_properties
 - business_services
 - company_integrations, company_api_clients, company_events, integration_logs
 - notifications, consent_records, feature_flags
 - audit_logs, activity_events
 - rewards_accounts, rewards_rules, rewards_transactions, rewards_redemptions
+- reservations, reservation_events
 - system_settings
 
 UUIDs are internal identifiers, not authentication credentials. RHC Digital IDs are server-generated public identifiers in `RHC-YYYY-XXXXXXXX` format; knowing an ID is not authorization. Treat its association with a person as personal data even though the identifier is not a secret.
 
-## Migration status: four pending, none applied in this handoff
+## Migration status: five pending, none applied in this handoff
 
 | Migration | Purpose |
 | --- | --- |
@@ -23,8 +24,9 @@ UUIDs are internal identifiers, not authentication credentials. RHC Digital IDs 
 | `202609120001_month1_auth_ledger_hardening` | Auth/ledger hardening following the foundation. |
 | `202609140001_identity_history_seed_hardening` | Separate Auth confirmation timestamp, global-role uniqueness, history-preserving foreign keys, ledger ownership and index reconciliation. |
 | `202609140002_application_postgrest_lockdown` | Backend-only application table RLS and client-role privilege lockdown. |
+| `202609160001_reservation_foundation` | Additive reservation, reservation event, and property status history foundation. |
 
-Migration source lives under `packages/database/prisma/migrations`. **No applied constraints, RLS, or revocations are claimed.** The prior configuration check found invalid database URL syntax; target connectivity/roles/grants are unknown. Staging migration is **NO GO** until a valid target and role/grant plan are approved and all four migrations are exercised on disposable PostgreSQL. Do not rewrite migration history or run seeds/bootstrap to disguise an unverified database.
+Migration source lives under `packages/database/prisma/migrations`. **No applied constraints, RLS, or revocations are claimed.** The prior configuration check found invalid database URL syntax; target connectivity/roles/grants are unknown. Staging migration is **NO GO** until a valid target and role/grant plan are approved and all five migrations are exercised on disposable PostgreSQL. Do not rewrite migration history or run seeds/bootstrap to disguise an unverified database.
 
 ## Identity and history invariants
 
@@ -33,6 +35,7 @@ Migration source lives under `packages/database/prisma/migrations`. **No applied
 - `rhc_id_sequences` is an application table, not a SQL sequence. ID issuance uses a yearly atomic counter, user locking and serializable retries, with one audit/event committed with issuance. Real concurrency still needs PostgreSQL validation.
 - A partial global-role code unique index handles null `company_id`; Prisma 5 cannot express that index. Preserve it in future migrations and inspect SQL-specific invariants separately from Prisma diff.
 - Customer-property, consent, notification and reward history uses restrictive deletion relationships in the hardening migration. Consent decisions are appended rather than replacing prior grants/withdrawals.
+- Reservations use `reservations`, `reservation_events`, and `property_status_history`. Active property reservations are constrained by a partial unique index for `PENDING`/`CONFIRMED`, while status transitions retain auditable event and property-status history.
 - Rewards transactions are an inactive Month 1 ledger foundation: corrections use reversals/adjustments, not silent mutation. Composite account/customer foreign keys prevent mismatched ownership; populated-data conflicts deliberately fail for manual reconciliation.
 - Machine client `credential_ref` holds a versioned key hash, not plaintext key material. Service event receipts are transactional and scoped/idempotent; they do not post rewards or other business transitions.
 

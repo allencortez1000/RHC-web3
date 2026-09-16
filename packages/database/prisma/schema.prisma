@@ -62,6 +62,23 @@ enum PropertyStatus {
   BLOCKED
 }
 
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  EXPIRED
+  CANCELLED
+  CONVERTED
+}
+
+enum ReservationEventType {
+  CREATED
+  CONFIRMED
+  EXPIRED
+  CANCELLED
+  CONVERTED
+  NOTE
+}
+
 enum CustomerPropertyRelationship {
   RESERVEE
   BUYER
@@ -151,8 +168,11 @@ model User {
   rewards_transactions RewardsTransaction[]
   rewards_redemptions  RewardsRedemption[]
   notifications        Notification[]
-  audit_logs           AuditLog[]           @relation("AuditActor")
-  activity_events      ActivityEvent[]      @relation("ActivityActor")
+  audit_logs              AuditLog[]               @relation("AuditActor")
+  activity_events         ActivityEvent[]          @relation("ActivityActor")
+  reservations            Reservation[]            @relation("CustomerReservations")
+  reservation_events      ReservationEvent[]       @relation("ReservationEventActor")
+  property_status_changes PropertyStatusHistory[]  @relation("PropertyStatusActor")
 
   @@index([email])
   @@index([account_status, verification_status])
@@ -324,12 +344,71 @@ model Property {
   metadata            Json               @default("{}")
   created_at          DateTime           @default(now())
   updated_at          DateTime           @updatedAt
-  project             Project            @relation(fields: [project_id], references: [id])
+  project             Project                 @relation(fields: [project_id], references: [id])
   customer_properties CustomerProperty[]
+  reservations        Reservation[]
+  status_history      PropertyStatusHistory[]
 
   @@index([project_id, status])
   @@index([asset_type])
   @@map("properties")
+}
+
+model PropertyStatusHistory {
+  id              String         @id @default(uuid()) @db.Uuid
+  property_id     String         @db.Uuid
+  previous_status PropertyStatus?
+  next_status     PropertyStatus
+  reason          String?
+  actor_user_id   String?        @db.Uuid
+  reservation_id  String?        @db.Uuid
+  created_at      DateTime       @default(now())
+  property        Property       @relation(fields: [property_id], references: [id], onDelete: Restrict)
+  actor           User?          @relation("PropertyStatusActor", fields: [actor_user_id], references: [id], onDelete: SetNull)
+  reservation     Reservation?   @relation(fields: [reservation_id], references: [id], onDelete: SetNull)
+
+  @@index([property_id, created_at])
+  @@index([actor_user_id])
+  @@map("property_status_history")
+}
+
+model Reservation {
+  id                 String              @id @default(uuid()) @db.Uuid
+  reservation_number String              @unique
+  customer_id        String              @db.Uuid
+  property_id        String              @db.Uuid
+  status             ReservationStatus   @default(PENDING)
+  expires_at         DateTime
+  confirmed_at       DateTime?
+  cancelled_at       DateTime?
+  converted_at       DateTime?
+  created_at         DateTime            @default(now())
+  updated_at         DateTime            @updatedAt
+  customer           User                @relation("CustomerReservations", fields: [customer_id], references: [id], onDelete: Restrict)
+  property           Property            @relation(fields: [property_id], references: [id], onDelete: Restrict)
+  events             ReservationEvent[]
+  status_history     PropertyStatusHistory[]
+
+  @@index([customer_id, status])
+  @@index([property_id, status])
+  @@index([expires_at, status])
+  @@map("reservations")
+}
+
+model ReservationEvent {
+  id             String               @id @default(uuid()) @db.Uuid
+  reservation_id String               @db.Uuid
+  event_type     ReservationEventType
+  actor_user_id  String?              @db.Uuid
+  note           String?
+  metadata       Json                 @default("{}")
+  created_at     DateTime             @default(now())
+  reservation    Reservation          @relation(fields: [reservation_id], references: [id], onDelete: Restrict)
+  actor          User?                @relation("ReservationEventActor", fields: [actor_user_id], references: [id], onDelete: SetNull)
+
+  @@index([reservation_id, created_at])
+  @@index([actor_user_id])
+  @@map("reservation_events")
 }
 
 model CustomerProperty {

@@ -37,16 +37,50 @@ export type Account = {
   account_status?: string;
   verification_status?: string;
   auth_email_confirmed_at?: string | null;
+  role?: string;
+  roles?: string[];
+  is_admin?: boolean;
+  permissions?: string[];
 };
 
 const demoAccessToken = 'rhc-demo-token';
+const adminDemoEmails = new Set(['superadmin@example.com', 'systemadmin@example.com', 'sales@example.com', 'finance@example.com', 'propertyadmin@example.com', 'compliance@example.com', 'auditor@example.com']);
+const demoRoles: Record<string, string> = {
+  'superadmin@example.com': 'SUPER_ADMINISTRATOR',
+  'systemadmin@example.com': 'SYSTEM_ADMINISTRATOR',
+  'sales@example.com': 'AMICA_SALES',
+  'finance@example.com': 'AMICA_FINANCE',
+  'propertyadmin@example.com': 'PROPERTY_ADMINISTRATOR',
+  'compliance@example.com': 'COMPLIANCE_OFFICER',
+  'auditor@example.com': 'INTERNAL_AUDITOR',
+};
 const demoAccount: Account = {
   id: 'mock-user-customer',
   email: 'demo@rhc.local',
   account_status: 'ACTIVE',
   verification_status: 'VERIFIED',
   auth_email_confirmed_at: '2026-01-01T00:00:00.000Z',
+  role: 'CUSTOMER',
+  roles: ['CUSTOMER'],
+  is_admin: false,
 };
+function accountForDemoToken(token: string): Account {
+  const email = decodeURIComponent(token.slice(`${demoAccessToken}:`.length));
+  if (!email || email === token || email === 'demo@rhc.local') return demoAccount;
+  const role = demoRoles[email] || 'CUSTOMER';
+  return {
+    id: `mock-${role.toLowerCase().replaceAll('_', '-')}`,
+    email,
+    account_status: 'ACTIVE',
+    verification_status: 'VERIFIED',
+    auth_email_confirmed_at: '2026-01-01T00:00:00.000Z',
+    role,
+    roles: [role],
+    is_admin: adminDemoEmails.has(email),
+  };
+}
+function isDemoToken(token: string) { return token === demoAccessToken || token.startsWith(`${demoAccessToken}:`); }
+export function isAdminAccount(account?: Account | null) { return Boolean(account?.is_admin || account?.roles?.some((role) => role !== 'CUSTOMER') || (account?.role && account.role !== 'CUSTOMER')); }
 const demoProfile = {
   first_name: 'Demo',
   last_name: 'Customer',
@@ -54,33 +88,81 @@ const demoProfile = {
   mobile_number: '+639123456789',
   country: 'Philippines',
 };
+const demoInventory = [
+  {
+    id: 'demo-property-available-1',
+    property_code: 'AMICA-R1-A-01-01',
+    asset_type: 'RESIDENTIAL',
+    status: 'AVAILABLE',
+    tower: 'Building A',
+    floor: '1',
+    unit_number: '101',
+    area: '32.50',
+    list_price: '2450000.00',
+    currency: 'PHP',
+    metadata: { unit_type: '1 BEDROOM', demo_data: true },
+    project: { id: 'demo-project-1', project_code: 'AMICA-R1', project_name: 'Amica Residences 1', company: { company_code: 'AMICA', display_name: 'Amica' } },
+  },
+  {
+    id: 'demo-property-reserved-1',
+    property_code: 'AMICA-R1-A-01-03',
+    asset_type: 'RESIDENTIAL',
+    status: 'RESERVED',
+    tower: 'Building A',
+    floor: '1',
+    unit_number: '103',
+    area: '48.00',
+    list_price: '3650000.00',
+    currency: 'PHP',
+    metadata: { unit_type: '2 BEDROOM', demo_data: true },
+    project: { id: 'demo-project-1', project_code: 'AMICA-R1', project_name: 'Amica Residences 1', company: { company_code: 'AMICA', display_name: 'Amica' } },
+  },
+  {
+    id: 'demo-property-blocked-1',
+    property_code: 'AMICA-R2-A-04-01',
+    asset_type: 'RESIDENTIAL',
+    status: 'BLOCKED',
+    tower: 'Building A',
+    floor: '4',
+    unit_number: '401',
+    area: '48.00',
+    list_price: '3780000.00',
+    currency: 'PHP',
+    metadata: { unit_type: '2 BEDROOM', demo_data: true },
+    project: { id: 'demo-project-2', project_code: 'AMICA-R2', project_name: 'Amica Residences 2', company: { company_code: 'AMICA', display_name: 'Amica' } },
+  },
+];
 const demoPropertyLinks = [
   {
     id: 'demo-property-link-1',
     relationship_type: 'Authorized viewer',
     status: 'ACTIVE',
     property: {
-      id: 'demo-property-1',
-      property_code: 'RHC-DEMO-PROP-001',
-      asset_type: 'Condominium Unit',
-      status: 'Reserved',
-      tower: 'A',
-      floor: '12',
-      unit_number: '1208',
-      area: '42 sqm',
-      list_price: 'Coming soon',
-      currency: 'PHP',
-      project: { project_name: 'RHC Demo Residences', company: { display_name: 'Rabino Holdings Corporation' } },
+      ...demoInventory[1],
     },
   },
 ];
 
-function demoResponse(path: string): unknown {
+function demoResponse(path: string, token = demoAccessToken): unknown {
   const route = path.split('?')[0];
-  if (route === '/auth/session') return { authenticated: true, user: demoAccount };
-  if (route === '/me') return { user: demoAccount, profile: demoProfile };
+  const account = accountForDemoToken(token);
+  if (route === '/auth/session') return { authenticated: true, user: account };
+  if (route === '/me') return { user: account, profile: demoProfile };
   if (route === '/me/rhc-id') return { rhc_id: demoProfile.rhc_id };
   if (route === '/me/properties') return demoPropertyLinks;
+  if (route === '/me/reservations') {
+    return [
+      {
+        id: 'demo-reservation-1',
+        reservation_number: 'RSV-DEMO-0001',
+        status: 'PENDING',
+        expires_at: '2026-01-04T08:00:00.000Z',
+        created_at: '2026-01-01T08:00:00.000Z',
+        property: demoPropertyLinks[0].property,
+        events: [],
+      },
+    ];
+  }
   if (route === '/me/notifications') {
     return [
       {
@@ -93,6 +175,44 @@ function demoResponse(path: string): unknown {
       },
     ];
   }
+  if (route === '/companies') {
+    return [
+      { id: 'demo-company-rhc', company_code: 'RHC', display_name: 'Rabino Holdings Corporation', legal_name: 'Rabino Holdings Corporation', status: 'ACTIVE' },
+      { id: 'demo-company-amica', company_code: 'AMICA_CONDO', display_name: 'Amica', legal_name: 'Amica Condominium Realty Corporation', status: 'ACTIVE' },
+    ];
+  }
+  if (route === '/projects') {
+    return [
+      { id: 'demo-project-1', project_code: 'AMICA-R1', project_name: 'Amica Residences 1', status: 'ACTIVE', company: { display_name: 'Amica' } },
+    ];
+  }
+  if (route === '/properties') return demoInventory;
+  if (route.startsWith('/properties/')) return demoInventory.find((property) => property.id === route.split('/').at(-1)) || null;
+  if (route === '/admin/dashboard') return { totalUsers: 19, verifiedCustomers: 8, companies: 11, activeProjects: 2, totalAmicaProperties: 30, availableProperties: 12, reservedProperties: 4, activeIntegrations: 0, auditCount: 38 };
+  if (route === '/admin/customers' || route === '/admin/users') return [
+    { id: 'demo-customer-1', email: 'miguel.reyes@example.com', account_status: 'ACTIVE', verification_status: 'VERIFIED', created_at: '2026-09-01T08:00:00.000Z', profile: { first_name: 'Miguel', last_name: 'Reyes', rhc_id: 'RHC-2026-000001' } },
+    { id: 'demo-customer-2', email: 'angela.santos@example.com', account_status: 'ACTIVE', verification_status: 'VERIFIED', created_at: '2026-09-02T08:00:00.000Z', profile: { first_name: 'Angela', last_name: 'Santos', rhc_id: 'RHC-2026-000002' } },
+    { id: 'demo-customer-4', email: 'sofia.navarro@example.com', account_status: 'ACTIVE', verification_status: 'PENDING', created_at: '2026-09-04T08:00:00.000Z', profile: { first_name: 'Sofia', last_name: 'Navarro', rhc_id: null } },
+  ];
+  if (route === '/admin/companies') return [
+    { id: 'demo-company-rhc', company_code: 'RHC', display_name: 'Rabino Holdings Corporation', legal_name: 'Rabino Holdings Corporation', status: 'ACTIVE', integration_status: 'ACTIVE' },
+    { id: 'demo-company-amica', company_code: 'AMICA', display_name: 'Amica', legal_name: 'Amica', status: 'ACTIVE', integration_status: 'ACTIVE' },
+  ];
+  if (route === '/admin/projects') return [{ id: 'demo-project-1', project_code: 'AMICA-R1', project_name: 'Amica Residences 1', status: 'ACTIVE', location: 'Central Luzon, Philippines', company: { display_name: 'Amica' } }];
+  if (route === '/admin/properties') return demoInventory;
+  if (route === '/admin/reservations') return [{ id: 'demo-reservation-1', reservation_number: 'RES-2026-000001', status: 'CONFIRMED', expires_at: '2026-09-18T08:00:00.000Z', created_at: '2026-09-15T08:00:00.000Z', customer: { email: 'miguel.reyes@example.com', profile: { rhc_id: 'RHC-2026-000001' } }, property: demoInventory[1] }];
+  if (route === '/admin/audit-logs') return [
+    { id: 'demo-audit-1', action: 'RESERVATION_CONFIRMED', entity_type: 'reservation', entity_id: 'demo-reservation-1', created_at: '2026-09-16T08:00:00.000Z' },
+    { id: 'demo-audit-2', action: 'DIGITAL_ID_CREATED', entity_type: 'rhc_digital_id', entity_id: 'RHC-2026-000001', created_at: '2026-09-15T08:00:00.000Z' },
+  ];
+  if (route === '/admin/roles') return [{ id: 'role-super', code: 'SUPER_ADMINISTRATOR', name: 'SUPER ADMINISTRATOR', is_system: true, role_permissions: [] }, { id: 'role-customer', code: 'CUSTOMER', name: 'CUSTOMER', is_system: true, role_permissions: [] }];
+  if (route === '/admin/permissions') return [{ id: 'permission-customer-view', code: 'customer.view', description: 'customer.view' }, { id: 'permission-audit-view', code: 'audit.view', description: 'audit.view' }];
+  if (route === '/admin/customer-properties') return [{ id: 'demo-customer-property-1', customer_id: 'demo-customer-1', property_id: 'demo-property-reserved-1', relationship_type: 'BUYER', status: 'ACTIVE', effective_from: '2026-09-01T08:00:00.000Z', created_at: '2026-09-01T08:00:00.000Z', updated_at: '2026-09-01T08:00:00.000Z' }];
+  if (route === '/admin/business-services') return [{ id: 'demo-service-1', service_code: 'PROPERTY_SERVICES', service_name: 'Property Services', service_type: 'PROPERTY', status: 'ACTIVE', integration_status: 'PREPARED', company: { display_name: 'Amica' } }];
+  if (route === '/admin/integrations') return [{ id: 'demo-integration-1', integration_key: 'AMICA_PROPERTY_SERVICES', name: 'Amica Property Services', status: 'PREPARED', updated_at: '2026-09-16T08:00:00.000Z', company: { display_name: 'Amica', company_code: 'AMICA' } }];
+  if (route === '/admin/user-roles') return [{ id: 'demo-user-role-1', user_id: 'mock-superadmin', role: { name: 'SUPER ADMINISTRATOR', code: 'SUPER_ADMINISTRATOR' }, company_id: null, project_id: null, expires_at: null }];
+  if (route === '/admin/feature-flags') return [{ id: 'flag-wallet', key: 'ENABLE_WALLET', enabled: false, scope: 'GLOBAL', description: 'Month 2 wallet flag', updated_at: '2026-09-16T08:00:00.000Z' }];
+  if (route === '/admin/system-settings') return [{ id: 'setting-web3', key: 'web3_placeholder_status', value: { wallet_status: 'NOT_ACTIVATED', token_status: 'MONTH_2' }, description: 'Month 1 Web3 placeholder state', updated_at: '2026-09-16T08:00:00.000Z' }];
   if (route === '/business-services') {
     return [
       {
@@ -139,6 +259,12 @@ export function useRuntime() {
 export function errorMessage(error: unknown) {
   return error instanceof Error ? error.message : 'The request could not be completed.';
 }
+function adminUrl(path = '/') {
+  if (typeof window === 'undefined') return path;
+  const configured = process.env.NEXT_PUBLIC_ADMIN_WEB_URL;
+  if (configured) return `${configured.replace(/\/$/, '')}${path}`;
+  return `${window.location.protocol}//${window.location.hostname}:3003${path}`;
+}
 
 export function PortalProvider({
   auth,
@@ -146,6 +272,7 @@ export function PortalProvider({
   pathname,
   navigate,
   publicRoutes,
+  requireAdmin = false,
   children,
 }: {
   auth: AuthAdapter;
@@ -153,6 +280,7 @@ export function PortalProvider({
   pathname: string;
   navigate: (path: string) => void;
   publicRoutes: string[];
+  requireAdmin?: boolean;
   children: ReactNode;
 }) {
   const [session, setSession] = useState<BrowserSession | null>();
@@ -160,7 +288,7 @@ export function PortalProvider({
   const [error, setError] = useState('');
   const [retry, setRetry] = useState(0);
   const [dataRevision, setDataRevision] = useState(0);
-  const isPublic = publicRoutes.includes(pathname);
+  const isPublic = publicRoutes.some((route) => route.endsWith('/*') ? pathname.startsWith(route.slice(0, -1)) : route === pathname);
   const generation = useRef(0);
   useEffect(() => {
     let active = true;
@@ -195,8 +323,12 @@ export function PortalProvider({
         setUser(null);
         throw new ApiError(401, 'Your session has ended. Please sign in again.');
       }
-      if (current.access_token === demoAccessToken) {
-        const localDemoResponse = demoResponse(path);
+      if (isDemoToken(current.access_token)) {
+        if (path.split('?')[0] === '/me/reservations' && init.method?.toUpperCase() === 'POST') {
+          setDataRevision((n) => n + 1);
+          return { id: 'demo-reservation-new', reservation_number: 'RSV-DEMO-NEW', status: 'PENDING' } as T;
+        }
+        const localDemoResponse = demoResponse(path, current.access_token);
         if (localDemoResponse !== null) return localDemoResponse as T;
       }
       if (!apiUrl) throw new Error('The public API URL is not configured.');
@@ -242,9 +374,10 @@ export function PortalProvider({
       navigate('/login');
       return;
     }
-    if (session.access_token === demoAccessToken) {
+    if (isDemoToken(session.access_token)) {
+      const demoUser = accountForDemoToken(session.access_token);
       setError('');
-      setUser(demoAccount);
+      setUser(demoUser);
       return;
     }
     setError('');
@@ -285,6 +418,12 @@ export function PortalProvider({
           >
             Retry
           </button>{' '}
+          <SignOutButton />
+        </section>
+      ) : user && session && requireAdmin && !isAdminAccount(user) ? (
+        <section className="mx-auto max-w-xl p-8">
+          <h1 className="rhc-page-title">Access denied</h1>
+          <p role="alert" className="my-5">This dashboard is for authorized RHC administrators and staff only.</p>
           <SignOutButton />
         </section>
       ) : user && session ? (
@@ -474,8 +613,9 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
     try {
       if (mode === 'login') {
         await auth.login(email, password);
-        await request('/auth/session');
-        navigate('/dashboard');
+        const session = await request<{ authenticated: boolean; user: Account }>('/auth/session');
+        if (isAdminAccount(session.user)) window.location.assign(adminUrl('/'));
+        else navigate('/dashboard');
       }
       if (mode === 'register') {
         if (password !== form.get('confirm_password')) throw new Error('Passwords do not match.');

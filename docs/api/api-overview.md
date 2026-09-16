@@ -33,6 +33,8 @@ Expect 400 for invalid input, 401 for invalid/missing authentication, 403 for de
 | GET / PATCH | `/me` | Own user/profile read and allowlisted profile updates. Approved or ID-issued identity fields are locked; only `mobile_number` remains self-editable. |
 | GET / POST | `/me/rhc-id` | Read / explicitly issue ID; POST accepts an empty body, needs enabled `ENABLE_RHC_ID`, confirmed Auth email, active account, and business `VERIFIED`. |
 | GET | `/me/properties` | Own active, currently effective customer-property relationships; `ENABLE_PROPERTIES`. |
+| GET / POST | `/me/reservations` | Own reservation history / create an atomic property hold for an available property; `ENABLE_PROPERTIES`. |
+| POST | `/me/reservations/:id/cancel` | Customer cancellation for own active reservation, with audit/event history. |
 | GET | `/me/notifications` | Own notifications, bounded and ordered. |
 | GET / POST | `/me/consents` | Policy/history read / append a grant or withdrawal; no historical record overwrite. |
 | GET | `/companies` | Public allowlisted directory fields; `ENABLE_COMPANY_DIRECTORY`. |
@@ -52,7 +54,7 @@ GET routes:
 
 - `/admin/dashboard` (each metric uses its own domain permission)
 - `/admin/users`, `/admin/customers`
-- `/admin/companies`, `/admin/projects`, `/admin/properties`, `/admin/customer-properties`
+- `/admin/companies`, `/admin/projects`, `/admin/properties`, `/admin/reservations`, `/admin/customer-properties`
 - `/admin/roles`, `/admin/permissions`, `/admin/user-roles`
 - `/admin/integrations`, `/admin/business-services`, `/admin/api-clients`
 - `/admin/feature-flags`, `/admin/audit-logs`, `/admin/system-settings`
@@ -63,6 +65,8 @@ GET routes:
 | POST / PATCH | `/admin/projects` / `/admin/projects/:id` | `project.create` / `project.edit`; validated company/target scope, property feature gate. |
 | POST / PATCH | `/admin/properties` / `/admin/properties/:id` | `property.create` / `property.edit`; project/target scope, property feature gate. |
 | POST / PATCH | `/admin/customer-properties` / `/admin/customer-properties/:id` | `customer_property.manage`; property/relationship scope, effective-date checks. |
+| POST | `/admin/reservations` | `reservation.create`; property-scoped atomic reservation creation. |
+| POST | `/admin/reservations/:id/confirm`, `/:id/expire`, `/:id/cancel`, `/:id/convert` | `reservation.manage` or `reservation.cancel`; reviewed transition with reservation event, property status history and audit evidence. |
 | POST | `/admin/users/:id/verification/approve` | Global `user.manage`; `expected_status` and `review_reference`; no self-approval; active confirmed linked identity/profile required. |
 | PATCH | `/admin/users/:id/status` | Global `user.manage`; `account_status`, `expected_status`, `review_reference`; activation needs confirmed linked identity; self-disable/bootstrap-admin protections. |
 | POST / PATCH / DELETE | `/admin/roles` / `/admin/roles/:id` | Global `role.manage`; system/reserved-role protections; deletion requires review reference and no assignments. |
@@ -96,4 +100,4 @@ Events accept `event_type` (`SERVICE.REQUESTED`, `SERVICE.COMPLETED`, or `SERVIC
 
 ## Evidence boundary
 
-The endpoint implementation and fixture tests are not live acceptance. All four migrations are pending, including PostgREST lockdown; browser direct table access must not be assumed blocked on an unknown target. See [current report](../month-1/targeted-completion-report.md) and [acceptance gates](../month-1/acceptance-validation.md).
+The endpoint implementation and fixture tests are not live acceptance. All five migrations are pending, including PostgREST lockdown; browser direct table access must not be assumed blocked on an unknown target. See [current report](../month-1/targeted-completion-report.md) and [acceptance gates](../month-1/acceptance-validation.md).

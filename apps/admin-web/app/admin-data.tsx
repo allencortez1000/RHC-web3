@@ -35,6 +35,7 @@ export const modules = [
   'Projects',
   'Properties',
   'Amica Tower Inventory',
+  'Reservations',
   'Customer Properties',
   'Business Services',
   'Users',
@@ -89,6 +90,15 @@ const columns: Record<string, Column[]> = {
     ['area', 'Area'],
     ['list_price', 'List price'],
     ['currency', 'Currency'],
+  ],
+  reservations: [
+    ['reservation_number', 'Reservation #'],
+    ['customer.email', 'Customer'],
+    ['property.property_code', 'Property'],
+    ['property.project.project_name', 'Project'],
+    ['status', 'Status'],
+    ['expires_at', 'Expires'],
+    ['created_at', 'Created'],
   ],
   'customer-properties': [
     ['customer.email', 'Customer'],
@@ -222,6 +232,10 @@ const forms: Record<string, Field[]> = {
     { key: 'area', label: 'Area', type: 'number' },
     { key: 'list_price', label: 'List price', type: 'number' },
     { key: 'currency', label: 'Currency', max: 3, required: true },
+  ],
+  reservations: [
+    { key: 'customer_id', label: 'Customer', required: true, source: 'customers' },
+    { key: 'property_id', label: 'Property', required: true, source: 'properties' },
   ],
   'customer-properties': [
     { key: 'customer_id', label: 'Customer', required: true, source: 'customers' },
@@ -401,6 +415,7 @@ export function AdminTable({
   const [page, setPage] = useState(0);
   const [editing, setEditing] = useState<Row | 'new' | null>(null);
   const [flag, setFlag] = useState<Row | null>(null);
+  const [reservationAction, setReservationAction] = useState<{ row: Row; action: 'confirm' | 'cancel' | 'expire' | 'convert' } | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
@@ -408,7 +423,7 @@ export function AdminTable({
   const filtered =
     data.data?.filter(
       (row) =>
-        (!amicaOnly || valueAt(row, 'project.project_code') === 'AMICA-T1') &&
+        (!amicaOnly || String(valueAt(row, 'project.project_code')).startsWith('AMICA-')) &&
         (!status || row.status === status) &&
         cols.some(([key]) =>
           display(valueAt(row, key)).toLowerCase().includes(query.toLowerCase()),
@@ -419,7 +434,7 @@ export function AdminTable({
   const canEdit = resource === 'companies' || resource === 'properties';
   const canManage =
     metadataResources.includes(resource) || ['user-roles', 'system-settings'].includes(resource);
-  const actionOpen = Boolean(management || review || editing || flag);
+  const actionOpen = Boolean(management || review || editing || flag || reservationAction);
   const manage = (mode: ManagementAction['mode'], row?: Row) => {
     setManagement({ resource, mode, row });
     setMessage('');
@@ -429,9 +444,29 @@ export function AdminTable({
     setEditing(null);
     setManagement(null);
     setFlag(null);
+    setReservationAction(null);
     setMessage('Changes saved.');
     data.refresh();
   };
+  async function submitReservationAction() {
+    if (!reservationAction || busy) return;
+    setBusy(true);
+    setError('');
+    try {
+      await request(`/admin/reservations/${encodeURIComponent(reservationAction.row.id)}/${reservationAction.action}`, {
+        method: 'POST',
+        body: JSON.stringify({
+          review_reference: `ADMIN-${reservationAction.action.toUpperCase()}`,
+          note: `Admin ${reservationAction.action} action`,
+        }),
+      });
+      complete();
+    } catch (cause) {
+      setError(errorMessage(cause));
+    } finally {
+      setBusy(false);
+    }
+  }
   async function toggleFlag() {
     if (!flag || busy) return;
     setBusy(true);
@@ -479,6 +514,20 @@ export function AdminTable({
           done={complete}
           cancel={() => setEditing(null)}
         />
+      )}
+      {reservationAction && (
+        <Card title="Confirm reservation action" className="mb-5">
+          <p className="mb-4">
+            {reservationAction.action.toUpperCase()} reservation {String(reservationAction.row.reservation_number)}?
+          </p>
+          <p className="mb-4 text-sm text-[var(--rhc-muted)]">
+            This writes reservation events, property status history, and audit logs.
+          </p>
+          <div className="flex gap-3">
+            <Web3Button disabled={busy} onClick={submitReservationAction}>Confirm action</Web3Button>
+            <Web3Button disabled={busy} variant="secondary" onClick={() => setReservationAction(null)}>Cancel</Web3Button>
+          </div>
+        </Card>
       )}
       {flag && (
         <Card title="Confirm feature flag change" className="mb-5">
@@ -569,11 +618,13 @@ export function AdminTable({
             Create{' '}
             {resource === 'customer-properties'
               ? 'relationship'
-              : resource === 'properties'
-                ? 'property'
-                : resource === 'companies'
-                  ? 'company'
-                  : 'project'}
+              : resource === 'reservations'
+                ? 'reservation'
+                : resource === 'properties'
+                  ? 'property'
+                  : resource === 'companies'
+                    ? 'company'
+                    : 'project'}
           </Web3Button>
         )}
       </div>
@@ -602,7 +653,7 @@ export function AdminTable({
                         {label}
                       </th>
                     ))}
-                    {(canEdit || canReview || canManage || resource === 'feature-flags') && (
+                    {(canEdit || canReview || canManage || resource === 'feature-flags' || resource === 'reservations') && (
                       <th className="p-3">Actions</th>
                     )}
                   </tr>
@@ -720,6 +771,24 @@ export function AdminTable({
                           >
                             Edit
                           </Web3Button>
+                        </td>
+                      )}
+                      {resource === 'reservations' && (
+                        <td className="p-3">
+                          <div className="flex flex-wrap gap-2">
+                            {row.status === 'PENDING' && (
+                              <>
+                                <Web3Button variant="secondary" disabled={actionOpen || data.loading} onClick={() => setReservationAction({ row, action: 'confirm' })}>Confirm</Web3Button>
+                                <Web3Button variant="secondary" disabled={actionOpen || data.loading} onClick={() => setReservationAction({ row, action: 'expire' })}>Expire</Web3Button>
+                              </>
+                            )}
+                            {(row.status === 'PENDING' || row.status === 'CONFIRMED') && (
+                              <Web3Button variant="secondary" disabled={actionOpen || data.loading} onClick={() => setReservationAction({ row, action: 'cancel' })}>Cancel</Web3Button>
+                            )}
+                            {row.status === 'CONFIRMED' && (
+                              <Web3Button variant="secondary" disabled={actionOpen || data.loading} onClick={() => setReservationAction({ row, action: 'convert' })}>Convert</Web3Button>
+                            )}
+                          </div>
                         </td>
                       )}
                       {resource === 'feature-flags' && (

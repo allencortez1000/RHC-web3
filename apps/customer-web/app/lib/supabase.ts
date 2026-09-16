@@ -5,24 +5,41 @@ import type { AuthAdapter, BrowserSession } from '@rhc/ui';
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const demoEmail = 'demo@rhc.local';
 const demoPassword = 'Demo123456!';
 const demoSessionKey = 'rhc-demo-session';
-const demoSession: BrowserSession = {
-  access_token: 'rhc-demo-token',
-  user: { id: 'mock-user-customer', email: demoEmail },
-};
+const demoCookieName = 'rhc_demo_email';
+const customerEmail = 'demo@rhc.local';
+const adminEmails = new Set(['superadmin@example.com', 'systemadmin@example.com', 'sales@example.com', 'finance@example.com', 'propertyadmin@example.com', 'compliance@example.com', 'auditor@example.com']);
 const demoSubscribers = new Set<(session: BrowserSession | null) => void>();
 
+function demoSessionFor(email: string): BrowserSession {
+  return { access_token: `rhc-demo-token:${encodeURIComponent(email)}`, user: { id: `mock-${email.split('@')[0]}`, email } };
+}
+function readCookie(name: string) {
+  if (typeof document === 'undefined') return null;
+  return document.cookie.split('; ').find((part) => part.startsWith(`${name}=`))?.split('=').slice(1).join('=') || null;
+}
+function writeCookie(email: string | null) {
+  if (typeof document === 'undefined') return;
+  document.cookie = email ? `${demoCookieName}=${encodeURIComponent(email)}; path=/; SameSite=Lax` : `${demoCookieName}=; path=/; max-age=0; SameSite=Lax`;
+}
 function readDemoSession() {
   if (typeof window === 'undefined') return null;
-  return window.localStorage.getItem(demoSessionKey) === 'active' ? demoSession : null;
+  const cookieEmail = readCookie(demoCookieName);
+  if (cookieEmail) return demoSessionFor(decodeURIComponent(cookieEmail));
+  if (window.localStorage.getItem(demoSessionKey) === 'active' || !supabase) return demoSessionFor(customerEmail);
+  return null;
 }
-
-function writeDemoSession(active: boolean) {
+function writeDemoSession(email: string | null) {
   if (typeof window === 'undefined') return;
-  if (active) window.localStorage.setItem(demoSessionKey, 'active');
-  else window.localStorage.removeItem(demoSessionKey);
+  if (email) {
+    if (email === customerEmail) window.localStorage.setItem(demoSessionKey, 'active');
+    else window.localStorage.removeItem(demoSessionKey);
+    writeCookie(email);
+  } else {
+    window.localStorage.removeItem(demoSessionKey);
+    writeCookie(null);
+  }
   const next = readDemoSession();
   demoSubscribers.forEach((callback) => callback(next));
 }
@@ -43,22 +60,19 @@ export const authAdapter: AuthAdapter = {
   subscribe(callback) {
     demoSubscribers.add(callback);
     if (!supabase) {
-      return () => {
-        demoSubscribers.delete(callback);
-      };
+      queueMicrotask(() => callback(readDemoSession()));
+      return () => { demoSubscribers.delete(callback); };
     }
     const { data } = supabase.auth.onAuthStateChange((_event, session) => callback(readDemoSession() || session));
-    return () => {
-      demoSubscribers.delete(callback);
-      data.subscription.unsubscribe();
-    };
+    return () => { demoSubscribers.delete(callback); data.subscription.unsubscribe(); };
   },
   async login(email, password) {
-    if (email.trim().toLowerCase() === demoEmail && password === demoPassword) {
-      writeDemoSession(true);
+    const normalized = email.trim().toLowerCase();
+    if ((normalized === customerEmail || adminEmails.has(normalized)) && password === demoPassword) {
+      writeDemoSession(normalized);
       return;
     }
-    writeDemoSession(false);
+    writeDemoSession(null);
     const { error } = await requireSupabase().auth.signInWithPassword({ email, password });
     if (error) throw error;
   },
@@ -75,21 +89,17 @@ export const authAdapter: AuthAdapter = {
     const hash = new URLSearchParams(link.hash.slice(1));
     const failure = link.searchParams.get('error_description') || hash.get('error_description');
     if (failure) throw new Error(failure);
-    // Bearer-token links are not bound to this browser and can swap the user's session.
-    if (['access_token', 'refresh_token', 'token_hash'].some((name) => link.searchParams.has(name) || hash.has(name)))
-      throw new Error('Unsupported confirmation link. Request a new email link in this browser.');
+    if (['access_token', 'refresh_token', 'token_hash'].some((name) => link.searchParams.has(name) || hash.has(name))) throw new Error('Unsupported confirmation link. Request a new email link in this browser.');
     const code = link.searchParams.get('code');
-    if (!code || link.searchParams.getAll('code').length !== 1)
-      throw new Error('The confirmation code is missing or invalid. Request a new email link in this browser.');
+    if (!code || link.searchParams.getAll('code').length !== 1) throw new Error('The confirmation code is missing or invalid. Request a new email link in this browser.');
     const client = requireSupabase();
-    // The SDK supplies the locally stored PKCE verifier; never fall back to an existing session.
     const { data, error: exchangeError } = await client.auth.exchangeCodeForSession(code);
     if (exchangeError) throw exchangeError;
     if (!data.session) throw new Error('This link is invalid or expired. Request a new email link in this browser.');
     const { error } = await client.auth.getUser(); if (error) throw error;
   },
   async logout() {
-    writeDemoSession(false);
+    writeDemoSession(null);
     if (!supabase) return;
     const { error } = await supabase.auth.signOut({ scope: 'local' });
     if (error) throw error;

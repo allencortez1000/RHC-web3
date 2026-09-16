@@ -54,6 +54,10 @@ export default function CustomerLoginStart() {
                   <dt>Password:</dt>
                   <dd className="font-mono text-[var(--rhc-heading)]">Demo123456!</dd>
                 </div>
+                <div className="flex flex-wrap gap-2">
+                  <dt>Admin:</dt>
+                  <dd className="font-mono text-[var(--rhc-heading)]">superadmin@example.com</dd>
+                </div>
               </dl>
             </div>
 

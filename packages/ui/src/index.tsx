@@ -386,12 +386,12 @@ export function TokenHero() {
           </div>
           <div className="mt-6 flex flex-wrap gap-3">
             <Web3Button href="/token">View Token</Web3Button>
-            <Web3Button variant="secondary">Send</Web3Button>
-            <Web3Button variant="secondary">Receive</Web3Button>
+            <Web3Button variant="secondary" disabled>Send — Month 2</Web3Button>
+            <Web3Button variant="secondary" disabled>Receive — Month 2</Web3Button>
             <Web3Button href="/transactions" variant="secondary">
-              View Transactions
+              View Month 2 Ledger Preview
             </Web3Button>
-            <Web3Button variant="tertiary">Copy Contract</Web3Button>
+            <Web3Button variant="tertiary" disabled>No contract deployed</Web3Button>
           </div>
         </div>
       </div>
@@ -479,7 +479,7 @@ export function DigitalIDCard({
           <Badge tone="gold">{account}</Badge>
         </div>
         <p className="mt-5 font-mono text-sm text-[var(--rhc-secondary-text)]">
-          Wallet: Not connected
+          Wallet: Not activated — Month 2
         </p>
       </div>
     </Card>
@@ -531,7 +531,7 @@ export function PropertyAssetCard({
           <Web3Button href={href} variant="secondary">
             View Property
           </Web3Button>
-          <Web3Button variant="secondary">Digital Asset Info</Web3Button>
+          <Web3Button variant="secondary" disabled>Digital asset — Month 2</Web3Button>
         </div>
       </div>
     </Card>
@@ -553,9 +553,9 @@ export function TransactionTable() {
           className="min-w-[260px] rounded-lg border px-3 py-2 text-sm"
         />
         <div className="flex flex-wrap gap-2">
-          <Web3Button variant="secondary">Filter</Web3Button>
-          <Web3Button variant="secondary">Date</Web3Button>
-          <Web3Button variant="secondary">Export</Web3Button>
+          <Web3Button variant="secondary" disabled>Filter — Month 2</Web3Button>
+          <Web3Button variant="secondary" disabled>Date — Month 2</Web3Button>
+          <Web3Button variant="secondary" disabled>Export — Month 2</Web3Button>
         </div>
       </div>
       <div className="overflow-x-auto">
@@ -627,16 +627,26 @@ export function AppShell({
   navItems,
   title = 'Dashboard',
   admin = false,
+  hideSidebar = false,
 }: {
   children: ReactNode;
   navItems: NavItem[];
   title?: string;
   admin?: boolean;
+  hideSidebar?: boolean;
 }) {
-  const groups = useMemo(() => groupedNav(navItems), [navItems]);
+  const marketplaceItems = useMemo(
+    () => (admin ? [] : navItems.filter((item) => item.section === 'Marketplace' && item.label === 'RHC Marketplace')),
+    [admin, navItems],
+  );
+  const groups = useMemo(
+    () => groupedNav(navItems.filter((item) => item.section !== 'Marketplace' && !item.href.startsWith('/marketplace'))),
+    [navItems],
+  );
   return (
     <Web3Shell variant={admin ? 'admin' : 'customer'}>
       <div className="mx-auto flex min-h-screen max-w-[1540px] gap-5 px-4 py-4 md:px-6">
+        {!hideSidebar && (
         <aside className="rhc-sidebar sticky top-4 hidden h-[calc(100vh-2rem)] w-[18.5rem] shrink-0 rounded-xl border p-5 lg:block">
           <div className="flex h-full flex-col">
             <a href={admin ? '/' : '/dashboard'} className="flex items-center gap-3">
@@ -681,6 +691,7 @@ export function AppShell({
             </div>
           </div>
         </aside>
+        )}
         <main className="min-w-0 flex-1">
           <header className="mb-5 rounded-xl border border-[var(--rhc-border)] bg-[var(--rhc-surface)] p-4 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-4">
@@ -695,6 +706,22 @@ export function AppShell({
                   placeholder="Search RHC ecosystem"
                   className="hidden min-w-[240px] rounded-lg border px-3 py-2 text-sm xl:block"
                 />
+                {marketplaceItems.length > 0 && (
+                  <nav
+                    aria-label="Marketplace navigation"
+                    className="hidden items-center gap-2 rounded-lg border border-[var(--rhc-border)] bg-[var(--rhc-surface-secondary)] p-1 xl:flex"
+                  >
+                    {marketplaceItems.map((item) => (
+                      <a
+                        key={`header-${item.label}`}
+                        href={item.href}
+                        className={`rounded-md px-3 py-1.5 text-xs font-bold transition hover:bg-[var(--rhc-accent-soft)] hover:text-[var(--rhc-primary)] ${item.active ? 'bg-[var(--rhc-accent-soft)] text-[var(--rhc-primary)]' : 'text-[var(--rhc-secondary-text)]'}`}
+                      >
+                        Go to Marketplace
+                      </a>
+                    ))}
+                  </nav>
+                )}
                 <NetworkBadge />
                 <WalletAddress />
                 <ThemeToggle />
@@ -707,17 +734,19 @@ export function AppShell({
               </div>
             </div>
           </header>
-          <nav aria-label="Mobile navigation" className="mb-5 flex gap-3 overflow-x-auto lg:hidden">
-            {navItems.map((item) => (
-              <a
-                key={item.label}
-                href={item.href}
-                className="whitespace-nowrap rounded-lg border p-2 text-sm"
-              >
-                {item.label}
-              </a>
-            ))}
-          </nav>
+          {!hideSidebar && (
+            <nav aria-label="Mobile navigation" className="mb-5 flex gap-3 overflow-x-auto lg:hidden">
+              {navItems.map((item) => (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  className="whitespace-nowrap rounded-lg border p-2 text-sm"
+                >
+                  {item.label}
+                </a>
+              ))}
+            </nav>
+          )}
           {children}
         </main>
       </div>

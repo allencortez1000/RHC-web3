@@ -9,7 +9,7 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "npm run dev -w @rhc/customer-web",
+    "dev": "concurrently \"npm run dev:customer\" \"npm run dev:admin\"",
     "dev:customer": "npm run dev -w @rhc/customer-web",
     "dev:admin": "npm run dev -w @rhc/admin-web",
     "dev:api": "npm run dev -w @rhc/api",
@@ -33,6 +33,7 @@
     "db:generate": "npm run db:generate -w @rhc/database",
     "db:migrate": "npm run db:migrate -w @rhc/database",
     "db:seed": "npm run db:seed -w @rhc/database",
+    "seed:demo:reset": "npm run db:seed -w @rhc/database",
     "validate": "npm run lint && npm run typecheck && npm run test && npm run build"
   },
   "devDependencies": {

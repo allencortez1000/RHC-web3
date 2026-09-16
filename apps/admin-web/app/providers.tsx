@@ -8,5 +8,5 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const navigate = useCallback((path: string) => router.replace(path), [router]);
-  return <PortalProvider auth={authAdapter} apiUrl={process.env.NEXT_PUBLIC_API_URL} pathname={pathname} navigate={navigate} publicRoutes={publicRoutes}>{children}</PortalProvider>;
+  return <PortalProvider auth={authAdapter} apiUrl={process.env.NEXT_PUBLIC_API_URL} pathname={pathname} navigate={navigate} publicRoutes={publicRoutes} requireAdmin>{children}</PortalProvider>;
 }
