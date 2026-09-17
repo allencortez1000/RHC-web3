@@ -31,7 +31,7 @@ const categories = [
 export default function Page() {
   const [active, setActive] = useState(categories[0]);
   return (
-    <AppShell title="RHC Marketplace" navItems={navFor('RHC Marketplace')} hideSidebar>
+    <AppShell title="RHC Marketplace" navItems={navFor('RHC Marketplace')}>
       <div className="mb-5 flex justify-start">
         <Web3Button href="/dashboard" variant="secondary">
           ← Back to Dashboard

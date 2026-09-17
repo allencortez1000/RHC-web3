@@ -27,26 +27,57 @@ import {
   useRuntime,
 } from '@rhc/ui';
 
-export const modules = [
-  'Dashboard',
-  'Customers',
-  'RHC Digital IDs',
-  'Companies',
-  'Projects',
-  'Properties',
-  'Amica Tower Inventory',
-  'Reservations',
-  'Customer Properties',
-  'Business Services',
-  'Users',
-  'Roles',
-  'User Roles',
-  'Permissions',
-  'Integrations',
-  'Feature Flags',
-  'Audit Logs',
-  'System Settings',
+type AdminNavItem = readonly [string, string];
+export const adminNavGroups: Array<{ section: string; items: AdminNavItem[] }> = [
+  {
+    section: 'Overview',
+    items: [
+      ['Command Center', '/'],
+      ['Review Queue', '/verification'],
+    ],
+  },
+  {
+    section: 'Customers',
+    items: [
+      ['Customers', '/customers'],
+      ['Digital IDs', '/rhc-digital-ids'],
+      ['Verification Reviews', '/verification'],
+    ],
+  },
+  {
+    section: 'Property Operations',
+    items: [
+      ['Companies', '/companies'],
+      ['Projects', '/projects'],
+      ['Inventory', '/properties'],
+      ['Amica Tower Inventory', '/amica-tower-inventory'],
+      ['Reservations', '/reservations'],
+      ['Customer Properties', '/customer-properties'],
+    ],
+  },
+  {
+    section: 'Records & Services',
+    items: [
+      ['Business Services', '/business-services'],
+      ['Integrations', '/integrations'],
+      ['Feature Flags', '/feature-flags'],
+    ],
+  },
+  {
+    section: 'Governance',
+    items: [
+      ['Users', '/users'],
+      ['Roles', '/roles'],
+      ['User Roles', '/user-roles'],
+      ['Permissions', '/permissions'],
+      ['Audit Logs', '/audit-logs'],
+      ['System Settings', '/system-settings'],
+    ],
+  },
 ];
+export const adminNavItems: AdminNavItem[] = adminNavGroups.flatMap((group) => group.items);
+export const modules = adminNavItems.map(([label]) => label);
+const routeFor = new Map<string, string>(adminNavItems.map(([label, href]) => [label, href]));
 type Row = { id: string; [key: string]: unknown };
 type Column = [string, string];
 const columns: Record<string, Column[]> = {
@@ -555,7 +586,7 @@ export function AdminTable({
         </p>
       )}
       <div className="mb-5 flex flex-wrap items-end gap-3">
-        <label className="text-sm">
+        <label className="min-w-[260px] flex-1 text-sm font-medium text-[var(--rhc-secondary-text)]">
           Search records
           <input
             value={query}
@@ -563,11 +594,12 @@ export function AdminTable({
               setQuery(event.target.value);
               setPage(0);
             }}
-            className="mt-2 block rounded-lg border p-3"
+            placeholder="Search loaded records…"
+            className="mt-2 block w-full rounded-xl border border-[var(--rhc-border)] bg-[var(--rhc-input)] p-3 text-[var(--rhc-input-text)] shadow-sm outline-none focus:border-[var(--rhc-primary)] focus:ring-2 focus:ring-[var(--rhc-accent-soft)]"
           />
         </label>
         {resource === 'properties' && (
-          <label className="text-sm">
+          <label className="min-w-[220px] text-sm font-medium text-[var(--rhc-secondary-text)]">
             Property status
             <select
               value={status}
@@ -575,7 +607,7 @@ export function AdminTable({
                 setStatus(event.target.value);
                 setPage(0);
               }}
-              className="mt-2 block rounded-lg border p-3"
+              className="mt-2 block w-full rounded-xl border border-[var(--rhc-border)] bg-[var(--rhc-input)] p-3 text-[var(--rhc-input-text)] shadow-sm outline-none focus:border-[var(--rhc-primary)] focus:ring-2 focus:ring-[var(--rhc-accent-soft)]"
             >
               <option value="">All statuses</option>
               {statuses.map((value) => (
@@ -846,6 +878,42 @@ export function AdminTable({
     </>
   );
 }
+function AdminSidebar({ active }: { active?: string }) {
+  return (
+    <aside className="rhc-admin-sidebar fixed hidden h-full w-80 overflow-y-auto border-r border-[var(--rhc-border)] p-6 lg:block">
+      <Link href="/" className="flex items-center gap-3 rounded-2xl p-2 transition hover:bg-[var(--rhc-accent-soft)]">
+        <div className="grid h-12 w-12 place-items-center rounded-2xl border border-[rgba(212,175,55,.35)] bg-[var(--rhc-accent-soft)] font-black text-[var(--rhc-primary)]">RHC</div>
+        <div>
+          <h1 className="text-base font-black text-[var(--rhc-heading)]">Admin Command Center</h1>
+          <p className="text-xs text-[var(--rhc-muted)]">Operations · RBAC · Audit</p>
+        </div>
+      </Link>
+      <div className="mt-5 rounded-2xl border border-[var(--rhc-border)] bg-[var(--rhc-surface-secondary)] p-4">
+        <Badge tone="gold">Demo / controlled admin</Badge>
+        <p className="mt-3 text-xs leading-5 text-[var(--rhc-muted)]">Actions are permission-guarded and should create audit records through the API.</p>
+      </div>
+      <nav aria-label="Admin navigation" className="mt-6 space-y-6">
+        {adminNavGroups.map((group) => (
+          <div key={group.section}>
+            <p className="px-2 text-[0.68rem] font-black uppercase tracking-[0.18em] text-[var(--rhc-primary)]">{group.section}</p>
+            <div className="mt-2 space-y-1">
+              {group.items.map(([label, href]) => {
+                const current = label === active || href === routeFor.get(active || '');
+                return (
+                  <Link key={label} href={href} className={`flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-semibold transition ${current ? 'bg-[var(--rhc-accent-soft)] text-[var(--rhc-heading)] ring-1 ring-[rgba(212,175,55,.28)]' : 'text-[var(--rhc-secondary-text)] hover:bg-[var(--rhc-surface-secondary)] hover:text-[var(--rhc-heading)]'}`}>
+                    <span>{label}</span>
+                    <span className={`h-1.5 w-1.5 rounded-full ${current ? 'bg-[var(--rhc-primary)]' : 'bg-transparent'}`} />
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </nav>
+    </aside>
+  );
+}
+
 export function AdminModule({
   title,
   resource,
@@ -857,30 +925,32 @@ export function AdminModule({
 }) {
   return (
     <Web3Shell variant="admin">
-      <section className="mx-auto max-w-6xl px-6 py-10">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <Badge tone="warning">Admin Module</Badge>
-          <div className="flex gap-3">
-            <Link href="/">Command Center</Link>
-            <ThemeToggle />
-            <SignOutButton />
+      <AdminSidebar active={title} />
+      <section className="min-h-screen lg:pl-80">
+        <header className="sticky top-0 z-20 border-b border-[var(--rhc-border)] bg-[var(--rhc-bg)] px-5 py-4 backdrop-blur-xl md:px-8">
+          <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4">
+            <div>
+              <p className="rhc-eyebrow">RHC Digital Admin</p>
+              <h1 className="mt-1 text-2xl font-black text-[var(--rhc-heading)] md:text-3xl">{title}</h1>
+            </div>
+            <div className="flex items-center gap-3">
+              <Link href="/" className="rounded-xl border border-[var(--rhc-border)] px-3 py-2 text-sm font-semibold text-[var(--rhc-secondary-text)] hover:bg-[var(--rhc-surface-secondary)] hover:text-[var(--rhc-heading)]">Command Center</Link>
+              <ThemeToggle />
+              <SignOutButton />
+            </div>
           </div>
-        </div>
-        <h1 className="mt-5 text-4xl font-black text-[var(--rhc-heading)] md:text-6xl">{title}</h1>
-        <nav aria-label="Admin modules" className="mt-5 flex gap-4 overflow-x-auto">
-          {modules.map((label) => (
-            <a
-              key={label}
-              className="whitespace-nowrap text-sm"
-              href={`/${label.toLowerCase().replaceAll(' ', '-')}`}
-            >
-              {label}
-            </a>
-          ))}
-        </nav>
-        <Card className="mt-8" title={title}>
-          <AdminTable resource={resource} amicaOnly={amicaOnly} />
-        </Card>
+          <nav aria-label="Mobile admin modules" className="mx-auto mt-4 flex max-w-7xl gap-2 overflow-x-auto pb-1 lg:hidden">
+            {adminNavItems.map(([label, href]) => (
+              <Link key={label} href={href} className="whitespace-nowrap rounded-full border border-[var(--rhc-border)] bg-[var(--rhc-surface-secondary)] px-3 py-2 text-xs font-bold text-[var(--rhc-secondary-text)]">{label}</Link>
+            ))}
+          </nav>
+        </header>
+        <main className="mx-auto max-w-7xl px-5 py-6 md:px-8 md:py-8">
+          <Card className="rhc-card-token" title={`${title} Workspace`}>
+            <p className="mb-5 text-sm leading-6 text-[var(--rhc-muted)]">Search, filter, review, and manage records according to your server-enforced permissions. Demo-only records remain fictional and audited.</p>
+            <AdminTable resource={resource} amicaOnly={amicaOnly} />
+          </Card>
+        </main>
       </section>
     </Web3Shell>
   );

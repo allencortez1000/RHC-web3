@@ -167,13 +167,71 @@ function demoResponse(path: string, token = demoAccessToken): unknown {
     return [
       {
         id: 'demo-notification-1',
-        subject: 'Welcome to the RHC Web3 demo',
-        body: 'This local sample account lets you preview the dashboard without connecting Supabase or the API.',
+        subject: 'Welcome to RHC Digital',
+        body: 'Sample records for testing and presentation. No real customer transaction is processed.',
         channel: 'IN_APP',
         status: 'Unread',
         created_at: '2026-01-01T08:00:00.000Z',
       },
+      {
+        id: 'demo-notification-2',
+        subject: 'Demo payment record posted',
+        body: 'A fictional payment record was posted to your demo account.',
+        channel: 'IN_APP',
+        status: 'Unread',
+        created_at: '2026-01-02T08:00:00.000Z',
+      },
     ];
+  }
+  if (route === '/me/demo-records') {
+    return {
+      payments: [
+        { id: 'pay-1', reference: 'DEMO-PAY-0001', property_code: 'DEMO-AMICA-T1-1204', due_date: '2026-09-20', amount: 125000, currency: 'PHP', status: 'POSTED', description: 'Reservation fee demo record', document_id: 'doc-1' },
+        { id: 'pay-2', reference: 'DEMO-PAY-0002', property_code: 'DEMO-AMICA-T1-1204', due_date: '2026-10-20', amount: 275000, currency: 'PHP', status: 'PENDING', description: 'Contract milestone pending review', document_id: 'doc-2' },
+        { id: 'pay-3', reference: 'DEMO-PAY-0003', property_code: 'DEMO-AMICA-T1-1204', due_date: '2026-08-20', amount: 25000, currency: 'PHP', status: 'REVERSED', description: 'Reversal preserves original posted entry', document_id: 'doc-3' },
+      ],
+      documents: [
+        { id: 'doc-1', title: 'Demo Reservation Acknowledgement', category: 'Reservation', status: 'Issued', version: '1.0', issued_at: '2026-09-11', property_code: 'DEMO-AMICA-T1-1204', issuer: 'Amica Demo Records', hash: 'b96f1a3d7c2e-demo' },
+        { id: 'doc-2', title: 'Demo Payment Evidence', category: 'Payment', status: 'Under review', version: '1.1', issued_at: '2026-09-12', property_code: 'DEMO-AMICA-T1-1204', issuer: 'RHC Finance Demo', hash: 'a81d4e29bc11-demo' },
+        { id: 'doc-3', title: 'Demo Contract Summary', category: 'Contract', status: 'Issued', version: '2.0', issued_at: '2026-09-13', property_code: 'DEMO-AMICA-T1-1204', issuer: 'RHC Digital Demo', hash: 'cc317bc992af-demo' },
+      ],
+      certificates: [
+        { id: 'cert-1', reference: 'DEMO-CERT-0001', type: 'RHC Customer Verification Certificate', status: 'ACTIVE', issued_at: '2026-09-14', linked_record: 'RHC-DEMO-0001', issuer: 'RHC Digital Demo' },
+        { id: 'cert-2', reference: 'DEMO-CERT-0002', type: 'Demo Property Record Certificate', status: 'SUPERSEDED', issued_at: '2026-09-10', linked_record: 'DEMO-AMICA-T1-1204', issuer: 'Amica Demo Records' },
+        { id: 'cert-3', reference: 'DEMO-CERT-0003', type: 'Demo Turnover Readiness Certificate', status: 'REVOKED', issued_at: '2026-09-09', linked_record: 'TURN-DEMO-0001', issuer: 'RHC Digital Demo' },
+      ],
+      milestones: [
+        { id: 'mile-1', title: 'Foundation Works Demo Update', description: 'Fictional milestone update for presentation only; not an official project progress report.', status: 'Reviewed', date: '2026-09-01', reviewer: 'Property Admin Demo' },
+        { id: 'mile-2', title: 'Structural Works Demo Update', description: 'Demo update connected to customer property lifecycle visibility.', status: 'In progress', date: '2026-09-08', reviewer: 'Amica Demo Reviewer' },
+        { id: 'mile-3', title: 'Document Review Demo Update', description: 'Sample review queue activity for documents and certificates.', status: 'Pending review', date: '2026-09-15', reviewer: 'Compliance Demo' },
+      ],
+      benefits: [
+        { id: 'benefit-1', title: 'Demo Amica Mart voucher', cost: 300, status: 'Available', detail: 'Fictional benefit offer; no merchant settlement occurs.' },
+        { id: 'benefit-2', title: 'Demo Water service priority', cost: 500, status: 'Available', detail: 'Local mock connector only; no utility integration is active.' },
+        { id: 'benefit-3', title: 'Demo document assistance', cost: 200, status: 'Available', detail: 'Creates a local demo request only.' },
+      ],
+      rewards: {
+        balance: 1300,
+        earned: 1500,
+        redeemed: 200,
+        entries: [
+          { id: 'rw-1', date: '2026-09-01', source: 'Amica Demo', points: 1000, reason: 'Demo property milestone', reference: 'DEMO-RW-0001' },
+          { id: 'rw-2', date: '2026-09-05', source: 'Amica Mart Demo', points: 500, reason: 'Demo retail event', reference: 'DEMO-RW-0002' },
+          { id: 'rw-3', date: '2026-09-08', source: 'RHC Benefits Demo', points: -200, reason: 'Demo benefit redemption', reference: 'DEMO-RW-0003' },
+        ],
+      },
+      turnover: {
+        case_number: 'TURN-DEMO-0001',
+        status: 'Checklist in progress',
+        note: 'Turnover is a demo workflow only and is not a legal transfer or title issuance.',
+        checklist: [
+          { label: 'Demo identity verified', complete: true },
+          { label: 'Demo payment records reviewed', complete: true },
+          { label: 'Demo document package acknowledged', complete: true },
+          { label: 'Demo site inspection scheduled', complete: false },
+        ],
+      },
+    };
   }
   if (route === '/companies') {
     return [

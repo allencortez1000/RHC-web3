@@ -165,10 +165,29 @@ pre,
     linear-gradient(90deg, #e4e7ec 1px, transparent 1px);
 }
 
-.rhc-sidebar {
+.rhc-sidebar,
+.rhc-admin-sidebar {
   border-color: rgba(212, 175, 55, 0.18);
-  background: linear-gradient(180deg, #0b1728, #07111f);
+  background:
+    radial-gradient(circle at 80% 0%, rgba(212, 175, 55, 0.12), transparent 28%),
+    linear-gradient(180deg, #0b1728, #07111f);
   box-shadow: var(--rhc-shadow-md);
+}
+.rhc-admin-hero {
+  background:
+    linear-gradient(120deg, rgba(212, 175, 55, 0.1), transparent 34%),
+    radial-gradient(circle at 90% 12%, rgba(212, 175, 55, 0.12), transparent 28%),
+    var(--rhc-surface);
+}
+:root[data-theme='light'] .rhc-admin-sidebar {
+  background:
+    radial-gradient(circle at 80% 0%, rgba(212, 175, 55, 0.12), transparent 28%),
+    linear-gradient(180deg, #ffffff, #f8fafc);
+}
+:root[data-theme='light'] .rhc-admin-hero {
+  background:
+    linear-gradient(120deg, rgba(212, 175, 55, 0.11), transparent 34%),
+    var(--rhc-surface);
 }
 .rhc-card {
   border: 1px solid var(--rhc-border);

@@ -640,7 +640,7 @@ export function AppShell({
     [admin, navItems],
   );
   const groups = useMemo(
-    () => groupedNav(navItems.filter((item) => item.section !== 'Marketplace' && !item.href.startsWith('/marketplace'))),
+    () => groupedNav(navItems.filter((item) => item.section !== 'Marketplace')),
     [navItems],
   );
   return (
