@@ -3,14 +3,14 @@
 ## Implemented/prepared in the repository
 
 - Monorepo with Customer Web, Admin Web, NestJS API, shared packages, Prisma database package, CI, Docker/deployment preparation and documentation.
-- PostgreSQL domain schema and **four pending migrations**, including identity/history/ledger reconciliation and application PostgREST lockdown. Migration source is not deployed protection.
-- Seed definitions for eight RHC companies, AMICA-T1 and marked sample inventory; **no target seeding is claimed**.
+- PostgreSQL domain schema and **five pending migrations**, including identity/history/ledger reconciliation, application PostgREST lockdown, and additive authorization-scope deletion protection. Migration source is not deployed protection.
+- Import-safe seed definitions for the eight RHC companies and the required AMICA-T1 project foundation; only clearly marked synthetic sample inventory is opt-in through `SEED_SAMPLE_INVENTORY=true`; **no target seeding is claimed**.
 - Supabase SDK browser auth with PKCE confirmation/recovery, backend JWT verification and authoritative Auth Admin confirmation. No opaque UUID bearer tokens or runtime mock fallback.
 - Separate Auth confirmation timestamp and business verification; reviewed approval, guarded/idempotent RHC ID issuance, and approved-identity self-edit protection with mobile contact updates allowed.
-- API-backed customer profile, property relationships, directory, notifications and append-only consent history; explicit loading/empty/error/disabled states rather than successful fixture fallback.
+- API-backed customer profile, property relationships, directory, notifications and append-only consent history; explicit loading/empty/error/disabled states rather than successful fixture fallback. Signup mobile metadata remains unverified and the authenticated `/me` profile update is the application contact source of truth.
 - Scoped admin lists/dashboard and validated company/project/property/relationship mutations; global user status/verification, role/assignment/permission management; integration/service metadata, typed settings and feature controls. Admin reference data is not authorization.
-- Company-bound hashed machine credentials, delegated scopes, one-time issue/rotation, revocation, safe metadata reads, consent-bound identity checks and idempotent allowlisted event receipts.
-- Backend authorization, transactional audit/activity evidence, response envelopes, redaction, and wired Redis IP plus authenticated user/client rate limits.
+- Company-bound hashed machine credentials, delegated scopes, one-time issue/rotation, revocation, safe metadata reads, consent-bound identity checks and idempotent allowlisted event receipts. Framework readiness is separate from formally approved company activation; see [activation boundary](company-integration-activation.md).
+- Backend authorization, transactional audit/activity evidence, response envelopes, redaction, and wired Redis IP plus authenticated user/client rate limits. Authenticated admin capabilities are caller-specific; navigation does not grant access.
 - Disabled RHC Points/rewards data foundation and inactive future-feature surfaces; no active token/wallet/marketplace/blockchain product.
 - Substantive unit/API/browser fixture suites; see [testing](testing.md) for the exact supplied results versus pending reruns.
 

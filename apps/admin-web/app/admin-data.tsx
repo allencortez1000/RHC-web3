@@ -10,7 +10,7 @@ import {
   protectedRole,
   type ManagementAction,
 } from './management-controls';
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import {
   Badge,
   Card,
@@ -27,25 +27,56 @@ import {
   useRuntime,
 } from '@rhc/ui';
 
-export const modules = [
-  'Dashboard',
-  'Customers',
-  'RHC Digital IDs',
-  'Companies',
-  'Projects',
-  'Properties',
-  'Amica Tower Inventory',
-  'Customer Properties',
-  'Business Services',
-  'Users',
-  'Roles',
-  'User Roles',
-  'Permissions',
-  'Integrations',
-  'Feature Flags',
-  'Audit Logs',
-  'System Settings',
+export type AdminModuleDefinition = { label: string; path: string; permission: string };
+export const moduleDefinitions: readonly AdminModuleDefinition[] = [
+  { label: 'Dashboard', path: '/dashboard', permission: 'company.view' },
+  { label: 'Customers', path: '/customers', permission: 'customer.view' },
+  { label: 'RHC Digital IDs', path: '/rhc-digital-ids', permission: 'customer.view' },
+  { label: 'Companies', path: '/companies', permission: 'company.view' },
+  { label: 'Projects', path: '/projects', permission: 'project.view' },
+  { label: 'Properties', path: '/properties', permission: 'property.view' },
+  { label: 'Amica Tower Inventory', path: '/amica-tower-inventory', permission: 'property.view' },
+  { label: 'Customer Properties', path: '/customer-properties', permission: 'customer_property.view' },
+  { label: 'Business Services', path: '/business-services', permission: 'integration.view' },
+  { label: 'Users', path: '/users', permission: 'user.view' },
+  { label: 'Roles', path: '/roles', permission: 'role.view' },
+  { label: 'User Roles', path: '/user-roles', permission: 'role.view' },
+  { label: 'Permissions', path: '/permissions', permission: 'permission.view' },
+  { label: 'Integrations', path: '/integrations', permission: 'integration.view' },
+  { label: 'Feature Flags', path: '/feature-flags', permission: 'feature_flag.view' },
+  { label: 'Audit Logs', path: '/audit-logs', permission: 'audit.view' },
+  { label: 'System Settings', path: '/system-settings', permission: 'system_settings.view' },
 ];
+export const modules = moduleDefinitions.map((module) => module.label);
+export type AdminCapabilities = { permissions: string[]; grants: Record<string, unknown> };
+export function visibleModules(capabilities?: AdminCapabilities) {
+  if (!capabilities) return [];
+  return moduleDefinitions.filter((module) => capabilities.permissions.includes(module.permission));
+}
+export function useAdminCapabilities() {
+  const { request } = useRuntime();
+  const [state, setState] = useState<{ data?: AdminCapabilities; error?: string; loading: boolean }>({ loading: true });
+  const [revision, setRevision] = useState(0);
+  useEffect(() => {
+    const controller = new AbortController();
+    setState({ loading: true });
+    request<AdminCapabilities>('/admin/capabilities', { signal: controller.signal })
+      .then((data) => { if (!controller.signal.aborted) setState({ data, loading: false }); })
+      .catch((cause) => { if (!controller.signal.aborted) setState({ error: errorMessage(cause), loading: false }); });
+    return () => controller.abort();
+  }, [request, revision]);
+  return { ...state, reload: () => setRevision((value) => value + 1) };
+}
+export function AdminNavigation({ capabilities, ariaLabel = 'Admin modules', className = 'mt-5 flex gap-4 overflow-x-auto', linkClassName = 'whitespace-nowrap text-sm' }: { capabilities?: AdminCapabilities; ariaLabel?: string; className?: string; linkClassName?: string }) {
+  const visible = visibleModules(capabilities);
+  return <nav aria-label={ariaLabel} className={className}>{visible.map((module) => <Link key={module.path} className={linkClassName} href={module.path}>{module.label}</Link>)}</nav>;
+}
+export function AdminPermissionBoundary({ permission, children }: { permission: string; children: ReactNode }) {
+  const resource = useAdminCapabilities();
+  if (resource.loading || resource.error) return <ResourceStatus {...resource} />;
+  if (!resource.data?.permissions.includes(permission)) return <EmptyState title="No administrative access" description="Your account has no permission for this module. The API remains authoritative for every resource request." />;
+  return <>{children}</>;
+}
 type Row = { id: string; [key: string]: unknown };
 type Column = [string, string];
 const columns: Record<string, Column[]> = {
@@ -777,6 +808,23 @@ export function AdminTable({
     </>
   );
 }
+const resourcePermissions: Record<string, string> = {
+  users: 'user.view',
+  customers: 'customer.view',
+  companies: 'company.view',
+  projects: 'project.view',
+  properties: 'property.view',
+  'customer-properties': 'customer_property.view',
+  roles: 'role.view',
+  'user-roles': 'role.view',
+  permissions: 'permission.view',
+  integrations: 'integration.view',
+  'business-services': 'integration.view',
+  'feature-flags': 'feature_flag.view',
+  'audit-logs': 'audit.view',
+  'system-settings': 'system_settings.view',
+};
+
 export function AdminModule({
   title,
   resource,
@@ -786,6 +834,9 @@ export function AdminModule({
   resource: string;
   amicaOnly?: boolean;
 }) {
+  const capabilities = useAdminCapabilities();
+  const requiredPermission = resourcePermissions[resource];
+  const authorized = Boolean(requiredPermission && capabilities.data?.permissions.includes(requiredPermission));
   return (
     <Web3Shell variant="admin">
       <section className="mx-auto max-w-6xl px-6 py-10">
@@ -798,20 +849,12 @@ export function AdminModule({
           </div>
         </div>
         <h1 className="mt-5 text-4xl font-black text-[var(--rhc-heading)] md:text-6xl">{title}</h1>
-        <nav aria-label="Admin modules" className="mt-5 flex gap-4 overflow-x-auto">
-          {modules.map((label) => (
-            <a
-              key={label}
-              className="whitespace-nowrap text-sm"
-              href={`/${label.toLowerCase().replaceAll(' ', '-')}`}
-            >
-              {label}
-            </a>
-          ))}
-        </nav>
-        <Card className="mt-8" title={title}>
-          <AdminTable resource={resource} amicaOnly={amicaOnly} />
-        </Card>
+        <AdminNavigation capabilities={capabilities.data} />
+        <div className="mt-8">
+          <ResourceStatus {...capabilities} />
+          {capabilities.data && !authorized ? <EmptyState title="No administrative access" description="Your account has no permission for this module. The API remains authoritative for every resource request." /> : null}
+          {capabilities.data && authorized ? <Card title={title}><AdminTable resource={resource} amicaOnly={amicaOnly} /></Card> : null}
+        </div>
       </section>
     </Web3Shell>
   );

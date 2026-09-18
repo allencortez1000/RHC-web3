@@ -268,7 +268,7 @@ model Role {
   is_system        Boolean          @default(false)
   created_at       DateTime         @default(now())
   updated_at       DateTime         @updatedAt
-  company          Company?         @relation(fields: [company_id], references: [id])
+  company          Company?         @relation(fields: [company_id], references: [id], onDelete: Restrict)
   role_permissions RolePermission[]
   user_roles       UserRole[]
 
@@ -300,8 +300,8 @@ model UserRole {
   expires_at DateTime?
   user       User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
   role       Role      @relation(fields: [role_id], references: [id], onDelete: Cascade)
-  company    Company?  @relation(fields: [company_id], references: [id])
-  project    Project?  @relation(fields: [project_id], references: [id])
+  company    Company?  @relation(fields: [company_id], references: [id], onDelete: Restrict)
+  project    Project?  @relation(fields: [project_id], references: [id], onDelete: Restrict)
 
   @@unique([user_id, role_id, company_id, project_id])
   @@index([user_id])

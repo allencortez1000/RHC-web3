@@ -15,7 +15,7 @@ The schema is defined in `packages/database/prisma/schema.prisma` and includes n
 
 UUIDs are internal identifiers, not authentication credentials. RHC Digital IDs are server-generated public identifiers in `RHC-YYYY-XXXXXXXX` format; knowing an ID is not authorization. Treat its association with a person as personal data even though the identifier is not a secret.
 
-## Migration status: four pending, none applied in this handoff
+## Migration status: five pending, none applied in this handoff
 
 | Migration | Purpose |
 | --- | --- |
@@ -23,6 +23,7 @@ UUIDs are internal identifiers, not authentication credentials. RHC Digital IDs 
 | `202609120001_month1_auth_ledger_hardening` | Auth/ledger hardening following the foundation. |
 | `202609140001_identity_history_seed_hardening` | Separate Auth confirmation timestamp, global-role uniqueness, history-preserving foreign keys, ledger ownership and index reconciliation. |
 | `202609140002_application_postgrest_lockdown` | Backend-only application table RLS and client-role privilege lockdown. |
+| `202609150001_authorization_scope_delete_restrict` | Additive authorization-scope foreign-key `RESTRICT` actions; prevents deletion from broadening grants. |
 
 Migration source lives under `packages/database/prisma/migrations`. **No applied constraints, RLS, or revocations are claimed.** The prior configuration check found invalid database URL syntax; target connectivity/roles/grants are unknown. Staging migration is **NO GO** until a valid target and role/grant plan are approved and all four migrations are exercised on disposable PostgreSQL. Do not rewrite migration history or run seeds/bootstrap to disguise an unverified database.
 
@@ -48,4 +49,4 @@ Before approval, inspect actual database identity, migration/creator/runtime rol
 
 ## Seed boundary
 
-Seed code defines the eight-company RHC catalog, AMICA-T1 and clearly identified sample inventory (opt-in via `SEED_SAMPLE_INVENTORY=true`); definitions are not evidence that a target was seeded. Do not interpret prepared rewards/service records as active features or sample records as production inventory. Seed execution and admin identity bootstrap are separate approved operator steps, never automatic install/build/startup actions. See [acceptance](../month-1/acceptance-validation.md).
+Seed code defines the eight-company RHC catalog and the required AMICA-T1 project foundation in core mode. Clearly identified synthetic sample inventory is separate and opt-in via `SEED_SAMPLE_INVENTORY=true`; disabling the option does not delete existing samples and definitions are not evidence that a target was seeded. Do not interpret prepared rewards/service records as active features or sample records as production inventory. Seed execution and admin identity bootstrap are separate approved operator steps, never automatic install/build/startup actions. See [acceptance](../month-1/acceptance-validation.md).

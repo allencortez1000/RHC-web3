@@ -21,6 +21,23 @@ test('admin signs in, loads API metrics, and signs out', async ({ page }) => {
   await expect(page).toHaveURL(/\/login$/);
 });
 
+test('admin landing skips dashboard when the caller has another permitted workflow', async ({ page }) => {
+  const fixture = await installFixtures(page, { authenticated: true, adminPermissions: ['property.view'] });
+  await page.goto('/');
+  await expect(page).toHaveURL(/\/properties$/);
+  await expect(page.getByRole('cell', { name: 'FIX-1205', exact: true })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Dashboard', exact: true })).toHaveCount(0);
+  expect(fixture.requests.some((item) => item.path === '/admin/dashboard')).toBe(false);
+});
+
+test('authenticated account with no admin read permission receives a no-access state', async ({ page }) => {
+  const fixture = await installFixtures(page, { authenticated: true, adminPermissions: [] });
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'No administrative access' })).toBeVisible();
+  expect(fixture.requests.some((item) => item.path === '/admin/dashboard')).toBe(false);
+  expect(fixture.requests.some((item) => item.path.startsWith('/admin/') && item.path !== '/admin/capabilities')).toBe(false);
+});
+
 test('forbidden records stay hidden and cannot offer mutations', async ({ page }) => {
   await installFixtures(page, { authenticated: true, deny: ['/admin/companies'] });
   await page.goto('/companies');

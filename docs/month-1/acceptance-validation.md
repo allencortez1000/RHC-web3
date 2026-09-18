@@ -13,7 +13,7 @@
 
 1. **Finish offline validation.** Main records exact final lint/typecheck/build/audit and test commands, results, runtime and revision/snapshot in the [completion report](targeted-completion-report.md#pending-final-result-main-to-update). Rerun both frontend suites after the final changes. Verify Node 22 and, where intended, the Docker image/container separately. Do not turn missing services into mock runtime success.
 2. **Approve the target and security model before database execution.** Correct URL syntax securely, identify the intended nonproduction/disposable database, and obtain explicit migration/creator/runtime role, ownership and grants approval. Review direct/column/inherited grants, RLS policies, views/RPCs, backend bypass/policies, and creator default-ACL effects. Do not print URLs, passwords, keys, tokens, or user identities into evidence.
-3. **Execute the migration chain only on approved disposable PostgreSQL first.** Apply all four migrations in order, validate SQL-only indexes/constraints, retained history, account/customer ledger ownership, and role/ACL effects. Exercise the lockdown with representative Supabase client roles; if those roles are absent the SQL skips them, so that case alone does not prove client denial. Test owner/service access and intended non-owner backend behavior. Check actual concurrent provisioning/approval/ID issuance/idempotency, not merely mocked transactions.
+3. **Execute the migration chain only on approved disposable PostgreSQL first.** Apply all five migrations in order, validate SQL-only indexes/constraints, retained history, account/customer ledger ownership, and role/ACL effects. Exercise the lockdown with representative Supabase client roles; if those roles are absent the SQL skips them, so that case alone does not prove client denial. Test owner/service access and intended non-owner backend behavior. Check actual concurrent provisioning/approval/ID issuance/idempotency, not merely mocked transactions.
 4. **Review the disposable results and explicitly authorize staging migration.** Until steps 2–3 pass, staging remains NO GO. Approve backups, reconciliation of conflicting existing data, rollback/recovery procedures, actual ingress topology, and operational owners. Seeds/sample inventory and bootstrap remain separate decisions; never automatic predeploy/startup work.
 5. **Run separately approved live nonproduction acceptance.** After authorized migration/configuration, verify the matrix below through the actual applications/API and direct database/provider access paths. A migration success alone is not release acceptance.
 6. **Release sign-off.** Only after live checks and all blockers are resolved may owners approve deployment separately. A UI setting `month_1_acceptance_state=accepted`, fixture count, generated Prisma client, or passing health probe cannot replace sign-off.
@@ -33,3 +33,13 @@
 | Operations | Health/readiness distinction, safe logs/errors, protected secrets/build context, current audit, Node 22, container if used, backup/restore and agreed incident/recovery ownership. |
 
 This documentation pass did not run migrations, seeds, bootstrap, live probes, deployments, or application test suites. Its validation is limited to source/document consistency and local documentation checks. See [known limitations](known-limitations.md).
+
+## Checkpoint 3 current addendum — 2026-09-16
+
+The counts and pending wording above are preserved historical handoff evidence. In the Checkpoint 3 working copy, the following fixture/local validation was executed after the seed, capability, consent, and documentation changes:
+
+- `npm.cmd test`: **269/269** API unit/service tests passed across 17 suites.
+- `npm.cmd run test:e2e -w @rhc/api -- --runInBand`: **165/165** API fixture HTTP tests passed across 10 suites.
+- Customer Playwright: **55/55** passed; Admin Playwright: **67/67** passed using ephemeral synthetic `NEXT_PUBLIC_*` endpoint values and browser-intercepted fixtures.
+- `npm.cmd run typecheck`, `npm.cmd run lint`, `npm.cmd run build:api`, `npm.cmd run build:customer`, and `npm.cmd run build:admin` passed; `git diff --check` passed with only existing LF/CRLF warnings.
+- The repository currently contains five pending migration directories, none applied. No real PostgreSQL, seed CLI, Supabase, Redis, partner, bootstrap, or deployment operation was performed. Live acceptance remains pending.

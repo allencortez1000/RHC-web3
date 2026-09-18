@@ -175,3 +175,9 @@ Documentation validation performed:
 - Controller/DTO/auth/guard/config/migration/bootstrap source was inspected to reconcile claims; no application suites, CLI bootstrap, database or provider probes were run.
 
 These are documentation checks, not application acceptance. Final application command results belong above; the [acceptance matrix](acceptance-validation.md) supplies the ordered live gates. Future product scope remains in the [Month 2 handoff](month-2-handoff.md); [known limitations](known-limitations.md) records deliberate implementation and operational gaps.
+
+## Checkpoint 3 current addendum — 2026-09-16
+
+The preceding report is preserved historical evidence from an earlier revision and is not rewritten here. The current working copy adds import-safe core/sample seed orchestration, caller-specific Admin capability gating, and configured consent-policy enforcement. Current fixture/local results are API unit/service **269/269** across 17 suites, API HTTP **165/165** across 10 suites, database seed orchestration **7/7**, Customer Playwright **55/55**, and Admin Playwright **67/67**. Typecheck, lint, API/Admin/Customer builds, and `git diff --check` passed.
+
+Five migration directories are now present, including the additive authorization-scope restriction migration; none were applied. No real seed, PostgreSQL, provider, bootstrap, staging, or deployment operation was performed. Formal company event-allowlist/partner activation approval, legal policy inputs, first-unlinked-customer linking policy, and Checkpoint 4 disposable database verification remain pending.

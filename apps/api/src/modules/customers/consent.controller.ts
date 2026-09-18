@@ -8,15 +8,9 @@ import { CurrentUser, AuthUser } from '../security/auth-user.decorator';
 import { AuditService } from '../security/audit.service';
 import { EventsService } from '../events/events.service';
 import { RateLimit } from '../security/rate-limit.guard';
+import { CONSENT_POLICY_DEFINITIONS, ConsentPolicyService } from '../security/consent-policy.service';
 
 const consentType = z.enum(['PRIVACY_POLICY', 'TERMS', 'MARKETING', 'DATA_SHARING', 'COMPANY_SERVICE']);
-export const consentPolicies = [
-  { consent_type: 'PRIVACY_POLICY', purpose: 'ACCOUNT_PRIVACY', description: 'Processing personal data to operate your RHC account under the privacy policy.', required: true, company_required: false },
-  { consent_type: 'TERMS', purpose: 'ACCOUNT_TERMS', description: 'Acceptance of the terms governing your RHC account.', required: true, company_required: false },
-  { consent_type: 'MARKETING', purpose: 'MARKETING_COMMUNICATIONS', description: 'Receiving optional marketing communications from RHC.', required: false, company_required: false },
-  { consent_type: 'DATA_SHARING', purpose: 'COMPANY_DATA_SHARING', description: 'Sharing your RHC identity with the selected company.', required: false, company_required: true },
-  { consent_type: 'COMPANY_SERVICE', purpose: 'COMPANY_SERVICE_DELIVERY', description: 'Allowing the selected company to report services associated with your RHC identity.', required: false, company_required: true },
-] as const;
 const decision = z.object({
   consent_type: consentType,
   purpose: z.enum(['ACCOUNT_PRIVACY', 'ACCOUNT_TERMS', 'MARKETING_COMMUNICATIONS', 'COMPANY_DATA_SHARING', 'COMPANY_SERVICE_DELIVERY']),
@@ -24,7 +18,7 @@ const decision = z.object({
   company_id: uuid.nullable().optional(),
   granted: z.boolean(),
 }).strict().superRefine((value, context) => {
-  const policy = consentPolicies.find((item) => item.consent_type === value.consent_type)!;
+  const policy = CONSENT_POLICY_DEFINITIONS.find((item) => item.consent_type === value.consent_type)!;
   if (value.purpose !== policy.purpose) context.addIssue({ code: 'custom', path: ['purpose'], message: 'Purpose does not match consent type' });
   if (policy.company_required !== Boolean(value.company_id)) context.addIssue({ code: 'custom', path: ['company_id'], message: policy.company_required ? 'A company is required' : 'Account consent cannot be company scoped' });
 });
@@ -44,18 +38,21 @@ function publicRecord(record: Prisma.ConsentRecordGetPayload<{ select: typeof re
 @Controller('me/consents')
 @UseGuards(AuthGuard)
 export class ConsentController {
-  constructor(private readonly prisma: PrismaService, private readonly audit: AuditService, private readonly events: EventsService) {}
+  constructor(private readonly prisma: PrismaService, private readonly audit: AuditService, private readonly events: EventsService, private readonly policies: ConsentPolicyService) {}
 
   @Get()
   async history(@CurrentUser() user: AuthUser, @Query() query: unknown) {
     const { take, skip, ...filters } = historyQuery.parse(query);
     const records = await this.prisma.consentRecord.findMany({ where: { user_id: user.id, ...filters }, select: recordSelect, orderBy: [{ created_at: 'desc' }, { id: 'desc' }], take, skip });
-    return { policies: consentPolicies, records: records.map(publicRecord) };
+    return { policies: this.policies.list(), records: records.map(publicRecord) };
   }
 
   @Post() @RateLimit(20)
   async append(@CurrentUser() user: AuthUser, @Body() body: unknown) {
     const input = decision.parse(body);
+    // A withdrawal references historical evidence and must remain available even when the
+    // currently published policy is unavailable. New grants require an approved version.
+    if (input.granted) this.policies.assertGrant(input.consent_type, input.purpose, input.consent_version, input.company_id ?? null);
     return this.prisma.$transaction(async (tx) => {
       // Serialize self-service decisions without rewriting any historical evidence.
       await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`consent:${user.id}`}, 0))`;

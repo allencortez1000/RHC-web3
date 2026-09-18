@@ -81,13 +81,20 @@ describe('self-service consent and public registration config', () => {
     expect(history.policies.filter((policy: any) => policy.required).map((policy: any) => policy.consent_type)).toEqual(['PRIVACY_POLICY', 'TERMS']);
   });
 
+  it('rejects a new grant for an unsupported policy version without writing evidence', async () => {
+    await post({ ...grant, consent_version: 'tampered-v2' }).expect(409);
+    expect(h.prisma.consentRecord.create).not.toHaveBeenCalled();
+    expect(h.prisma.auditLog.create).not.toHaveBeenCalled();
+    expect(h.prisma.activityEvent.create).not.toHaveBeenCalled();
+  });
+
   it('keeps account policies and optional marketing independent of company permissions', async () => {
     for (const [consent_type, purpose] of [['PRIVACY_POLICY', 'ACCOUNT_PRIVACY'], ['TERMS', 'ACCOUNT_TERMS'], ['MARKETING', 'MARKETING_COMMUNICATIONS']]) {
-      await post({ consent_type, purpose, consent_version: 'v1', granted: true }).expect(201);
+      await post({ consent_type, purpose, consent_version: '2026-09.v1', granted: true }).expect(201);
     }
     expect(records).toHaveLength(3);
     expect(records.every((row) => row.company_id === null)).toBe(true);
-    await post({ consent_type: 'PRIVACY_POLICY', purpose: 'ACCOUNT_PRIVACY', consent_version: 'v1', granted: false }).expect(201);
+    await post({ consent_type: 'PRIVACY_POLICY', purpose: 'ACCOUNT_PRIVACY', consent_version: '2026-09.v1', granted: false }).expect(201);
     expect(h.user.account_status).toBe('ACTIVE');
     expect(h.issuance.issueForUser).not.toHaveBeenCalled();
   });
@@ -138,5 +145,40 @@ describe('self-service consent and public registration config', () => {
     await post().expect(500);
     expect(records).toHaveLength(0);
     expect(h.prisma.$transaction).toHaveBeenCalled();
+  });
+});
+
+describe('consent policy configuration boundary', () => {
+  let h: Harness;
+  let records: any[];
+
+  beforeEach(async () => {
+    h = await createHarness({ consentPolicies: [] });
+    records = [];
+    const project = (record: any) => ({ ...record, company: record.company_id ? { id: record.company_id, display_name: 'Fixture company', status: 'ACTIVE' } : null });
+    h.prisma.consentRecord = {
+      findMany: jest.fn(async ({ where, take, skip }: any) => records.filter((record) => Object.entries(where).every(([key, value]) => value === undefined || record[key] === value)).sort((a, b) => b.created_at.getTime() - a.created_at.getTime() || b.id.localeCompare(a.id)).slice(skip, skip + take).map(project)),
+      create: jest.fn(async ({ data }: any) => { const record = { id: `61000000-0000-4000-8000-${String(records.length + 1).padStart(12, '0')}`, ...data }; records.push(record); return project(record); }),
+    };
+  });
+  afterEach(async () => { await h.close(); });
+
+  const post = (body: unknown) => request(h.app.getHttpServer()).post('/api/v1/me/consents').set('Authorization', `Bearer ${h.token}`).send(body as object);
+  const get = () => request(h.app.getHttpServer()).get('/api/v1/me/consents').set('Authorization', `Bearer ${h.token}`);
+
+  it('reports missing approved policy inputs and refuses new grants without writing evidence', async () => {
+    const policies = (await get().expect(200)).body.data.policies;
+    expect(policies).toHaveLength(5);
+    expect(policies.every((policy: any) => policy.configured === false && policy.consent_version === null && policy.publication_reference === null)).toBe(true);
+    await post({ ...grant }).expect(503);
+    expect(records).toHaveLength(0);
+    expect(h.prisma.auditLog.create).not.toHaveBeenCalled();
+    expect(h.prisma.activityEvent.create).not.toHaveBeenCalled();
+  });
+
+  it('keeps withdrawal available without current policy configuration', async () => {
+    await post({ ...grant, granted: false, consent_version: 'historical-v1' }).expect(201);
+    expect(records).toHaveLength(1);
+    expect(records[0]).toMatchObject({ granted: false, consent_version: 'historical-v1' });
   });
 });

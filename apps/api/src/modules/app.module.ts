@@ -20,18 +20,23 @@ import { MeController } from './customers/me.controller';
 import { ConsentController } from './customers/consent.controller';
 import { DirectoryController } from './directory/directory.controller';
 import { AdminController } from './admin/admin.controller';
+import { CapabilitiesController } from './admin/capabilities.controller';
 import { ManagementController } from './admin/management.controller';
 import { RhcIdService } from './identity/rhc-id.service';
 import { SupabaseJwtService } from './security/supabase-jwt.service';
 import { ApplicationUserService } from './security/application-user.service';
 import { AuthGuard } from './security/auth.guard';
 import { PermissionGuard } from './security/permission.guard';
+import { StructuredLogger } from '../platform/structured-logger';
+import { CONSENT_POLICY_CONFIG, ConsentPolicyService } from './security/consent-policy.service';
 
 @Module({
-  controllers: [AuthController, MeController, ConsentController, DirectoryController, AdminController, HealthController, ApiClientsController, CompanyApiController, InternalIntegrationController, ManagementController],
-  providers: [PrismaService, RbacService, AuditService, EventsService, RhcIdService, SupabaseJwtService, ApplicationUserService, AuthGuard, PermissionGuard, FeatureService, RateLimitStore, CompanyApiKeyService, CompanyApiGuard, InternalIntegrationService,
+  controllers: [AuthController, MeController, ConsentController, DirectoryController, AdminController, CapabilitiesController, HealthController, ApiClientsController, CompanyApiController, InternalIntegrationController, ManagementController],
+  providers: [PrismaService, RbacService, AuditService, EventsService, RhcIdService, SupabaseJwtService, ApplicationUserService, AuthGuard, PermissionGuard, FeatureService, RateLimitStore, CompanyApiKeyService, CompanyApiGuard, InternalIntegrationService, ConsentPolicyService,
+    { provide: CONSENT_POLICY_CONFIG, useValue: [] },
     { provide: APP_GUARD, useClass: RateLimitGuard },
     { provide: APP_GUARD, useClass: FeatureGuard },
+    { provide: StructuredLogger, useFactory: () => new StructuredLogger(process.env.LOG_LEVEL) },
     { provide: APP_FILTER, useClass: ApiExceptionFilter },
     { provide: APP_INTERCEPTOR, useClass: ResponseEnvelopeInterceptor },
   ],

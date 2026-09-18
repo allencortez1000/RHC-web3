@@ -54,3 +54,9 @@ The following results were **reported by main for this handoff**, not rerun duri
 The prior configuration check rejected database URL syntax; it did not establish connectivity or an approved target. Staging migrations remain **NO GO** until target roles/grants are approved and the chain is validated on disposable PostgreSQL. No deployment is authorized by fixture test counts.
 
 Record final commands, exact counts, runtime, revision/snapshot, and failures/skips in the [pending final-result section](targeted-completion-report.md#pending-final-result-main-to-update). Do not replace pending entries with discovery counts or recycle historical results as fresh validation.
+
+## Checkpoint 3 current validation addendum — 2026-09-16
+
+The current Checkpoint 3 run supersedes the pending browser placeholders above without rewriting their historical record. `npm.cmd test` passed **269/269** API unit/service tests across 17 suites, the API fixture E2E command passed **165/165** across 10 suites, Customer Playwright passed **55/55**, and Admin Playwright passed **67/67**. The browser suites used ephemeral synthetic public API/Supabase environment values and intercepted local fixtures; they did not contact live services. The database-package seed suite was run explicitly with `npm.cmd test -w @rhc/database` and passed **7/7**.
+
+`npm.cmd run typecheck`, `npm.cmd run lint`, `npm.cmd run build:api`, `npm.cmd run build:customer`, `npm.cmd run build:admin`, and `git diff --check` passed. No migration, real seed execution, database connection, provider call, bootstrap, or deployment was performed. The full five-directory migration chain and live acceptance remain pending.

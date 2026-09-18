@@ -50,6 +50,7 @@ export async function installFixtures(
     loginError?: boolean;
     registrationEnabled?: boolean;
     empty?: boolean;
+    adminPermissions?: string[];
   } = {},
 ) {
   await page.route('**/*', (route) => {
@@ -354,6 +355,14 @@ export async function installFixtures(
       candidate.verification_status = 'VERIFIED';
       candidate.profile.verification_status = 'VERIFIED';
       return ok({ id: candidate.id, verification_status: 'VERIFIED' });
+    }
+    if (path === '/admin/capabilities') {
+      const permissions = options.adminPermissions ?? [
+        'company.view', 'customer.view', 'project.view', 'property.view', 'customer_property.view',
+        'integration.view', 'user.view', 'role.view', 'permission.view', 'feature_flag.view',
+        'audit.view', 'system_settings.view',
+      ];
+      return ok({ permissions, grants: {} });
     }
     if (path === '/admin/dashboard')
       return ok({

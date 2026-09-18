@@ -7,8 +7,9 @@ export const requestContext = new AsyncLocalStorage<RequestContext>();
 const safeId = (value: unknown) => typeof value === 'string' && /^[a-zA-Z0-9_-]{1,128}$/.test(value) ? value : undefined;
 
 export class RequestContextMiddleware {
-  use(req: Request & { requestId?: string; correlationId?: string }, res: Response, next: NextFunction) {
+  use(req: Request & { requestId?: string; correlationId?: string; requestStartedAt?: number }, res: Response, next: NextFunction) {
     // Request IDs are server-issued; correlation IDs may be safely propagated.
+    req.requestStartedAt = Date.now();
     req.requestId = randomUUID();
     req.correlationId = safeId(req.headers['x-correlation-id']) ?? req.requestId;
     res.setHeader('x-request-id', req.requestId);

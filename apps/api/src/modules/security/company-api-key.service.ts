@@ -3,7 +3,7 @@ import { createHash, randomBytes, randomUUID, timingSafeEqual } from 'crypto';
 import { PrismaService } from '../../platform/prisma.service';
 import { AuditService } from './audit.service';
 import { FeatureService } from './feature.guard';
-import { RbacService } from './rbac.service';
+import { RbacService, type RbacDbClient } from './rbac.service';
 import { apiScope } from '../../platform/dto';
 import type { z } from 'zod';
 
@@ -26,14 +26,14 @@ function newKey(clientId: string) { return `rhc_${clientId}.${randomBytes(32).to
 export class CompanyApiKeyService {
   constructor(private readonly prisma: PrismaService, private readonly audit: AuditService, private readonly features: FeatureService, private readonly rbac: RbacService) {}
 
-    private async requireDelegation(actor: string, company_id: string, scopes: string[]) {
-      await this.rbac.require(actor, 'integration.manage', { company_id });
+    private async requireDelegation(actor: string, company_id: string, scopes: string[], dbClient: RbacDbClient) {
+      await this.rbac.require(actor, 'integration.manage', { company_id }, dbClient);
       if (!scopes.length) throw new ForbiddenException('API scopes are required');
       for (const scope of scopes) {
         const parsed = apiScope.safeParse(scope);
         if (!parsed.success) throw new ForbiddenException('Unsupported API scope');
         // A machine key covers a whole company, so project-only rights cannot delegate it.
-        await this.rbac.require(actor, scopePermissions[parsed.data], { company_id });
+        await this.rbac.require(actor, scopePermissions[parsed.data], { company_id }, dbClient);
       }
     }
 
@@ -41,7 +41,7 @@ export class CompanyApiKeyService {
     return this.prisma.$transaction(async (tx) => {
       // Serialize with role/status governance before checking the actor's current grants.
       await tx.$executeRaw`SELECT pg_advisory_xact_lock(734821906)`;
-      await this.requireDelegation(actor, data.company_id, data.scopes);
+      await this.requireDelegation(actor, data.company_id, data.scopes, tx);
       const company = await tx.company.findUniqueOrThrow({ where: { id: data.company_id }, select: { status: true, api_enabled: true } });
       if (company.status !== 'ACTIVE' || !company.api_enabled) throw new ForbiddenException('Company API is disabled');
       const client_id = randomUUID();
@@ -58,7 +58,7 @@ export class CompanyApiKeyService {
       await tx.$queryRaw`SELECT id FROM company_api_clients WHERE id = ${id}::uuid FOR UPDATE`;
       const before = await tx.companyApiClient.findUniqueOrThrow({ where: { id }, select: { ...apiClientSelect, company: { select: { status: true, api_enabled: true } } } });
       if (before.status !== 'ACTIVE' || before.company.status !== 'ACTIVE' || !before.company.api_enabled) throw new ForbiddenException('Company API is disabled');
-      await this.requireDelegation(actor, before.company_id, before.scopes);
+      await this.requireDelegation(actor, before.company_id, before.scopes, tx);
       const api_key = newKey(before.client_id);
       const client = await tx.companyApiClient.update({ where: { id }, data: { credential_ref: hashCompanyKey(api_key) }, select: apiClientSelect });
       await this.audit.record({ actor_user_id: actor, company_id: client.company_id, action: 'company_api_key.rotate', entity_type: 'company_api_client', entity_id: id }, tx);

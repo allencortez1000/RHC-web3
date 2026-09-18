@@ -40,13 +40,20 @@ test('malformed public config cannot enable registration', async ({ page }) => {
   expect(fixture.authRequests.some((item) => item.path === '/signup')).toBe(false);
 });
 
+const policyVersions: Record<string, string> = {
+  PRIVACY_POLICY: 'v1',
+  TERMS: 'v1',
+  MARKETING: 'v2',
+  DATA_SHARING: '2026.v1',
+  COMPANY_SERVICE: 'v1',
+};
 const policies = [
   { consent_type: 'PRIVACY_POLICY', purpose: 'ACCOUNT_PRIVACY', required: true, company_required: false },
   { consent_type: 'TERMS', purpose: 'ACCOUNT_TERMS', required: true, company_required: false },
   { consent_type: 'MARKETING', purpose: 'MARKETING_COMMUNICATIONS', required: false, company_required: false },
   { consent_type: 'DATA_SHARING', purpose: 'COMPANY_DATA_SHARING', required: false, company_required: true },
   { consent_type: 'COMPANY_SERVICE', purpose: 'COMPANY_SERVICE_DELIVERY', required: false, company_required: true },
-].map((policy) => ({ ...policy, description: `Fixture purpose: ${policy.purpose}` }));
+].map((policy) => ({ ...policy, configured: true, consent_version: policyVersions[policy.consent_type], publication_reference: `synthetic-test/${policy.consent_type.toLowerCase()}` }));
 async function privacyFixture(page: Page) {
   const fixture = await installFixtures(page, { authenticated: true });
   const records: Array<Record<string, unknown>> = [];
@@ -82,14 +89,14 @@ test('account consent is explicit, versioned, and separate from optional permiss
   await expect(account.getByLabel('Consent decision')).toHaveValue('');
   await expect(optional.getByLabel('Consent decision')).toHaveValue('');
   expect(fixture.writes).toHaveLength(0);
-  await account.getByLabel('Policy version reviewed').fill('v1');
+  await expect(account.getByLabel('Policy version reviewed')).toHaveValue('v1');
   await account.getByLabel('Consent decision').selectOption('grant');
   await account.getByRole('button', { name: 'Save consent decision' }).click();
   await expect(page.getByRole('status').filter({ hasText: 'Consent decision saved' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Privacy policy — Granted' })).toBeVisible();
   expect(fixture.writes).toEqual([{ consent_type: 'PRIVACY_POLICY', purpose: 'ACCOUNT_PRIVACY', consent_version: 'v1', company_id: null, granted: true }]);
   await expect(optional.getByLabel('Consent decision')).toHaveValue('');
-  await optional.getByLabel('Policy version reviewed').fill('v2');
+  await expect(optional.getByLabel('Policy version reviewed')).toHaveValue('v2');
   await optional.getByLabel('Consent decision').selectOption('grant');
   await optional.getByRole('button', { name: 'Save consent decision' }).click();
   await expect(page.getByRole('heading', { name: 'Marketing communications — Granted' })).toBeVisible();
@@ -105,7 +112,7 @@ test('company-specific consent can be withdrawn after the company becomes inacti
   const optional = page.locator('form').filter({ has: page.getByRole('combobox', { name: 'Optional permission', exact: true }) });
   await optional.getByRole('combobox', { name: 'Optional permission', exact: true }).selectOption('DATA_SHARING');
   await optional.getByRole('combobox', { name: 'Company', exact: true }).selectOption(fixture.company.id);
-  await optional.getByLabel('Policy version reviewed').fill('2026.v1');
+  await expect(optional.getByLabel('Policy version reviewed')).toHaveValue('2026.v1');
   await optional.getByLabel('Consent decision').selectOption('grant');
   await optional.getByRole('button', { name: 'Save consent decision' }).click();
   await expect(page.getByRole('heading', { name: 'Company data sharing — Granted' })).toBeVisible();
@@ -126,7 +133,7 @@ test('consent read and write failures are visible and retryable without a false 
   await expect(page.getByRole('alert').filter({ hasText: 'Consent service temporarily unavailable' })).toBeVisible();
   await page.getByRole('button', { name: 'Retry', exact: true }).click();
   const account = page.locator('form').filter({ has: page.getByRole('combobox', { name: 'Account policy', exact: true }) });
-  await account.getByLabel('Policy version reviewed').fill('v1');
+  await expect(account.getByLabel('Policy version reviewed')).toHaveValue('v1');
   await account.getByLabel('Consent decision').selectOption('grant');
   fixture.controls.failWrite = true;
   await account.getByRole('button', { name: 'Save consent decision' }).click();

@@ -34,7 +34,7 @@ Expect 400 for invalid input, 401 for invalid/missing authentication, 403 for de
 | GET / POST | `/me/rhc-id` | Read / explicitly issue ID; POST accepts an empty body, needs enabled `ENABLE_RHC_ID`, confirmed Auth email, active account, and business `VERIFIED`. |
 | GET | `/me/properties` | Own active, currently effective customer-property relationships; `ENABLE_PROPERTIES`. |
 | GET | `/me/notifications` | Own notifications, bounded and ordered. |
-| GET / POST | `/me/consents` | Policy/history read / append a grant or withdrawal; no historical record overwrite. |
+| GET / POST | `/me/consents` | Policy/history read / append a grant or withdrawal; no historical record overwrite. New grants require a configured approved policy/version; withdrawal can reference historical evidence when current policy configuration is unavailable. |
 | GET | `/companies` | Public allowlisted directory fields; `ENABLE_COMPANY_DIRECTORY`. |
 | GET | `/business-services` | Public service catalog filtered by service/company status; `ENABLE_INTEGRATION_FRAMEWORK`. |
 | GET | `/projects` | Active public projects and companies; `ENABLE_PROPERTIES`. |
@@ -42,7 +42,7 @@ Expect 400 for invalid input, 401 for invalid/missing authentication, 403 for de
 
 Email confirmation populates `auth_email_confirmed_at`; it does **not** set business `verification_status=VERIFIED`. New application users start business `PENDING`. Existing disabled/locked accounts cannot be revived through login.
 
-Consent POST accepts `consent_type`, matching `purpose`, `consent_version`, `granted`, and `company_id` where required. Types are `PRIVACY_POLICY`, `TERMS`, `MARKETING`, `DATA_SHARING`, and `COMPANY_SERVICE`. The last two require a company; account-level types must not be company-scoped. Read policy purposes from GET rather than inventing them. Withdrawal remains available for inactive companies. A signup metadata checkbox is not a persisted consent-history record.
+Consent POST accepts `consent_type`, matching `purpose`, `consent_version`, `granted`, and `company_id` where required. Types are `PRIVACY_POLICY`, `TERMS`, `MARKETING`, `DATA_SHARING`, and `COMPANY_SERVICE`. The last two require a company; account-level types must not be company-scoped. GET exposes static type/purpose metadata plus whether an approved published version is configured; production defaults are not configured and contain no legal policy text. New grants must match the configured version; withdrawal remains available for inactive companies and without current policy configuration. A signup metadata checkbox is not a persisted consent-history record. The authenticated `PATCH /me` contact workflow writes `UserProfile.mobile_number`; signup `mobile_number` metadata is not transferred or treated as verified identity.
 
 ## Admin read and management endpoints
 
@@ -50,6 +50,7 @@ Admin endpoints require user JWT authentication and database permissions. Tenant
 
 GET routes:
 
+- `/admin/capabilities` (authenticated caller capability read; no permission is granted by this response)
 - `/admin/dashboard` (each metric uses its own domain permission)
 - `/admin/users`, `/admin/customers`
 - `/admin/companies`, `/admin/projects`, `/admin/properties`, `/admin/customer-properties`
@@ -96,4 +97,4 @@ Events accept `event_type` (`SERVICE.REQUESTED`, `SERVICE.COMPLETED`, or `SERVIC
 
 ## Evidence boundary
 
-The endpoint implementation and fixture tests are not live acceptance. All four migrations are pending, including PostgREST lockdown; browser direct table access must not be assumed blocked on an unknown target. See [current report](../month-1/targeted-completion-report.md) and [acceptance gates](../month-1/acceptance-validation.md).
+The endpoint implementation and fixture tests are not live acceptance. All five migrations are pending, including PostgREST lockdown and authorization-scope deletion protection; browser direct table access must not be assumed blocked on an unknown target. Company integration metadata/activation is also not partner approval; see [the activation boundary](../month-1/company-integration-activation.md). See [current report](../month-1/targeted-completion-report.md) and [acceptance gates](../month-1/acceptance-validation.md).

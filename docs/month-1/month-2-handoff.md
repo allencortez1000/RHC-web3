@@ -34,3 +34,7 @@ Main reports 210 unit tests / 11 suites and 140 API tests / 8 suites passing wit
 | Smart contracts | Boundary documentation under `contracts/`. | Approved Solidity scope and independent security/legal review before implementation/deployment. |
 
 Keep wallet, rewards, marketplace, blockchain, public token, transfer/sale, crypto payment and staking inactive until their implementations and approvals exist. Do not tokenize corporations, condominium title, equity or customer custody assets without separate legal/compliance scope. Sensitive customer, property, financial, contract and authentication data remains off-chain.
+
+## Checkpoint 3 status addendum — 2026-09-16
+
+The earlier four-migration and pending-browser counts in this handoff are historical and remain unchanged. Current source/fixture validation has five pending migration directories, API unit/service **269/269**, API fixture HTTP **165/165**, Customer Playwright **55/55**, and Admin Playwright **67/67**. These results do not authorize Month 2 or establish live database/provider acceptance. Core/sample seed execution, disposable PostgreSQL verification, formal company activation, legal policy inputs, and frontend integration with the newer remote work remain Checkpoint 4 gates.

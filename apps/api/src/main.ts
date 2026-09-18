@@ -4,6 +4,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';
 import { loadEnv, loadLocalEnvFiles, type RhcEnv } from '@rhc/config';
+import { StructuredLogger } from './platform/structured-logger';
 
 export function configureTrustedProxy(app: Pick<NestExpressApplication, 'set'>, env: Pick<RhcEnv, 'TRUSTED_PROXY_CIDRS'>) {
   app.set('trust proxy', env.TRUSTED_PROXY_CIDRS);
@@ -40,12 +41,13 @@ export async function bootstrap() {
 }
 
 if (require.main === module) {
+  const startupLogger = new StructuredLogger('error');
   const startupTimeout = setTimeout(() => {
-    console.error('API startup timed out');
+    startupLogger.error({ event: 'api.startup.timeout', category: 'internal_error', internal_code: 'API_STARTUP_TIMEOUT', service: 'api' });
     process.exit(1);
   }, 30_000);
   void bootstrap().then(() => clearTimeout(startupTimeout)).catch(() => {
-    console.error('API startup failed; check environment configuration and service availability');
+    startupLogger.error({ event: 'api.startup.failed', category: 'internal_error', internal_code: 'API_STARTUP_FAILED', service: 'api' });
     process.exit(1);
   });
 }

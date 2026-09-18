@@ -26,3 +26,9 @@
 - RHC Points/rewards activation, Wallet, Marketplace, Blockchain, token transfer/sale, crypto payment, staking and custody remain intentionally inactive/out of Month 1 scope. Seed definitions/sample inventory do not prove any target was seeded, nor that sample properties are real production inventory.
 
 See [targeted completion report](targeted-completion-report.md) for current evidence and the pending final-result section, and [Month 2 handoff](month-2-handoff.md) for actual extension boundaries.
+
+## Checkpoint 3 current addendum — 2026-09-16
+
+The four-migration and pending-browser counts in the earlier bullets are retained historical handoff statements. The current working copy has five pending migration directories and no applied database changes. Checkpoint 3 fixture/local validation passed: API unit/service **269/269** across 17 suites, API fixture HTTP **165/165** across 10 suites, Customer Playwright **55/55**, Admin Playwright **67/67**, and database seed orchestration **7/7**. Typecheck, lint, affected Admin/Customer builds, API build, and `git diff --check` also passed.
+
+These results do not establish PostgreSQL foreign-key/RLS/ACL/connection-limit behavior, live Supabase/JWKS/Auth Admin behavior, Redis/ingress behavior, partner activation, legal policy approval, staging initialization, bootstrap, or deployment. No live target was contacted; those remain separate Checkpoint 4 or approval-gated checks.

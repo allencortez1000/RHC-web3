@@ -1,6 +1,7 @@
 import { ForbiddenException } from '@nestjs/common';
 import { MeController } from '../src/modules/customers/me.controller';
 import { CompanyApiKeyService } from '../src/modules/security/company-api-key.service';
+import { ManagementController } from '../src/modules/admin/management.controller';
 
 const userId = '10000000-0000-4000-8000-000000000001';
 const companyId = '20000000-0000-4000-8000-000000000001';
@@ -75,7 +76,7 @@ describe('machine credential delegation boundary', () => {
     const operation = method === 'issue' ? f.service.issue({ company_id: companyId, client_name: 'Partner', scopes: ['properties.read'] }, userId) : f.service.rotate(clientId, userId);
     await expect(operation).rejects.toThrow(/^Insufficient permission for this resource$/);
     expect(f.tx.$executeRaw.mock.invocationCallOrder[0]).toBeLessThan(f.rbac.require.mock.invocationCallOrder[0]);
-    expect(f.rbac.require).toHaveBeenCalledWith(userId, 'integration.manage', { company_id: companyId });
+    expect(f.rbac.require).toHaveBeenCalledWith(userId, 'integration.manage', { company_id: companyId }, f.tx);
     expect(f.tx.companyApiClient.create).not.toHaveBeenCalled();
     expect(f.tx.companyApiClient.update).not.toHaveBeenCalled();
     expect(f.audit.record).not.toHaveBeenCalled();
@@ -85,7 +86,7 @@ describe('machine credential delegation boundary', () => {
     const f = fixture(['properties.read', 'identity.verify', 'projects.read', 'events.write']);
     await f.service.rotate(clientId, userId);
     expect(f.tx.$queryRaw.mock.invocationCallOrder[0]).toBeLessThan(f.tx.companyApiClient.findUniqueOrThrow.mock.invocationCallOrder[0]);
-    expect(f.rbac.require.mock.calls).toEqual(['integration.manage', 'property.view', 'customer.view', 'project.view', 'integration.manage'].map((permission) => [userId, permission, { company_id: companyId }]));
+    expect(f.rbac.require.mock.calls).toEqual(['integration.manage', 'property.view', 'customer.view', 'project.view', 'integration.manage'].map((permission) => [userId, permission, { company_id: companyId }, f.tx]));
     expect(f.rbac.require.mock.invocationCallOrder.at(-1)).toBeLessThan(f.tx.companyApiClient.update.mock.invocationCallOrder[0]);
     expect(f.audit.record).toHaveBeenCalledWith(expect.objectContaining({ action: 'company_api_key.rotate', company_id: companyId }), f.tx);
   });
@@ -94,5 +95,31 @@ describe('machine credential delegation boundary', () => {
     const f = fixture(scopes);
     await expect(f.service.rotate(clientId, userId)).rejects.toThrow(scopes.length ? 'Unsupported API scope' : 'API scopes are required');
     expect(f.tx.companyApiClient.update).not.toHaveBeenCalled();
+  });
+});
+
+describe('management transaction authorization boundary', () => {
+  it('passes the active transaction client to a governance permission recheck', async () => {
+    const actor = { id: userId };
+    const targetId = '10000000-0000-4000-8000-000000000002';
+    const tx = {
+      $executeRaw: jest.fn(async () => 1),
+      $queryRaw: jest.fn(async () => []),
+      userRole: { count: jest.fn(async () => 0) },
+      user: {
+        findUniqueOrThrow: jest.fn(async () => ({ id: targetId, account_status: 'ACTIVE', supabase_user_id: 'auth-target', auth_email_confirmed_at: new Date('2026-01-01'), profile: { id: 'profile-1' } })),
+        update: jest.fn(async () => ({ id: targetId, account_status: 'DISABLED' })),
+      },
+    };
+    const prisma = { $transaction: jest.fn(async (work: (client: typeof tx) => Promise<unknown>) => work(tx)) };
+    const rbac = { require: jest.fn(async () => undefined) };
+    const audit = { record: jest.fn(async () => undefined) };
+    const events = { publish: jest.fn(async () => undefined) };
+    const controller = new ManagementController(prisma as any, rbac as any, audit as any, events as any);
+
+    await controller.updateUserStatus(targetId, { account_status: 'DISABLED', expected_status: 'ACTIVE', review_reference: 'CASE-2026-001' }, actor as any);
+
+    expect(rbac.require).toHaveBeenCalledWith(userId, 'user.manage', {}, tx);
+    expect(prisma.$transaction).toHaveBeenCalledTimes(1);
   });
 });

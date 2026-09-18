@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { Card, ResourceStatus, Web3Button, errorMessage, usePagedResource, useResource, useRuntime } from '@rhc/ui';
 
-type Policy = { consent_type: string; purpose: string; description: string; required: boolean; company_required: boolean };
+type Policy = { consent_type: string; purpose: string; required: boolean; company_required: boolean; configured: boolean; consent_version: string | null; publication_reference: string | null };
 type Consent = {
   id: string;
   consent_type: string;
@@ -30,8 +30,13 @@ function ConsentForm({ policies, optional, setMessage }: { policies: Policy[]; o
   const policy = policies.find((item) => item.consent_type === type)!;
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (busy) return;
     const form = new FormData(event.currentTarget);
+    const granted = form.get('decision') === 'grant';
+    if (granted && !policy.configured) {
+      setError('This policy is not configured for acceptance. Withdrawals of historical decisions remain available.');
+      return;
+    }
+    if (busy) return;
     setBusy(true); setError(''); setMessage('');
     try {
       await request('/me/consents', { method: 'POST', body: JSON.stringify({
@@ -58,16 +63,17 @@ function ConsentForm({ policies, optional, setMessage }: { policies: Policy[]; o
               {policies.map((item) => <option key={item.consent_type} value={item.consent_type}>{labels[item.consent_type]}</option>)}
             </select>
           </label>
-          <p className="text-sm">Purpose: {policy.description}</p>
+          <p className="text-sm">Policy purpose: {policy.purpose}</p>
+          {!policy.configured && <p role="status" className="text-sm text-[var(--rhc-muted)]">Published policy text/version is not configured. New grants are unavailable; use a historical version only when withdrawing an existing decision.</p>}
           {policy.company_required && <CompanySelection />}
           <label className="block text-sm">Policy version reviewed
-            <input name="consent_version" required maxLength={80} pattern="[A-Za-z0-9][A-Za-z0-9._:\-]*" placeholder="Enter the version from the policy you reviewed" className="mt-2 w-full rounded-lg border p-3" />
+            <input name="consent_version" required maxLength={80} pattern="[A-Za-z0-9][A-Za-z0-9._:\-]*" defaultValue={policy.consent_version || ''} readOnly={policy.configured} placeholder={policy.configured ? 'Published version' : 'Historical version for withdrawal'} className="mt-2 w-full rounded-lg border p-3 read-only:bg-[var(--rhc-surface-secondary)]" />
           </label>
-          <p className="text-xs text-[var(--rhc-muted)]">Use the version supplied with the policy, not today’s date unless that is its published version. If you have not received the policy, request it from RHC before granting permission.</p>
+          <p className="text-xs text-[var(--rhc-muted)]">{policy.configured ? `Published version: ${policy.consent_version}. Review the approved policy identified by ${policy.publication_reference}.` : 'Do not invent a policy version or treat the registration checkbox as acceptance.'}</p>
           <label className="block text-sm">Consent decision
             <select name="decision" required defaultValue="" className="mt-2 w-full rounded-lg border p-3">
               <option value="" disabled>Choose a decision</option>
-              <option value="grant">{optional ? 'Grant permission' : 'Accept policy'}</option>
+              <option value="grant" disabled={!policy.configured}>{optional ? 'Grant permission' : 'Accept policy'}{policy.configured ? '' : ' (not configured)'}</option>
               <option value="withdraw">Withdraw consent</option>
             </select>
           </label>

@@ -1,10 +1,10 @@
 import Link from 'next/link';
 import { Badge, Card, SignOutButton, Web3Shell } from '@rhc/ui';
-import { AdminMetrics } from '../admin-data';
+import { AdminMetrics, AdminPermissionBoundary } from '../admin-data';
 
 export default function Page() {
   return (
-    <Web3Shell variant="admin">
+    <AdminPermissionBoundary permission="company.view"><Web3Shell variant="admin">
       <section className="mx-auto max-w-7xl px-6 py-10">
         <div className="flex justify-between"><Badge tone="warning">Admin Dashboard</Badge><Link href="/">Command Center</Link><SignOutButton /></div>
         <h1 className="mt-5 text-4xl font-black text-white md:text-6xl">Secure operations console.</h1>
@@ -25,6 +25,6 @@ export default function Page() {
           </Card>
         </div>
       </section>
-    </Web3Shell>
+    </Web3Shell></AdminPermissionBoundary>
   );
 }

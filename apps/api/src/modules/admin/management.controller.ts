@@ -9,7 +9,7 @@ import { PermissionGuard } from '../security/permission.guard';
 import { Authorization, Authorized, RequirePermission } from '../security/permission.decorator';
 import { RequireFeature } from '../security/feature.guard';
 import { RateLimit } from '../security/rate-limit.guard';
-import { RbacService, ResourceScope } from '../security/rbac.service';
+import { RbacService, type RbacDbClient, type ResourceScope } from '../security/rbac.service';
 import { AuditService } from '../security/audit.service';
 import { EventsService } from '../events/events.service';
 
@@ -32,13 +32,13 @@ export class ManagementController {
     return this.prisma.$transaction(async (tx) => {
       // Shared with the bootstrap CLI: serialize nullable-scope grants and protection checks.
       await tx.$executeRaw`SELECT pg_advisory_xact_lock(734821906)`;
-      await this.rbac.require(actor.id, permission);
+      await this.rbac.require(actor.id, permission, {}, tx);
       return work(tx);
     }, { isolationLevel: 'ReadCommitted' });
   }
 
-  private async canDelegate(actor: AuthUser, permissions: Array<{ code: string }>) {
-    for (const permission of permissions) await this.rbac.require(actor.id, permission.code);
+  private async canDelegate(actor: AuthUser, permissions: Array<{ code: string }>, dbClient: RbacDbClient) {
+    for (const permission of permissions) await this.rbac.require(actor.id, permission.code, {}, dbClient);
   }
 
   @Patch('projects/:id') @RequirePermission('project.edit', { target: 'project' }) @RequireFeature('ENABLE_PROPERTIES')
@@ -131,12 +131,12 @@ export class ManagementController {
   async replaceRolePermissions(@Param('id') rawId: string, @Body() body: unknown, @CurrentUser() actor: AuthUser) {
     const id = uuid.parse(rawId); const data = rolePermissionsReplace.parse(body);
     return this.governance(actor, 'role.manage', async (tx) => {
-      await this.rbac.require(actor.id, 'permission.manage');
+      await this.rbac.require(actor.id, 'permission.manage', {}, tx);
       const role = await tx.role.findUniqueOrThrow({ where: { id }, include: { role_permissions: true } });
       if (role.code === 'SUPER_ADMIN' || (role.code === 'CUSTOMER' && data.permission_ids.length)) throw new ForbiddenException('Protected role permissions');
       const permissions = await tx.permission.findMany({ where: { id: { in: data.permission_ids } }, select: { id: true, code: true } });
       if (permissions.length !== data.permission_ids.length) throw new BadRequestException('Unknown permission');
-      await this.canDelegate(actor, permissions);
+      await this.canDelegate(actor, permissions, tx);
       const before = role.role_permissions.map((grant) => grant.permission_id).sort();
       const after = [...data.permission_ids].sort();
       if (JSON.stringify(before) !== JSON.stringify(after)) {
@@ -159,10 +159,10 @@ export class ManagementController {
     const data = userRoleCreate.parse(body);
     if (data.user_id === actor.id) throw new ForbiddenException('Self-assignment is not allowed');
     return this.governance(actor, 'role.manage', async (tx) => {
-      await this.rbac.require(actor.id, 'user.manage');
+      await this.rbac.require(actor.id, 'user.manage', {}, tx);
       const role = await tx.role.findUniqueOrThrow({ where: { id: data.role_id }, include: { role_permissions: { include: { permission: true } } } });
       if (role.code === 'SUPER_ADMIN') throw new ForbiddenException('Use the explicit bootstrap operator workflow');
-      if (role.code !== 'CUSTOMER') await this.canDelegate(actor, role.role_permissions.map((grant) => grant.permission));
+      if (role.code !== 'CUSTOMER') await this.canDelegate(actor, role.role_permissions.map((grant) => grant.permission), tx);
       await tx.$queryRaw`SELECT id FROM users WHERE id = ${data.user_id}::uuid FOR UPDATE`;
       const user = await tx.user.findUniqueOrThrow({ where: { id: data.user_id }, select: { account_status: true, supabase_user_id: true, auth_email_confirmed_at: true } });
       if (user.account_status !== 'ACTIVE' || !user.supabase_user_id || !user.auth_email_confirmed_at || user.auth_email_confirmed_at > new Date()) throw new ConflictException('Active confirmed linked user required');
@@ -184,7 +184,7 @@ export class ManagementController {
   async removeAssignment(@Param('id') rawId: string, @Body() body: unknown, @CurrentUser() actor: AuthUser) {
     const id = uuid.parse(rawId); const review = reviewedAction.parse(body);
     return this.governance(actor, 'role.manage', async (tx) => {
-      await this.rbac.require(actor.id, 'user.manage');
+      await this.rbac.require(actor.id, 'user.manage', {}, tx);
       const before = await tx.userRole.findUniqueOrThrow({ where: { id }, include: { role: { select: { code: true } } } });
       if (before.user_id === actor.id || before.role.code === 'SUPER_ADMIN') throw new ForbiddenException('Protected assignment');
       await tx.userRole.delete({ where: { id } });

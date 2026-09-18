@@ -33,6 +33,20 @@ describe('HTTP authentication and ID integration with real services', () => {
     expect(h.prisma.user.create).not.toHaveBeenCalled();
   });
 
+  it.each([401, 403, 500, 502, 503, 504])('returns 503 for an unavailable identity provider and performs no provisioning, ID issuance, or business mutation (%s)', async (status) => {
+    h.setIdentityStatus(status);
+    await request(h.app.getHttpServer()).get('/api/v1/auth/session').set('Authorization', `Bearer ${h.token}`).expect(503);
+    await request(h.app.getHttpServer()).post('/api/v1/me/rhc-id').set('Authorization', `Bearer ${h.token}`).send({}).expect(503);
+    await request(h.app.getHttpServer()).post('/api/v1/admin/companies').set('Authorization', `Bearer ${h.token}`).send({}).expect(503);
+    expect(h.prisma.user.update).not.toHaveBeenCalled();
+    expect(h.prisma.user.create).not.toHaveBeenCalled();
+    expect(h.prisma.company.create).not.toHaveBeenCalled();
+    expect(h.issuance.issueForUser).not.toHaveBeenCalled();
+    expect(h.logs).toEqual(expect.arrayContaining([expect.objectContaining({ category: 'provider_unavailable', provider: 'supabase', operation: 'admin_identity_lookup', provider_status: status })]));
+    const expectedCode = [401, 403].includes(status) ? 'SUPABASE_ADMIN_CREDENTIAL_REJECTED' : 'SUPABASE_AUTH_PROVIDER_UNAVAILABLE';
+    expect(h.logs).toEqual(expect.arrayContaining([expect.objectContaining({ internal_code: expectedCode })]));
+  });
+
   it('does not substitute user metadata for email confirmation or business approval', async () => {
     h.identity.email_confirmed_at = null;
     h.identity.user_metadata = { email_confirmed_at: '2026-01-01T00:00:00Z', verification_status: 'VERIFIED' };

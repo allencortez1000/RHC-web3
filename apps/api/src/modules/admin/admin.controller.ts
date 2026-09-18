@@ -7,7 +7,7 @@ import { companyCreate, companyUpdate, customerPropertyCreate, flagUpdate, listQ
 import { AuthGuard } from '../security/auth.guard';
 import { PermissionGuard } from '../security/permission.guard';
 import { Authorization, Authorized, RequirePermission } from '../security/permission.decorator';
-import { RequireFeature } from '../security/feature.guard';
+import { assertFeatureMutationAllowed, RequireFeature } from '../security/feature.guard';
 import { RateLimit } from '../security/rate-limit.guard';
 import { AuditService } from '../security/audit.service';
 import { EventsService } from '../events/events.service';
@@ -210,6 +210,7 @@ export class AdminController {
     const data = flagUpdate.parse(body);
     return this.prisma.$transaction(async (tx) => {
       const before = await tx.featureFlag.findUniqueOrThrow({ where: { id } });
+      assertFeatureMutationAllowed(before.key, data.enabled);
       const after = await tx.featureFlag.update({ where: { id }, data, select: { id: true, key: true, enabled: true, scope: true, updated_at: true } });
       await this.audit.record({ actor_user_id: user.id, action: 'feature_flag.update', entity_type: 'feature_flag', entity_id: id, before_data: { enabled: before.enabled }, after_data: after }, tx);
       return after;

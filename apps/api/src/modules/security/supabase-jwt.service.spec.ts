@@ -1,8 +1,9 @@
-import { UnauthorizedException } from '@nestjs/common';
+import { ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
 import { createServer, Server } from 'http';
 import { AddressInfo } from 'net';
-import { exportJWK, generateKeyPair, JWTPayload, KeyLike, SignJWT } from 'jose';
-import { SupabaseJwtService } from './supabase-jwt.service';
+import { errors, exportJWK, generateKeyPair, JWTPayload, KeyLike, SignJWT } from 'jose';
+import { getControlledErrorLogMetadata } from '../../platform/controlled-errors';
+import { SupabaseAdminCredentialRejectedException, SupabaseJwksUnavailableException, SupabaseJwtService, SupabaseProviderUnavailableException } from './supabase-jwt.service';
 
 const subject = '10000000-0000-4000-8000-000000000001';
 const issuer = 'https://issuer.example.test/auth/v1';
@@ -20,6 +21,7 @@ describe('SupabaseJwtService (real jose signatures and local JWKS; mocked Auth a
   let authUser: Record<string, unknown>;
   let savedEnv: Array<[typeof envKeys[number], string | undefined]>;
   let jwksRequests = 0;
+  let jwksStatus = 200;
 
   beforeAll(async () => {
     const [ec, rsa, attacker] = await Promise.all([generateKeyPair('ES256'), generateKeyPair('RS256'), generateKeyPair('ES256')]);
@@ -32,8 +34,8 @@ describe('SupabaseJwtService (real jose signatures and local JWKS; mocked Auth a
     ];
     server = createServer((_req, res) => {
       jwksRequests += 1;
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ keys }));
+      res.writeHead(jwksStatus, { 'Content-Type': 'application/json' });
+      res.end(jwksStatus === 200 ? JSON.stringify({ keys }) : '{}');
     });
     await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
     jwksUrl = `http://127.0.0.1:${(server.address() as AddressInfo).port}/.well-known/jwks.json`;
@@ -49,6 +51,7 @@ describe('SupabaseJwtService (real jose signatures and local JWKS; mocked Auth a
       SUPABASE_JWKS_URL: jwksUrl, JWT_ISSUER: issuer, JWT_AUDIENCE: 'authenticated',
       SUPABASE_URL: 'https://auth.example.test/', SUPABASE_SECRET_KEY: 'test-only-server-secret',
     });
+    jwksStatus = 200;
     authUser = { id: subject, email: 'CURRENT@EXAMPLE.TEST', email_confirmed_at: confirmedAt };
     authFetch = jest.spyOn(globalThis, 'fetch').mockImplementation(async () => new Response(JSON.stringify(authUser), {
       status: 200, headers: { 'Content-Type': 'application/json' },
@@ -145,9 +148,9 @@ describe('SupabaseJwtService (real jose signatures and local JWKS; mocked Auth a
     await expect(service.verify(await token({ aud: 'custom-audience' }))).resolves.toMatchObject({ subject });
   });
 
-  it.each(['JWT_ISSUER', 'SUPABASE_JWKS_URL', 'SUPABASE_URL', 'SUPABASE_SECRET_KEY'] as const)('fails closed when %s is missing', async (key) => {
+  it.each(['JWT_ISSUER', 'SUPABASE_JWKS_URL', 'SUPABASE_URL', 'SUPABASE_SECRET_KEY'] as const)('fails closed with provider-unavailable when %s is missing', async (key) => {
     delete process.env[key];
-    await expect(service.verify(await token())).rejects.toThrow('Invalid or expired access token');
+    await expect(service.verify(await token())).rejects.toBeInstanceOf(SupabaseProviderUnavailableException);
     expect(authFetch).not.toHaveBeenCalled();
   });
 
@@ -170,18 +173,69 @@ describe('SupabaseJwtService (real jose signatures and local JWKS; mocked Auth a
     await expect(service.verify(await token())).resolves.toMatchObject({ emailConfirmed: true, emailConfirmedAt: confirmedAt });
   });
 
-  it.each([401, 403, 429, 500])('fails closed on Auth HTTP %s', async (status) => {
+  it.each([401, 403])('classifies Auth Admin HTTP %s as a provider credential rejection, not a customer authentication rejection', async (status) => {
     authFetch.mockResolvedValueOnce(new Response('{}', { status }));
-    await expect(service.verify(await token())).rejects.toThrow('Invalid or expired access token');
+    const error = await service.verify(await token()).catch((reason: unknown) => reason);
+    expect(error).toBeInstanceOf(SupabaseAdminCredentialRejectedException);
+    expect(error).toBeInstanceOf(ServiceUnavailableException);
+    expect(getControlledErrorLogMetadata(error)).toEqual({ category: 'provider_unavailable', internal_code: 'SUPABASE_ADMIN_CREDENTIAL_REJECTED', provider: 'supabase', operation: 'admin_identity_lookup', provider_status: status });
   });
 
-  it('fails closed on an Auth network/timeout failure', async () => {
-    authFetch.mockRejectedValueOnce(new Error('Simulated timeout'));
-    await expect(service.verify(await token())).rejects.toThrow('Invalid or expired access token');
-  });
-
-  it('fails closed on malformed Auth JSON', async () => {
-    authFetch.mockResolvedValueOnce(new Response('not-json', { status: 200 }));
+  it('keeps an Auth Admin 404 as a customer authentication rejection', async () => {
+    authFetch.mockResolvedValueOnce(new Response('{}', { status: 404 }));
     await expect(service.verify(await token())).rejects.toBeInstanceOf(UnauthorizedException);
+  });
+
+  it.each([408, 429, 500, 502, 503, 504])('classifies Auth HTTP %s as provider unavailable', async (status) => {
+    authFetch.mockResolvedValueOnce(new Response('{}', { status }));
+    const error = await service.verify(await token()).catch((reason: unknown) => reason);
+    expect(error).toBeInstanceOf(SupabaseProviderUnavailableException);
+    expect(error).toBeInstanceOf(ServiceUnavailableException);
+    expect(getControlledErrorLogMetadata(error)).toEqual(expect.objectContaining({ category: 'provider_unavailable', internal_code: 'SUPABASE_AUTH_PROVIDER_UNAVAILABLE', provider: 'supabase', operation: 'admin_identity_lookup', provider_status: status }));
+  });
+
+  it.each([
+    ['network failure', Object.assign(new Error('Simulated connection reset'), { code: 'ECONNRESET' })],
+    ['timeout', Object.assign(new Error('Simulated provider timeout'), { name: 'AbortError' })],
+  ] as const)('fails closed on an Auth %s without misclassifying it as invalid credentials', async (_label, failure) => {
+    authFetch.mockRejectedValueOnce(failure);
+    const error = await service.verify(await token()).catch((reason: unknown) => reason);
+    expect(error).toBeInstanceOf(SupabaseProviderUnavailableException);
+    expect(error).toBeInstanceOf(ServiceUnavailableException);
+    expect(getControlledErrorLogMetadata(error)).toEqual(expect.objectContaining({ category: 'provider_unavailable', internal_code: 'SUPABASE_AUTH_PROVIDER_UNAVAILABLE', provider: 'supabase', operation: 'admin_identity_lookup' }));
+  });
+
+  it('fails closed on malformed Auth JSON as provider unavailable', async () => {
+    authFetch.mockResolvedValueOnce(new Response('not-json', { status: 200 }));
+    const error = await service.verify(await token()).catch((reason: unknown) => reason);
+    expect(error).toBeInstanceOf(SupabaseProviderUnavailableException);
+    expect(getControlledErrorLogMetadata(error)).toEqual(expect.objectContaining({ operation: 'admin_identity_lookup', provider_status: 200 }));
+  });
+
+  it('classifies an HTTP JWKS failure as provider unavailability without contacting Auth Admin', async () => {
+    jwksStatus = 500;
+    const error = await service.verify(await token()).catch((reason: unknown) => reason);
+    expect(error).toBeInstanceOf(SupabaseJwksUnavailableException);
+    expect(error).toBeInstanceOf(ServiceUnavailableException);
+    expect(getControlledErrorLogMetadata(error)).toEqual({ category: 'provider_unavailable', internal_code: 'SUPABASE_JWKS_UNAVAILABLE', provider: 'supabase', operation: 'jwks_fetch' });
+    expect(authFetch).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['timeout', new errors.JWKSTimeout()],
+    ['connection failure', Object.assign(new Error('Simulated connection refusal'), { code: 'ECONNREFUSED' })],
+    ['TLS certificate validation failure', Object.assign(new Error('Simulated certificate validation failure'), { code: 'UNABLE_TO_VERIFY_LEAF_SIGNATURE' })],
+  ] as const)('classifies a JWKS %s as provider unavailability without contacting Auth Admin', async (_label, failure) => {
+    (service as any).jwks = jest.fn().mockRejectedValue(failure);
+    const error = await service.verify(await token()).catch((reason: unknown) => reason);
+    expect(error).toBeInstanceOf(SupabaseJwksUnavailableException);
+    expect(error).toBeInstanceOf(ServiceUnavailableException);
+    expect(getControlledErrorLogMetadata(error)).toEqual({ category: 'provider_unavailable', internal_code: 'SUPABASE_JWKS_UNAVAILABLE', provider: 'supabase', operation: 'jwks_fetch' });
+    expect(authFetch).not.toHaveBeenCalled();
+  });
+
+  it('keeps an unmatched JWKS signing key as an authentication rejection', async () => {
+    await expect(service.verify(await token({}, ecKey, 'ES256', 'unknown-kid'))).rejects.toBeInstanceOf(UnauthorizedException);
+    expect(authFetch).not.toHaveBeenCalled();
   });
 });
