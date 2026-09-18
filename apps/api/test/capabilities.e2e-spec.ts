@@ -14,7 +14,15 @@ describe('authenticated admin capabilities', () => {
   it('returns an empty capability set for an authenticated customer without querying dashboard data', async () => {
     const response = await get().expect(200);
 
-    expect(response.body.data).toEqual({ permissions: [], grants: {} });
+    expect(response.body.data.permissions).toEqual([]);
+    expect(response.body.data.grants).toEqual({});
+    expect(response.body.data.mutation_permissions).toEqual([]);
+    expect(response.body.data.mutation_grants).toEqual({});
+    expect(response.body.data.modules).toEqual(expect.arrayContaining([
+      expect.objectContaining({ path: '/', permission: 'company.view', usable: false }),
+      expect.objectContaining({ path: '/companies', permission: 'company.view', usable: false }),
+    ]));
+    expect(response.body.data.modules.every((module: { usable: boolean }) => !module.usable)).toBe(true);
     expect(h.prisma.userRole.findMany).toHaveBeenCalled();
     expect(h.prisma.company.count).not.toHaveBeenCalled();
   });
@@ -33,7 +41,36 @@ describe('authenticated admin capabilities', () => {
       'customer.view': [{ company_id: ids.companyB, project_id: null }],
       'property.view': [{ company_id: ids.companyA, project_id: ids.projectA }],
     });
+    expect(response.body.data.mutation_permissions).toEqual([]);
+    expect(response.body.data.modules).toEqual(expect.arrayContaining([
+      expect.objectContaining({ path: '/', permission: 'company.view', usable: true }),
+      expect.objectContaining({ path: '/companies', permission: 'company.view', usable: true }),
+      expect.objectContaining({ path: '/customers', permission: 'customer.view', usable: true }),
+      expect.objectContaining({ path: '/properties', permission: 'property.view', usable: true }),
+    ]));
+    expect(response.body.data.modules.find((module: { path: string }) => module.path === '/projects')?.usable).toBe(false);
     expect(JSON.stringify(response.body)).not.toMatch(/customer@example|10000000|Bearer|email|supabase/i);
+  });
+
+  it('does not treat read permission as mutation authority', async () => {
+    h.grant('company.view', ids.companyA);
+    let response = await get().expect(200);
+    expect(response.body.data.permissions).toEqual(['company.view']);
+    expect(response.body.data.mutation_permissions).toEqual([]);
+
+    h.grant('company.manage', ids.companyA);
+    response = await get().expect(200);
+    expect(response.body.data.mutation_permissions).toEqual(['company.manage']);
+    expect(response.body.data.mutation_grants).toEqual({ 'company.manage': [{ company_id: ids.companyA, project_id: null }] });
+  });
+
+  it('does not treat a project-scoped company grant as company-list or dashboard access', async () => {
+    h.grant('company.view', ids.companyA, ids.projectA);
+    const response = await get().expect(200);
+
+    expect(response.body.data.permissions).toEqual(['company.view']);
+    expect(response.body.data.modules.find((module: { path: string }) => module.path === '/')?.usable).toBe(false);
+    expect(response.body.data.modules.find((module: { path: string }) => module.path === '/companies')?.usable).toBe(false);
   });
 
   it('does not report expired or customer-role grants as effective administrative access', async () => {

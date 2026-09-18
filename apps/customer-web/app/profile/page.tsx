@@ -15,7 +15,7 @@ export default function Page() {
   const resource = useResource<Me>('/me');
   const [saved, setSaved] = useState(false);
   return (
-    <AppShell title="User Profile" navItems={navFor('Users')}>
+    <AppShell title="User Profile" navItems={navFor('Profile')}>
       <ResourceStatus {...resource} />
       {saved && (
         <p role="status" className="mb-4">
@@ -57,7 +57,7 @@ export default function Page() {
       <section className="mt-5 grid gap-4 md:grid-cols-3">
         {[
           ['Digital Identity', '/digital-id'],
-          ['Wallet', '/wallet'],
+          ['Wallet — Month 2', '/wallet'],
           ['Security', '/security'],
         ].map(([item, href]) => (
           <Card key={item}>

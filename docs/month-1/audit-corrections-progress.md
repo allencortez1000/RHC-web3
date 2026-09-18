@@ -397,3 +397,93 @@ All files containing earlier Checkpoint 1/2 work remain cumulative working-tree 
 ## Next recommended checkpoint
 
 Proceed only with the separately approved Checkpoint 4 disposable PostgreSQL/migration and staging-inspection preparation described in `docs/month-1/checkpoint-4-handoff.md`. Do not merge `origin/main`, run a real seed, apply migrations, bootstrap an administrator, contact live providers, deploy, or activate Month 2 as part of this handoff.
+
+## Checkpoint 4A — Frontend integration and combined validation
+
+- **Timestamp (UTC):** 2026-09-18T03:30:00Z (working-tree record; exact command times are retained in the terminal evidence).
+- **Starting branch:** `main`.
+- **Starting HEAD:** `d3d2a9604c34073ad1b8b235a80343134255cb25`, the local safety commit `checkpoint: preserve month 1 audit corrections before frontend integration` containing the intended uncommitted Checkpoints 1–3.
+- **origin/main after fetch:** `aa7ae72bb08a4bdb64857e64ca14fb2305d21d8e`.
+- **Merge base:** `4953810a22bcaf61b8c8961c2439fffafd593549`.
+- **Actual divergence before merge:** `git rev-list --count origin/main..HEAD` = `1`; `git rev-list --count HEAD..origin/main` = `5`. The five incoming commits were `efabacd`, `8f40902`, `53fc2fb`, `9f3d199`, and `aa7ae72`. No pull, rebase, cherry-pick, or force operation was used.
+- **Starting uncommitted inventory:** before the safety commit, 34 modified tracked files and 18 untracked intended Checkpoint 1–3 files were present; nothing was staged and there were no unresolved conflicts. They were reviewed, secret-scanned, and preserved in the local safety commit before merging.
+- **Starting snapshot attribution:** established relative to the local safety commit above. Cumulative diffs against the historical reviewed HEAD also include all preserved Checkpoints 1–3; they are not correction-only diffs.
+
+### Remote integration and conflicts
+
+The colleague commits included shared UI/runtime/auth files, Admin/Customer pages and CSS, package manifests/lockfile, reservation and Digital ID source, Prisma schema/migration/seed changes, a whitepaper asset, and workspace settings. The remote paths overlapped Checkpoint 3 Admin capability files, API module wiring, database schema/seed/migration history, and documentation.
+
+Manual conflicts were resolved in:
+
+- `apps/admin-web/app/admin-data.tsx` — retained the colleague’s Command Center visual layout and added capability/scope-aware navigation and mutation controls.
+- `apps/admin-web/app/page.tsx` — retained the colleague’s landing design while routing through caller capabilities and avoiding `/admin/dashboard` for restricted staff.
+- `apps/api/src/modules/app.module.ts` — retained logging, consent-policy, capabilities, and reservation providers/controllers.
+- `docs/api/api-overview.md`, `docs/database/schema.md`, and `docs/month-1/deliverables.md` — combined reservation documentation with the earlier authorization/consent/seed boundaries.
+- `packages/database/prisma/seed.ts` — deliberately retained the reviewed import-safe injected seed instead of the remote eager Prisma/demo seed. Reservation permission definitions were added without creating users, credentials, assignments, or sample records.
+
+The remote edit to historical `202609140002_application_postgrest_lockdown/migration.sql` was reverted to the local safety-commit version; its checksum/history must not change. The new additive `202609160001_reservation_foundation` source was retained for later approved migration review. The schema now contains the reservation/property-status foundation plus the preserved Checkpoint 1 `RESTRICT` authorization relationships. No migration was applied.
+
+### Checkpoint 4A implementation
+
+- Restored the real Supabase PKCE adapters in `apps/customer-web/app/lib/supabase.ts` and `apps/admin-web/app/lib/supabase.ts`. Missing public Supabase configuration fails closed; no client-forged demo bearer token, hardcoded demo password, browser demo cookie, or UUID bearer fallback remains.
+- Retained the colleague’s shared visual components in `packages/ui/src/index.tsx`, while aligning `packages/ui/src/runtime.tsx` with real Supabase session -> bearer JWT -> API behavior. Admin login explicitly goes to `/`; Customer login remains `/dashboard`. API `401` remains session/account rejection, while `503` is displayed as an availability error without forced sign-out.
+- Added scope-aware `GET /admin/capabilities` module results based on the same list semantics used by `PermissionGuard`. Project-scoped `company.view` cannot activate the company list/dashboard. Separate mutation permission/grant data drives UI controls; read permissions no longer imply writes. API authorization remains authoritative.
+- Filtered Admin navigation/actions to effective modules, gated company/project/property/user/role/permission/feature/integration/settings/reservation mutations by their actual permissions, and preserved AUDITOR read-only behavior. Added browser coverage for restricted landing, no-admin access, disabled/expired session, capabilities 403, and direct unauthorized mutation 403.
+- Added the colleague’s reservation API only with narrow boundary fixes: admin reservation creation rechecks customer visibility through `customer.view`; expired holds cannot be confirmed; a changed property status cannot be overwritten by a reservation transition. Added local service regression tests.
+- Kept the Customer visual design while restoring API-backed Marketplace service/company/project records and authorized customer-property detail reads. Public property lookup is only a fallback when `/me/properties` has no authorized record; sold/linked customer records do not use the public available-only endpoint. Public RHC ID verification fails closed when API configuration is absent.
+- Aligned Customer/Admin Playwright base URLs with the merged package ports (`3002` and `3003`) and API development CORS. Removed hardcoded demo credentials from customer login screens. Browser fixture helpers remain synthetic and intercepted only.
+
+### Files materially changed during Checkpoint 4A
+
+- Shared/runtime/auth: `packages/ui/src/runtime.tsx`, `packages/ui/src/index.tsx`, `apps/customer-web/app/lib/supabase.ts`, `apps/admin-web/app/lib/supabase.ts`, `apps/admin-web/app/providers.tsx`, `apps/customer-web/app/providers.tsx`.
+- Admin integration: `apps/admin-web/app/page.tsx`, `apps/admin-web/app/admin-data.tsx`, `apps/admin-web/app/rhc-digital-ids/page.tsx`, `apps/admin-web/playwright.config.ts`, `apps/admin-web/tests/smoke.spec.ts`.
+- Customer integration: `apps/customer-web/app/components/digital-id-page.tsx`, `apps/customer-web/app/properties/[id]/page.tsx`, `apps/customer-web/app/marketplace/page.tsx`, `apps/customer-web/app/admin/page.tsx`, login pages, public verification page, `apps/customer-web/playwright.config.ts`, and `apps/customer-web/tests/fixtures.ts`.
+- API/reservation/capability: `apps/api/src/main.ts`, `apps/api/src/modules/app.module.ts`, `apps/api/src/modules/admin/capabilities.controller.ts`, reservation controller/service/spec, directory/permission integration paths, and `apps/api/test/capabilities.e2e-spec.ts`.
+- Database/package integration: `packages/database/prisma/schema.prisma`, retained historical lockdown migration, new `202609160001_reservation_foundation` migration, `packages/database/prisma/seed.ts`, `package.json`, and `package-lock.json`.
+- Documentation: this progress record, `docs/month-1/checkpoint-4-handoff.md`, and merged API/database/deliverable context files.
+
+These files are cumulative where they contain Checkpoint 1–3 work. No Checkpoint 1–3 protection was discarded. The remote whitepaper/assets, CSS, navigation, reservation pages, and other colleague frontend additions remain in the merged tree; external evidence bundles, `.env` files, build output, and test-result artifacts were not staged.
+
+### Exact validation commands and results
+
+- `npm.cmd ci` — first attempt correctly failed because the merged lockfile was missing `@emnapi/core@1.11.3` and `@emnapi/runtime@1.11.3`. `npm.cmd install --package-lock-only --ignore-scripts --no-audit` repaired only lock metadata; the rerun `npm.cmd ci` passed with 923 packages installed, 933 audited, and 0 vulnerabilities. Existing deprecation/install-script warnings remain.
+- `npm.cmd run db:generate` — passed with Prisma Client 5.22.0.
+- `npx.cmd prisma format --schema packages/database/prisma/schema.prisma` — passed.
+- `DATABASE_URL=postgresql://127.0.0.1:5432/rhc_validation_placeholder DIRECT_URL=postgresql://127.0.0.1:5432/rhc_validation_placeholder npx.cmd prisma validate --schema packages/database/prisma/schema.prisma` — passed using loopback placeholders; no connection was made.
+- Focused `npm.cmd test -w @rhc/database` — **7/7 passed**.
+- Focused reservation unit test — **5/5 passed**.
+- Focused capability E2E — **6/6 passed**.
+- `npm.cmd run typecheck` — **passed** for all workspaces.
+- `npm.cmd run lint` — **passed** for all workspaces.
+- `npm.cmd test` — **274/274 passed** across 18 API unit/service suites.
+- `npm.cmd test -w @rhc/database` — **7/7 passed**.
+- `npm.cmd run test:e2e -w @rhc/api -- --runInBand` — **167/167 passed** across 10 API fixture suites.
+- Customer browser suite with synthetic `NEXT_PUBLIC_API_URL=http://127.0.0.1:3001/api/v1`, `NEXT_PUBLIC_SUPABASE_URL=https://rhc-e2e.supabase.co`, and synthetic publishable key — **55/55 passed**.
+- Admin browser suite with the same synthetic configuration — **71/71 passed**, including the new AUDITOR/disabled/expired/403 regressions.
+- `npm.cmd run build:customer` — **passed**; Next.js 15.5.25 production build.
+- `npm.cmd run build:admin` — **passed**; Next.js 15.5.25 production build.
+- `npm.cmd run build:api` — **passed**; shared prerequisites and API TypeScript build.
+- `npm.cmd audit` — **0 vulnerabilities**.
+- `npm.cmd audit --omit=dev` — **0 vulnerabilities**.
+- `git diff --check` and `git diff --cached --check` — passed with only Git’s LF/CRLF normalization warnings.
+- Merge-marker and source regression searches — no unresolved markers; no fake UUID bearer auth, raw production secret/error logging, or unsafe demo session fallback found. Synthetic test redaction fixtures and generated build output were excluded from source claims.
+
+### Remaining blockers and safety boundary
+
+- **SOURCE IMPLEMENTED:** merged colleague frontend, shared auth/runtime contract, scope-aware Admin capabilities/landing/navigation, permission-aware mutation controls, reservation boundary fixes, port/test alignment, and preserved Checkpoint 1–3 source protections.
+- **FIXTURE TESTED:** all listed tests use injected doubles, local HTTP/JWKS peers, or browser-intercepted synthetic endpoints. They do not prove PostgreSQL transaction/FK/RLS/ACL behavior, concurrency, or live provider behavior.
+- **LIVE VERIFIED:** none. No database connection, migration, real seed, Supabase/Redis/partner call, staging inspection, administrator bootstrap, deployment, or Month 2 activation occurred.
+- Checkpoint 4B still requires an explicitly approved disposable PostgreSQL target and six-migration review, including reservation migration ordering, authorization-scope `RESTRICT`, connection-limit-1 transaction behavior, rollback/concurrency, RLS/ACL/object ownership, and browser-role denial.
+- Formal partner activation/event-allowlist management, first unlinked-customer association policy, and approved legal policy/version inputs remain unresolved Checkpoint 3 business decisions.
+- The remote reservation foundation is source-only and must not be interpreted as live reservation acceptance or data initialization.
+
+### Checkpoint 4A safety confirmations
+
+- No push, pull, rebase, cherry-pick, or force operation.
+- No database connection, migration, seed CLI, bootstrap, staging inspection, or live provider/settings call.
+- No deployment and no Month 2 feature activation.
+- The local safety commit preserves Checkpoints 1–3; the final merge commit contains the integrated remote source and this append-only record. Exact final SHA is recorded in the evidence bundle and final Git state.
+
+## Next recommended checkpoint
+
+Proceed only to the separately approved Checkpoint 4B disposable PostgreSQL and migration verification gate. Do not apply migrations, run the real seed, bootstrap an administrator, inspect staging, contact live providers, deploy, or activate Month 2 as part of Checkpoint 4A.

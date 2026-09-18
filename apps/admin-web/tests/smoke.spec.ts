@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { apiUrl, installFixtures, signIn } from '../../customer-web/tests/fixtures';
+import { apiUrl, installFixtures, signIn, token } from '../../customer-web/tests/fixtures';
 
 test('anonymous admin routes redirect to real sign in', async ({ page }) => {
   const fixture = await installFixtures(page);
@@ -11,7 +11,7 @@ test('anonymous admin routes redirect to real sign in', async ({ page }) => {
 
 test('admin signs in, loads API metrics, and signs out', async ({ page }) => {
   const fixture = await installFixtures(page);
-  await signIn(page);
+  await signIn(page, /\/$/);
   await expect(page.getByText('Total users', { exact: true })).toBeVisible();
   await expect(page.getByText('7', { exact: true })).toBeVisible();
   expect(fixture.requests.some((item) => item.path === '/admin/dashboard')).toBe(true);
@@ -36,6 +36,48 @@ test('authenticated account with no admin read permission receives a no-access s
   await expect(page.getByRole('heading', { name: 'No administrative access' })).toBeVisible();
   expect(fixture.requests.some((item) => item.path === '/admin/dashboard')).toBe(false);
   expect(fixture.requests.some((item) => item.path.startsWith('/admin/') && item.path !== '/admin/capabilities')).toBe(false);
+});
+
+test('AUDITOR read access keeps records visible, hides mutations, and direct writes remain forbidden', async ({ page }) => {
+  const fixture = await installFixtures(page, {
+    authenticated: true,
+    adminMutationPermissions: [],
+    deny: [`/admin/companies/${'33333333-3333-4333-8333-333333333333'}`],
+  });
+  await page.goto('/companies');
+  await expect(page.getByRole('cell', { name: 'Fixture Company', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Create company', exact: true })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Edit', exact: true })).toHaveCount(0);
+  const responseStatus = await page.evaluate(async ({ url, id, bearer }) => {
+    const response = await fetch(`${url}/admin/companies/${id}`, {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${bearer}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ display_name: 'Unauthorized write' }),
+    });
+    return response.status;
+  }, { url: apiUrl, id: fixture.company.id, bearer: token });
+  expect(responseStatus).toBe(403);
+  expect(fixture.requests.filter((item) => item.method !== 'GET')).toHaveLength(1);
+  expect(fixture.requests.at(-1)).toMatchObject({ method: 'PATCH', path: `/admin/companies/${fixture.company.id}` });
+});
+
+for (const [label, options] of [
+  ['disabled account', { accountStatus: 'DISABLED' }],
+  ['expired account', { expiredAccount: true }],
+] as const) {
+  test(`${label} cannot enter the Admin landing`, async ({ page }) => {
+    const fixture = await installFixtures(page, { authenticated: true, ...options });
+    await page.goto('/');
+    await expect(page.getByRole('heading', { name: 'Account access' })).toBeVisible();
+    expect(fixture.requests.some((item) => item.path === '/admin/dashboard')).toBe(false);
+  });
+}
+
+test('capabilities API 403 shows a safe no-dashboard error state', async ({ page }) => {
+  const fixture = await installFixtures(page, { authenticated: true, deny: ['/admin/capabilities'] });
+  await page.goto('/');
+  await expect(page.getByRole('alert').filter({ hasText: 'You do not have permission' })).toBeVisible();
+  expect(fixture.requests.some((item) => item.path === '/admin/dashboard')).toBe(false);
 });
 
 test('forbidden records stay hidden and cannot offer mutations', async ({ page }) => {

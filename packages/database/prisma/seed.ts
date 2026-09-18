@@ -46,6 +46,7 @@ export const PILOT_COMPANIES = [
 export const PERMISSION_CODES = [
   'customer.view', 'customer.edit', 'company.view', 'company.manage', 'project.view', 'project.create', 'project.edit',
   'property.view', 'property.create', 'property.edit', 'property.change_status', 'customer_property.view', 'customer_property.manage',
+  'reservation.view', 'reservation.create', 'reservation.manage', 'reservation.cancel',
   'role.view', 'role.manage', 'permission.view', 'permission.manage', 'integration.view', 'integration.manage', 'feature_flag.view',
   'feature_flag.manage', 'audit.view', 'user.view', 'user.manage', 'system_settings.view', 'system_settings.manage',
 ] as const;
@@ -75,17 +76,17 @@ export const FEATURE_FLAG_DEFAULTS = {
 
 const rolePermissions: Record<string, readonly string[]> = {
   CUSTOMER: ['customer.view', 'customer.edit', 'company.view', 'project.view', 'property.view'],
-  SALES_AGENT: ['customer.view', 'project.view', 'property.view', 'customer_property.view'],
-  SALES_MANAGER: ['customer.view', 'customer.edit', 'project.view', 'property.view', 'property.edit', 'customer_property.view', 'customer_property.manage'],
-  FINANCE_STAFF: ['customer.view', 'property.view', 'customer_property.view'],
-  FINANCE_MANAGER: ['customer.view', 'customer.edit', 'property.view', 'customer_property.view'],
-  PROPERTY_ADMIN: ['company.view', 'project.view', 'project.create', 'project.edit', 'property.view', 'property.create', 'property.edit', 'property.change_status', 'customer_property.view', 'customer_property.manage'],
+  SALES_AGENT: ['customer.view', 'project.view', 'property.view', 'customer_property.view', 'reservation.view', 'reservation.create'],
+  SALES_MANAGER: ['customer.view', 'customer.edit', 'project.view', 'property.view', 'property.edit', 'customer_property.view', 'customer_property.manage', 'reservation.view', 'reservation.create', 'reservation.manage', 'reservation.cancel'],
+  FINANCE_STAFF: ['customer.view', 'property.view', 'customer_property.view', 'reservation.view'],
+  FINANCE_MANAGER: ['customer.view', 'customer.edit', 'property.view', 'customer_property.view', 'reservation.view', 'reservation.manage'],
+  PROPERTY_ADMIN: ['company.view', 'project.view', 'project.create', 'project.edit', 'property.view', 'property.create', 'property.edit', 'property.change_status', 'customer_property.view', 'customer_property.manage', 'reservation.view', 'reservation.create', 'reservation.manage', 'reservation.cancel'],
   DOCUMENT_OFFICER: ['customer.view', 'customer.edit', 'customer_property.view'],
   REWARDS_ADMIN: ['customer.view', 'company.view', 'integration.view'],
   COMPLIANCE_OFFICER: ['customer.view', 'user.view', 'audit.view'],
   DPO: ['customer.view', 'customer.edit', 'audit.view'],
-  AUDITOR: ['company.view', 'project.view', 'property.view', 'customer_property.view', 'role.view', 'permission.view', 'integration.view', 'feature_flag.view', 'audit.view', 'user.view', 'system_settings.view'],
-  SYSTEM_ADMIN: ['company.view', 'project.view', 'property.view', 'role.view', 'permission.view', 'integration.view', 'integration.manage', 'feature_flag.view', 'feature_flag.manage', 'user.view', 'user.manage', 'system_settings.view', 'system_settings.manage'],
+  AUDITOR: ['company.view', 'project.view', 'property.view', 'customer_property.view', 'reservation.view', 'role.view', 'permission.view', 'integration.view', 'feature_flag.view', 'audit.view', 'user.view', 'system_settings.view'],
+  SYSTEM_ADMIN: ['company.view', 'project.view', 'property.view', 'reservation.view', 'role.view', 'permission.view', 'integration.view', 'integration.manage', 'feature_flag.view', 'feature_flag.manage', 'user.view', 'user.manage', 'system_settings.view', 'system_settings.manage'],
   SUPER_ADMIN: [...PERMISSION_CODES],
 };
 

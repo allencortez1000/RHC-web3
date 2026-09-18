@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { PortalProvider } from '@rhc/ui';
 import { authAdapter } from './lib/supabase';
-const publicRoutes = ['/', '/login', '/signin', '/register', '/forgot-password', '/reset-password', '/verification', '/auth/confirm'];
+const publicRoutes = ['/', '/login', '/signin', '/register', '/forgot-password', '/reset-password', '/verification', '/auth/confirm', '/marketplace', '/verify/rhc-id/*'];
 export function Providers({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();

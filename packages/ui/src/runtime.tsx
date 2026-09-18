@@ -37,6 +37,10 @@ export type Account = {
   account_status?: string;
   verification_status?: string;
   auth_email_confirmed_at?: string | null;
+  role?: string;
+  roles?: string[];
+  is_admin?: boolean;
+  permissions?: string[];
 };
 
 export function isAuthEmailConfirmed(value: unknown): boolean {
@@ -92,7 +96,7 @@ export function PortalProvider({
   const [error, setError] = useState('');
   const [retry, setRetry] = useState(0);
   const [dataRevision, setDataRevision] = useState(0);
-  const isPublic = publicRoutes.includes(pathname);
+  const isPublic = publicRoutes.some((route) => route.endsWith('/*') ? pathname.startsWith(route.slice(0, -1)) : route === pathname);
   const generation = useRef(0);
   useEffect(() => {
     let active = true;
@@ -355,7 +359,7 @@ export function ResourceStatus({
 
 export type AuthMode =
   'login' | 'register' | 'forgot-password' | 'reset-password' | 'verification' | 'confirm';
-export function AuthForm({ mode }: { mode: AuthMode }) {
+export function AuthForm({ mode, admin = false }: { mode: AuthMode; admin?: boolean }) {
   const { auth, apiUrl, request, navigate } = useRuntime();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -398,7 +402,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
       if (mode === 'login') {
         await auth.login(email, password);
         await request('/auth/session');
-        navigate('/dashboard');
+        navigate(admin ? '/' : '/dashboard');
       }
       if (mode === 'register') {
         if (password !== form.get('confirm_password')) throw new Error('Passwords do not match.');
@@ -424,7 +428,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
         );
         if (signedIn) {
           await request('/auth/session');
-          navigate('/dashboard');
+          navigate(admin ? '/' : '/dashboard');
         } else
           setMessage(
             'Check your email for a confirmation link before signing in. Business verification remains PENDING until RHC reviews and approves your account.',

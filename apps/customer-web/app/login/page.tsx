@@ -43,6 +43,7 @@ export default function CustomerLoginStart() {
               Sign in with your confirmed RHC Digital account. Your password is processed only by Supabase Auth.
             </p>
 
+
             <LoginForm />
 
             <div className="mt-6 grid gap-3 sm:grid-cols-2">

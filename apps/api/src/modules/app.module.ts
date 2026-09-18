@@ -22,6 +22,8 @@ import { DirectoryController } from './directory/directory.controller';
 import { AdminController } from './admin/admin.controller';
 import { CapabilitiesController } from './admin/capabilities.controller';
 import { ManagementController } from './admin/management.controller';
+import { CustomerReservationsController, AdminReservationsController } from './reservations/reservations.controller';
+import { ReservationsService } from './reservations/reservations.service';
 import { RhcIdService } from './identity/rhc-id.service';
 import { SupabaseJwtService } from './security/supabase-jwt.service';
 import { ApplicationUserService } from './security/application-user.service';
@@ -31,8 +33,8 @@ import { StructuredLogger } from '../platform/structured-logger';
 import { CONSENT_POLICY_CONFIG, ConsentPolicyService } from './security/consent-policy.service';
 
 @Module({
-  controllers: [AuthController, MeController, ConsentController, DirectoryController, AdminController, CapabilitiesController, HealthController, ApiClientsController, CompanyApiController, InternalIntegrationController, ManagementController],
-  providers: [PrismaService, RbacService, AuditService, EventsService, RhcIdService, SupabaseJwtService, ApplicationUserService, AuthGuard, PermissionGuard, FeatureService, RateLimitStore, CompanyApiKeyService, CompanyApiGuard, InternalIntegrationService, ConsentPolicyService,
+  controllers: [AuthController, MeController, CustomerReservationsController, ConsentController, DirectoryController, AdminController, AdminReservationsController, CapabilitiesController, HealthController, ApiClientsController, CompanyApiController, InternalIntegrationController, ManagementController],
+  providers: [PrismaService, RbacService, AuditService, EventsService, RhcIdService, ReservationsService, SupabaseJwtService, ApplicationUserService, AuthGuard, PermissionGuard, FeatureService, RateLimitStore, CompanyApiKeyService, CompanyApiGuard, InternalIntegrationService, ConsentPolicyService,
     { provide: CONSENT_POLICY_CONFIG, useValue: [] },
     { provide: APP_GUARD, useClass: RateLimitGuard },
     { provide: APP_GUARD, useClass: FeatureGuard },

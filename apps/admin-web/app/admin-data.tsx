@@ -29,13 +29,14 @@ import {
 
 export type AdminModuleDefinition = { label: string; path: string; permission: string };
 export const moduleDefinitions: readonly AdminModuleDefinition[] = [
-  { label: 'Dashboard', path: '/dashboard', permission: 'company.view' },
+  { label: 'Dashboard', path: '/', permission: 'company.view' },
   { label: 'Customers', path: '/customers', permission: 'customer.view' },
   { label: 'RHC Digital IDs', path: '/rhc-digital-ids', permission: 'customer.view' },
   { label: 'Companies', path: '/companies', permission: 'company.view' },
   { label: 'Projects', path: '/projects', permission: 'project.view' },
   { label: 'Properties', path: '/properties', permission: 'property.view' },
   { label: 'Amica Tower Inventory', path: '/amica-tower-inventory', permission: 'property.view' },
+  { label: 'Reservations', path: '/reservations', permission: 'reservation.view' },
   { label: 'Customer Properties', path: '/customer-properties', permission: 'customer_property.view' },
   { label: 'Business Services', path: '/business-services', permission: 'integration.view' },
   { label: 'Users', path: '/users', permission: 'user.view' },
@@ -48,9 +49,19 @@ export const moduleDefinitions: readonly AdminModuleDefinition[] = [
   { label: 'System Settings', path: '/system-settings', permission: 'system_settings.view' },
 ];
 export const modules = moduleDefinitions.map((module) => module.label);
-export type AdminCapabilities = { permissions: string[]; grants: Record<string, unknown> };
+export type AdminCapabilities = {
+  permissions: string[];
+  grants: Record<string, unknown>;
+  mutation_permissions?: string[];
+  mutation_grants?: Record<string, unknown>;
+  modules?: Array<{ path: string; permission: string; usable: boolean }>;
+};
 export function visibleModules(capabilities?: AdminCapabilities) {
   if (!capabilities) return [];
+  if (capabilities.modules) {
+    const usable = new Set(capabilities.modules.filter((module) => module.usable).map((module) => module.path));
+    return moduleDefinitions.filter((module) => usable.has(module.path));
+  }
   return moduleDefinitions.filter((module) => capabilities.permissions.includes(module.permission));
 }
 export function useAdminCapabilities() {
@@ -74,9 +85,23 @@ export function AdminNavigation({ capabilities, ariaLabel = 'Admin modules', cla
 export function AdminPermissionBoundary({ permission, children }: { permission: string; children: ReactNode }) {
   const resource = useAdminCapabilities();
   if (resource.loading || resource.error) return <ResourceStatus {...resource} />;
-  if (!resource.data?.permissions.includes(permission)) return <EmptyState title="No administrative access" description="Your account has no permission for this module. The API remains authoritative for every resource request." />;
+  const usable = permission === 'company.view' && resource.data?.modules
+    ? resource.data.modules.some((module) => module.path === '/' && module.usable)
+    : resource.data?.permissions.includes(permission);
+  if (!usable) return <EmptyState title="No administrative access" description="Your account has no permission for this module. The API remains authoritative for every resource request." />;
   return <>{children}</>;
 }
+
+type AdminNavItem = readonly [string, string];
+export const adminNavGroups: Array<{ section: string; items: AdminNavItem[] }> = [
+  { section: 'Overview', items: [['Command Center', '/']] },
+  { section: 'Customers', items: [['Customers', '/customers'], ['Digital IDs', '/rhc-digital-ids'], ['Verification Reviews', '/verification']] },
+  { section: 'Property Operations', items: [['Companies', '/companies'], ['Projects', '/projects'], ['Inventory', '/properties'], ['Amica Tower Inventory', '/amica-tower-inventory'], ['Reservations', '/reservations'], ['Customer Properties', '/customer-properties']] },
+  { section: 'Records & Services', items: [['Business Services', '/business-services'], ['Integrations', '/integrations'], ['Feature Flags', '/feature-flags']] },
+  { section: 'Governance', items: [['Users', '/users'], ['Roles', '/roles'], ['User Roles', '/user-roles'], ['Permissions', '/permissions'], ['Audit Logs', '/audit-logs'], ['System Settings', '/system-settings']] },
+];
+export const adminNavItems: AdminNavItem[] = adminNavGroups.flatMap((group) => group.items);
+const routeFor = new Map<string, string>(adminNavItems.map(([label, href]) => [label, href]));
 type Row = { id: string; [key: string]: unknown };
 type Column = [string, string];
 const columns: Record<string, Column[]> = {
@@ -120,6 +145,15 @@ const columns: Record<string, Column[]> = {
     ['area', 'Area'],
     ['list_price', 'List price'],
     ['currency', 'Currency'],
+  ],
+  reservations: [
+    ['reservation_number', 'Reservation #'],
+    ['customer.email', 'Customer'],
+    ['property.property_code', 'Property'],
+    ['property.project.project_name', 'Project'],
+    ['status', 'Status'],
+    ['expires_at', 'Expires'],
+    ['created_at', 'Created'],
   ],
   'customer-properties': [
     ['customer.email', 'Customer'],
@@ -253,6 +287,10 @@ const forms: Record<string, Field[]> = {
     { key: 'area', label: 'Area', type: 'number' },
     { key: 'list_price', label: 'List price', type: 'number' },
     { key: 'currency', label: 'Currency', max: 3, required: true },
+  ],
+  reservations: [
+    { key: 'customer_id', label: 'Customer', required: true, source: 'customers' },
+    { key: 'property_id', label: 'Property', required: true, source: 'properties' },
   ],
   'customer-properties': [
     { key: 'customer_id', label: 'Customer', required: true, source: 'customers' },
@@ -425,6 +463,8 @@ export function AdminTable({
     !['roles', 'permissions', 'feature-flags', 'system-settings'].includes(resource),
   );
   const { request, user } = useRuntime();
+  const capabilities = useAdminCapabilities();
+  const hasMutation = (permission: string) => capabilities.data?.mutation_permissions?.includes(permission) === true;
   const [review, setReview] = useState<Row | null>(null);
   const [management, setManagement] = useState<ManagementAction | null>(null);
   const [query, setQuery] = useState('');
@@ -432,6 +472,7 @@ export function AdminTable({
   const [page, setPage] = useState(0);
   const [editing, setEditing] = useState<Row | 'new' | null>(null);
   const [flag, setFlag] = useState<Row | null>(null);
+  const [reservationAction, setReservationAction] = useState<{ row: Row; action: 'confirm' | 'cancel' | 'expire' | 'convert' } | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
@@ -439,7 +480,7 @@ export function AdminTable({
   const filtered =
     data.data?.filter(
       (row) =>
-        (!amicaOnly || valueAt(row, 'project.project_code') === 'AMICA-T1') &&
+        (!amicaOnly || String(valueAt(row, 'project.project_code')).startsWith('AMICA-')) &&
         (!status || row.status === status) &&
         cols.some(([key]) =>
           display(valueAt(row, key)).toLowerCase().includes(query.toLowerCase()),
@@ -447,22 +488,63 @@ export function AdminTable({
     ) || [];
   const lastPage = Math.max(0, Math.ceil(filtered.length / 20) - 1);
   const currentPage = Math.min(page, lastPage);
-  const canEdit = resource === 'companies' || resource === 'properties';
+  const canEdit =
+    (resource === 'companies' && hasMutation('company.manage')) ||
+    (resource === 'properties' && hasMutation('property.edit') && hasMutation('property.change_status'));
   const canManage =
-    metadataResources.includes(resource) || ['user-roles', 'system-settings'].includes(resource);
-  const actionOpen = Boolean(management || review || editing || flag);
+    (metadataResources.includes(resource) &&
+      ((resource === 'projects' && hasMutation('project.edit')) ||
+        (resource === 'customer-properties' && hasMutation('customer_property.manage')) ||
+        (['roles', 'integrations', 'business-services'].includes(resource) && hasMutation(resource === 'roles' ? 'role.manage' : 'integration.manage')))) ||
+    (resource === 'user-roles' && hasMutation('role.manage') && hasMutation('user.manage')) ||
+    (resource === 'system-settings' && hasMutation('system_settings.manage'));
+  const canReview = (resource === 'users' || resource === 'customers') && hasMutation('user.manage');
+  const canCreate =
+    (resource === 'companies' && hasMutation('company.manage')) ||
+    (resource === 'projects' && hasMutation('project.create')) ||
+    (resource === 'properties' && hasMutation('property.create') && hasMutation('property.change_status')) ||
+    (resource === 'customer-properties' && hasMutation('customer_property.manage')) ||
+    (resource === 'reservations' && hasMutation('reservation.create')) ||
+    (resource === 'roles' && hasMutation('role.manage')) ||
+    (resource === 'integrations' && hasMutation('integration.manage')) ||
+    (resource === 'business-services' && hasMutation('integration.manage')) ||
+    (resource === 'user-roles' && hasMutation('role.manage') && hasMutation('user.manage')) ||
+    (resource === 'system-settings' && hasMutation('system_settings.manage'));
+  const canFeatureManage = resource === 'feature-flags' && hasMutation('feature_flag.manage');
+  const canReservationManage = resource === 'reservations' && hasMutation('reservation.manage');
+  const canReservationCancel = resource === 'reservations' && hasMutation('reservation.cancel');
+  const actionOpen = Boolean(management || review || editing || flag || reservationAction);
   const manage = (mode: ManagementAction['mode'], row?: Row) => {
     setManagement({ resource, mode, row });
     setMessage('');
   };
-  const canReview = resource === 'users' || resource === 'customers';
   const complete = () => {
     setEditing(null);
     setManagement(null);
     setFlag(null);
+    setReservationAction(null);
     setMessage('Changes saved.');
     data.refresh();
   };
+  async function submitReservationAction() {
+    if (!reservationAction || busy) return;
+    setBusy(true);
+    setError('');
+    try {
+      await request(`/admin/reservations/${encodeURIComponent(reservationAction.row.id)}/${reservationAction.action}`, {
+        method: 'POST',
+        body: JSON.stringify({
+          review_reference: `ADMIN-${reservationAction.action.toUpperCase()}`,
+          note: `Admin ${reservationAction.action} action`,
+        }),
+      });
+      complete();
+    } catch (cause) {
+      setError(errorMessage(cause));
+    } finally {
+      setBusy(false);
+    }
+  }
   async function toggleFlag() {
     if (!flag || busy) return;
     setBusy(true);
@@ -511,6 +593,20 @@ export function AdminTable({
           cancel={() => setEditing(null)}
         />
       )}
+      {reservationAction && (
+        <Card title="Confirm reservation action" className="mb-5">
+          <p className="mb-4">
+            {reservationAction.action.toUpperCase()} reservation {String(reservationAction.row.reservation_number)}?
+          </p>
+          <p className="mb-4 text-sm text-[var(--rhc-muted)]">
+            This writes reservation events, property status history, and audit logs.
+          </p>
+          <div className="flex gap-3">
+            <Web3Button disabled={busy} onClick={submitReservationAction}>Confirm action</Web3Button>
+            <Web3Button disabled={busy} variant="secondary" onClick={() => setReservationAction(null)}>Cancel</Web3Button>
+          </div>
+        </Card>
+      )}
       {flag && (
         <Card title="Confirm feature flag change" className="mb-5">
           <p className="mb-4">
@@ -537,7 +633,7 @@ export function AdminTable({
         </p>
       )}
       <div className="mb-5 flex flex-wrap items-end gap-3">
-        <label className="text-sm">
+        <label className="min-w-[260px] flex-1 text-sm font-medium text-[var(--rhc-secondary-text)]">
           Search records
           <input
             value={query}
@@ -545,11 +641,12 @@ export function AdminTable({
               setQuery(event.target.value);
               setPage(0);
             }}
-            className="mt-2 block rounded-lg border p-3"
+            placeholder="Search loaded records…"
+            className="mt-2 block w-full rounded-xl border border-[var(--rhc-border)] bg-[var(--rhc-input)] p-3 text-[var(--rhc-input-text)] shadow-sm outline-none focus:border-[var(--rhc-primary)] focus:ring-2 focus:ring-[var(--rhc-accent-soft)]"
           />
         </label>
         {resource === 'properties' && (
-          <label className="text-sm">
+          <label className="min-w-[220px] text-sm font-medium text-[var(--rhc-secondary-text)]">
             Property status
             <select
               value={status}
@@ -557,7 +654,7 @@ export function AdminTable({
                 setStatus(event.target.value);
                 setPage(0);
               }}
-              className="mt-2 block rounded-lg border p-3"
+              className="mt-2 block w-full rounded-xl border border-[var(--rhc-border)] bg-[var(--rhc-input)] p-3 text-[var(--rhc-input-text)] shadow-sm outline-none focus:border-[var(--rhc-primary)] focus:ring-2 focus:ring-[var(--rhc-accent-soft)]"
             >
               <option value="">All statuses</option>
               {statuses.map((value) => (
@@ -577,6 +674,7 @@ export function AdminTable({
         )}
         {data.data &&
           !data.error &&
+          canCreate &&
           (createResources.includes(resource) || resource === 'system-settings') && (
             <Web3Button
               disabled={actionOpen || data.loading}
@@ -589,7 +687,7 @@ export function AdminTable({
                   : `Create ${resource === 'roles' ? 'role' : resource === 'integrations' ? 'integration' : 'business service'}`}
             </Web3Button>
           )}
-        {forms[resource] && data.data && !data.error && (
+        {forms[resource] && data.data && !data.error && canCreate && (
           <Web3Button
             disabled={actionOpen || data.loading}
             onClick={() => {
@@ -600,11 +698,13 @@ export function AdminTable({
             Create{' '}
             {resource === 'customer-properties'
               ? 'relationship'
-              : resource === 'properties'
-                ? 'property'
-                : resource === 'companies'
-                  ? 'company'
-                  : 'project'}
+              : resource === 'reservations'
+                ? 'reservation'
+                : resource === 'properties'
+                  ? 'property'
+                  : resource === 'companies'
+                    ? 'company'
+                    : 'project'}
           </Web3Button>
         )}
       </div>
@@ -633,7 +733,7 @@ export function AdminTable({
                         {label}
                       </th>
                     ))}
-                    {(canEdit || canReview || canManage || resource === 'feature-flags') && (
+                    {(canEdit || canReview || canManage || canFeatureManage || canReservationManage || canReservationCancel) && (
                       <th className="p-3">Actions</th>
                     )}
                   </tr>
@@ -692,7 +792,7 @@ export function AdminTable({
                               {protectedRole(row) && (
                                 <p className="text-xs">Protected role metadata</p>
                               )}
-                              {row.code !== 'SUPER_ADMIN' && (
+                              {row.code !== 'SUPER_ADMIN' && hasMutation('permission.manage') && (
                                 <Web3Button
                                   variant="secondary"
                                   disabled={actionOpen || data.loading}
@@ -753,7 +853,25 @@ export function AdminTable({
                           </Web3Button>
                         </td>
                       )}
-                      {resource === 'feature-flags' && (
+                      {resource === 'reservations' && (canReservationManage || canReservationCancel) && (
+                        <td className="p-3">
+                          <div className="flex flex-wrap gap-2">
+                            {canReservationManage && row.status === 'PENDING' && (
+                              <>
+                                <Web3Button variant="secondary" disabled={actionOpen || data.loading} onClick={() => setReservationAction({ row, action: 'confirm' })}>Confirm</Web3Button>
+                                <Web3Button variant="secondary" disabled={actionOpen || data.loading} onClick={() => setReservationAction({ row, action: 'expire' })}>Expire</Web3Button>
+                              </>
+                            )}
+                            {canReservationCancel && (row.status === 'PENDING' || row.status === 'CONFIRMED') && (
+                              <Web3Button variant="secondary" disabled={actionOpen || data.loading} onClick={() => setReservationAction({ row, action: 'cancel' })}>Cancel</Web3Button>
+                            )}
+                            {canReservationManage && row.status === 'CONFIRMED' && (
+                              <Web3Button variant="secondary" disabled={actionOpen || data.loading} onClick={() => setReservationAction({ row, action: 'convert' })}>Convert</Web3Button>
+                            )}
+                          </div>
+                        </td>
+                      )}
+                      {canFeatureManage && resource === 'feature-flags' && (
                         <td className="p-3">
                           <Web3Button
                             variant="secondary"
@@ -814,6 +932,7 @@ const resourcePermissions: Record<string, string> = {
   companies: 'company.view',
   projects: 'project.view',
   properties: 'property.view',
+  reservations: 'reservation.view',
   'customer-properties': 'customer_property.view',
   roles: 'role.view',
   'user-roles': 'role.view',
@@ -824,6 +943,47 @@ const resourcePermissions: Record<string, string> = {
   'audit-logs': 'audit.view',
   'system-settings': 'system_settings.view',
 };
+
+function AdminSidebar({ active, modules = [] }: { active?: string; modules?: AdminModuleDefinition[] }) {
+  const allowed = new Set(modules.map((module) => module.path));
+  return (
+    <aside className="rhc-admin-sidebar fixed hidden h-full w-80 overflow-y-auto border-r border-[var(--rhc-border)] p-6 lg:block">
+      <Link href="/" className="flex items-center gap-3 rounded-2xl p-2 transition hover:bg-[var(--rhc-accent-soft)]">
+        <div className="grid h-12 w-12 place-items-center rounded-2xl border border-[rgba(212,175,55,.35)] bg-[var(--rhc-accent-soft)] font-black text-[var(--rhc-primary)]">RHC</div>
+        <div>
+          <h1 className="text-base font-black text-[var(--rhc-heading)]">Admin Command Center</h1>
+          <p className="text-xs text-[var(--rhc-muted)]">Operations · RBAC · Audit</p>
+        </div>
+      </Link>
+      <div className="mt-5 rounded-2xl border border-[var(--rhc-border)] bg-[var(--rhc-surface-secondary)] p-4">
+        <Badge tone="gold">Authenticated access</Badge>
+        <p className="mt-3 text-xs leading-5 text-[var(--rhc-muted)]">Actions are permission-guarded and should create audit records through the API.</p>
+      </div>
+      <nav aria-label="Admin navigation" className="mt-6 space-y-6">
+        {adminNavGroups.map((group) => {
+          const items = group.items.filter(([, href]) => allowed.has(href));
+          if (!items.length) return null;
+          return (
+            <div key={group.section}>
+              <p className="px-2 text-[0.68rem] font-black uppercase tracking-[0.18em] text-[var(--rhc-primary)]">{group.section}</p>
+              <div className="mt-2 space-y-1">
+                {items.map(([label, href]) => {
+                  const current = label === active || href === routeFor.get(active || '');
+                  return (
+                    <Link key={label} href={href} className={`flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-semibold transition ${current ? 'bg-[var(--rhc-accent-soft)] text-[var(--rhc-heading)] ring-1 ring-[rgba(212,175,55,.28)]' : 'text-[var(--rhc-secondary-text)] hover:bg-[var(--rhc-surface-secondary)] hover:text-[var(--rhc-heading)]'}`}>
+                      <span>{label}</span>
+                      <span className={`h-1.5 w-1.5 rounded-full ${current ? 'bg-[var(--rhc-primary)]' : 'bg-transparent'}`} />
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </nav>
+    </aside>
+  );
+}
 
 export function AdminModule({
   title,
@@ -836,25 +996,37 @@ export function AdminModule({
 }) {
   const capabilities = useAdminCapabilities();
   const requiredPermission = resourcePermissions[resource];
-  const authorized = Boolean(requiredPermission && capabilities.data?.permissions.includes(requiredPermission));
+  const route = routeFor.get(title);
+  const visible = visibleModules(capabilities.data);
+  const authorized = Boolean((route && visible.some((module) => module.path === route)) || (!route && requiredPermission && capabilities.data?.permissions.includes(requiredPermission)));
   return (
     <Web3Shell variant="admin">
-      <section className="mx-auto max-w-6xl px-6 py-10">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <Badge tone="warning">Admin Module</Badge>
-          <div className="flex gap-3">
-            <Link href="/">Command Center</Link>
-            <ThemeToggle />
-            <SignOutButton />
+      <AdminSidebar active={title} modules={visible} />
+      <section className="min-h-screen lg:pl-80">
+        <header className="sticky top-0 z-20 border-b border-[var(--rhc-border)] bg-[var(--rhc-bg)] px-5 py-4 backdrop-blur-xl md:px-8">
+          <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4">
+            <div>
+              <p className="rhc-eyebrow">RHC Digital Admin</p>
+              <h1 className="mt-1 text-2xl font-black text-[var(--rhc-heading)] md:text-3xl">{title}</h1>
+            </div>
+            <div className="flex items-center gap-3">
+              <Link href="/" className="rounded-xl border border-[var(--rhc-border)] px-3 py-2 text-sm font-semibold text-[var(--rhc-secondary-text)] hover:bg-[var(--rhc-surface-secondary)] hover:text-[var(--rhc-heading)]">Command Center</Link>
+              <ThemeToggle />
+              <SignOutButton />
+            </div>
           </div>
-        </div>
-        <h1 className="mt-5 text-4xl font-black text-[var(--rhc-heading)] md:text-6xl">{title}</h1>
-        <AdminNavigation capabilities={capabilities.data} />
-        <div className="mt-8">
+          <nav aria-label="Mobile admin modules" className="mx-auto mt-4 flex max-w-7xl gap-2 overflow-x-auto pb-1 lg:hidden">
+            <AdminNavigation capabilities={capabilities.data} className="flex gap-2" linkClassName="whitespace-nowrap rounded-full border border-[var(--rhc-border)] bg-[var(--rhc-surface-secondary)] px-3 py-2 text-xs font-bold text-[var(--rhc-secondary-text)]" />
+          </nav>
+        </header>
+        <main className="mx-auto max-w-7xl px-5 py-6 md:px-8 md:py-8">
           <ResourceStatus {...capabilities} />
           {capabilities.data && !authorized ? <EmptyState title="No administrative access" description="Your account has no permission for this module. The API remains authoritative for every resource request." /> : null}
-          {capabilities.data && authorized ? <Card title={title}><AdminTable resource={resource} amicaOnly={amicaOnly} /></Card> : null}
-        </div>
+          {capabilities.data && authorized ? <Card className="rhc-card-token" title={`${title} Workspace`}>
+            <p className="mb-5 text-sm leading-6 text-[var(--rhc-muted)]">Search, filter, review, and manage records according to your server-enforced permissions. Actions remain permission-aware and server-authorized.</p>
+            <AdminTable resource={resource} amicaOnly={amicaOnly} />
+          </Card> : null}
+        </main>
       </section>
     </Web3Shell>
   );

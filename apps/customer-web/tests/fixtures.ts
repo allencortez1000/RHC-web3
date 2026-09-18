@@ -45,17 +45,20 @@ export async function installFixtures(
     businessVerified?: boolean;
     reviewCandidate?: boolean;
     expired?: boolean;
+    expiredAccount?: boolean;
+    accountStatus?: string;
     deny?: string[];
     failOnce?: string[];
     loginError?: boolean;
     registrationEnabled?: boolean;
     empty?: boolean;
     adminPermissions?: string[];
+    adminMutationPermissions?: string[];
   } = {},
 ) {
   await page.route('**/*', (route) => {
     const origin = new URL(route.request().url()).origin;
-    return ['http://127.0.0.1:3000', 'http://127.0.0.1:3002'].includes(origin)
+    return ['http://127.0.0.1:3000', 'http://127.0.0.1:3002', 'http://127.0.0.1:3003'].includes(origin)
       ? route.continue()
       : route.abort('blockedbyclient');
   });
@@ -71,7 +74,7 @@ export async function installFixtures(
   const account = {
     id: '22222222-2222-4222-8222-222222222222',
     email: user.email,
-    account_status: 'ACTIVE',
+    account_status: options.accountStatus || 'ACTIVE',
     verification_status: options.businessVerified ? 'VERIFIED' : 'PENDING',
     auth_email_confirmed_at: '2026-01-01T00:00:00.000Z' as string | null | undefined,
   };
@@ -291,6 +294,11 @@ export async function installFixtures(
     const ok = (data: unknown) =>
       route.fulfill({ json: { success: true, data, meta: { request_id: 'fixture-request' } } });
     if (path === '/auth/config') return ok({ registration_enabled: options.registrationEnabled !== false });
+    if (path === '/auth/session' && ((options.accountStatus && options.accountStatus !== 'ACTIVE') || options.expiredAccount))
+      return route.fulfill({
+        status: 401,
+        json: { success: false, error: { code: 'UNAUTHORIZED', message: 'Authentication required' } },
+      });
     if (path === '/auth/session') return ok({ authenticated: true, user: account });
     if (path === '/me') {
       if (method === 'PATCH') {
@@ -358,11 +366,32 @@ export async function installFixtures(
     }
     if (path === '/admin/capabilities') {
       const permissions = options.adminPermissions ?? [
-        'company.view', 'customer.view', 'project.view', 'property.view', 'customer_property.view',
+        'company.view', 'customer.view', 'project.view', 'property.view', 'reservation.view', 'customer_property.view',
         'integration.view', 'user.view', 'role.view', 'permission.view', 'feature_flag.view',
         'audit.view', 'system_settings.view',
       ];
-      return ok({ permissions, grants: {} });
+      const mutation_permissions = options.adminMutationPermissions ?? [
+        'company.manage', 'project.create', 'project.edit', 'property.create', 'property.edit',
+        'property.change_status', 'reservation.create', 'reservation.manage', 'reservation.cancel',
+        'customer_property.manage', 'user.manage', 'role.manage', 'permission.manage',
+        'integration.manage', 'feature_flag.manage', 'system_settings.manage',
+      ];
+      const modules = [
+        ['/', 'company.view'], ['/customers', 'customer.view'], ['/rhc-digital-ids', 'customer.view'],
+        ['/companies', 'company.view'], ['/projects', 'project.view'], ['/properties', 'property.view'],
+        ['/amica-tower-inventory', 'property.view'], ['/reservations', 'reservation.view'],
+        ['/customer-properties', 'customer_property.view'], ['/business-services', 'integration.view'],
+        ['/users', 'user.view'], ['/roles', 'role.view'], ['/user-roles', 'role.view'],
+        ['/permissions', 'permission.view'], ['/integrations', 'integration.view'],
+        ['/feature-flags', 'feature_flag.view'], ['/audit-logs', 'audit.view'], ['/system-settings', 'system_settings.view'],
+      ].map(([path, permission]) => ({ path, permission, usable: permissions.includes(permission) && (path !== '/' || permissions.includes('company.view')) }));
+      return ok({
+        permissions,
+        grants: Object.fromEntries(permissions.map((permission) => [permission, []])),
+        mutation_permissions,
+        mutation_grants: Object.fromEntries(mutation_permissions.map((permission) => [permission, []])),
+        modules,
+      });
     }
     if (path === '/admin/dashboard')
       return ok({
@@ -434,10 +463,10 @@ export async function installFixtures(
     flags,
   };
 }
-export async function signIn(page: Page) {
+export async function signIn(page: Page, destination: RegExp = /\/dashboard$/) {
   await page.goto('/login');
   await page.getByLabel('Email address').fill(user.email);
   await page.getByLabel('Password', { exact: true }).fill('Synthetic-password-42!');
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
-  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page).toHaveURL(destination);
 }

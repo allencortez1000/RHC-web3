@@ -203,3 +203,33 @@ keys, real identities, or customer data.
 Checkpoint 3 source and fixture work can be reviewed locally. It is not live
 PostgreSQL verification, staging initialization, legal approval, partner
 acceptance, administrator bootstrap, or Month 1 release acceptance.
+
+## Checkpoint 4A — Frontend integration completed for review
+
+Checkpoint 4A integrated `origin/main` at `aa7ae72bb08a4bdb64857e64ca14fb2305d21d8e` after creating local safety commit `d3d2a9604c34073ad1b8b235a80343134255cb25`. The resulting merge preserves Checkpoints 1–3 and the colleague’s visual/frontend additions. The exact merge commit SHA is recorded in the Checkpoint 4A evidence bundle and final Git state.
+
+### Integrated contracts
+
+- Admin login uses real Supabase PKCE authentication, then lands at `/`; effective capabilities select the first usable module. Customer login remains `/dashboard`.
+- `GET /admin/capabilities` now reports module usability using actual list-guard scope semantics, plus separate mutation permission data. Resource APIs remain authoritative.
+- Admin controls distinguish read from write permissions. AUDITOR/read-only accounts can inspect permitted records but do not receive mutation controls; direct unauthorized writes remain 403.
+- Missing Supabase configuration and all demo/mock browser shortcuts fail closed. No fake bearer token, client-generated admin identity, hardcoded demo password, or customer credential disclosure is part of the merged runtime.
+- Customer property detail prefers authorized `/me/properties` records and only falls back to the public available-property lookup when no authorized relationship exists. Marketplace categories render existing API directory records; Month 2 settlement remains disabled.
+- Local browser contracts use Customer `3002`, Admin `3003`, API `3001`; development CORS and Playwright configs are aligned.
+
+### Remote paths and conflict decisions
+
+Shared/runtime/auth-sensitive paths were manually reviewed rather than resolved with blind ours/theirs selection. The remote historical lockdown migration edit was not retained; the new reservation foundation migration remains pending and must be reviewed as migration six. The remote eager demo seed was not retained; the import-safe injected core/sample seed remains canonical. Conflicts and cumulative attribution are recorded in `audit-corrections-progress.md` and the Checkpoint 4A evidence bundle.
+
+### Checkpoint 4B requirements
+
+1. Review all six migration sources in order on a newly created disposable PostgreSQL target. Do not alter or apply them to staging.
+2. Verify reservation migration ordering/checksums, authorization-scope deletion `RESTRICT`, reservation/property-status constraints, connection-limit-1 nested transaction behavior, rollback/concurrency/idempotency, and RLS/ACL/object ownership.
+3. Run the import-safe seed helper only with injected doubles for source regression; separately approve any real core seed target/mode. Do not run `db:seed` here.
+4. Inspect approved staging identity, migration/runtime roles, grants, RLS/policies/views/functions, existing data, and target ownership only after the migration gate is approved.
+5. Keep company partner activation/event allowlisting, first unlinked-customer association, and legal policy/version inputs as explicit business/security decisions.
+6. Re-run both browser suites after any future frontend merge or runtime contract change; no blind replacement of shared runtime is approved.
+
+### Checkpoint 4A validation boundary
+
+**SOURCE IMPLEMENTED / FIXTURE TESTED:** combined typecheck, lint, unit/service, seed, API E2E, Customer browser, Admin browser, build, audit, and diff checks passed with synthetic/local fixtures. **LIVE VERIFIED:** none. No database connection, migration, seed, bootstrap, provider settings change, deployment, or Month 2 activation occurred. This handoff is not Month 1 release acceptance.
