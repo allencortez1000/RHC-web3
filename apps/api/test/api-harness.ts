@@ -24,8 +24,20 @@ function required(record: any) {
 
 // Only database/Redis boundaries are replaced. Auth, provisioning, ID issuance,
 // guards, controllers, filters and audit/event services execute unmodified.
+type FixtureGrant = {
+  company_id: string | null;
+  project_id: string | null;
+  expires_at: Date | null;
+  role: {
+    company_id: string | null;
+    code: string;
+    role_permissions: Array<{ permission: { code: string } }>;
+  };
+  project: { company_id: string } | null;
+};
+
 export function databaseFixture() {
-  const grants = new Map<string, Array<{ company_id: string | null; project_id: string | null; expires_at: Date | null; role: { company_id: string | null }; project: { company_id: string } | null }>>();
+  const grants = new Map<string, FixtureGrant[]>();
   const flags = new Map(['ENABLE_RHC_ID', 'ENABLE_PROPERTIES', 'ENABLE_COMPANY_DIRECTORY', 'ENABLE_INTEGRATION_FRAMEWORK', 'ENABLE_REGISTRATION'].map((key) => [key, { id: ids.flag, key, enabled: true, scope: 'GLOBAL' }]));
   const user = { id: ids.user, email: 'customer@example.test', supabase_user_id: ids.subject, account_status: 'ACTIVE', verification_status: 'PENDING', auth_email_confirmed_at: new Date('2026-01-01') };
   const users = new Map<string, any>([[user.id, user]]);
@@ -39,7 +51,12 @@ export function databaseFixture() {
   const properties = [{ id: ids.propertyA, project_id: ids.projectA, property_code: 'A-101', status: 'AVAILABLE', project: projects[0] }, { id: ids.propertyB, project_id: ids.projectB, property_code: 'B-101', status: 'AVAILABLE', project: projects[1] }];
   const prisma: any = {
     mockMode: false,
-    userRole: { findMany: jest.fn(async (args) => users.get(args.where.user_id)?.account_status === 'ACTIVE' ? grants.get(args.where.role.role_permissions.some.permission.code) ?? [] : []) },
+    userRole: { findMany: jest.fn(async (args) => {
+      if (users.get(args.where.user_id)?.account_status !== 'ACTIVE') return [];
+      const permission = args.where.role.role_permissions?.some?.permission?.code;
+      const assignments = permission ? grants.get(permission) ?? [] : [...grants.values()].flat();
+      return assignments.filter((assignment) => assignment.role.code !== 'CUSTOMER' && (!assignment.expires_at || assignment.expires_at > new Date()));
+    }) },
     user: {
       findUnique: jest.fn(async (args) => userResult(findUser(args.where), args)),
       findUniqueOrThrow: jest.fn(async (args) => userResult(required(findUser(args.where)), args)),
@@ -84,7 +101,7 @@ export function databaseFixture() {
     $executeRaw: jest.fn(async () => 1), $queryRaw: jest.fn(async () => [{ '?column?': 1 }]),
   };
   prisma.$transaction = jest.fn(async (callback) => callback(prisma));
-  return { prisma, grants, flags, user, users, profiles, sequences, grant(permission: string, company: string | null = null, project: string | null = null) { grants.set(permission, [{ company_id: company, project_id: project, expires_at: null, role: { company_id: null }, project: project ? { company_id: company ?? ids.companyA } : null }]); } };
+  return { prisma, grants, flags, user, users, profiles, sequences, grant(permission: string, company: string | null = null, project: string | null = null, role = 'SYSTEM_ADMIN') { grants.set(permission, [{ company_id: company, project_id: project, expires_at: null, role: { company_id: null, code: role, role_permissions: [{ permission: { code: permission } }] }, project: project ? { company_id: company ?? ids.companyA } : null }]); } };
 }
 
 export async function createHarness() {

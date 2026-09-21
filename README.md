@@ -22,9 +22,9 @@ Public token, token sale, staking, custody, exchange, and production blockchain 
 
 ## Current status: prepare-only, staging NO GO
 
-The implementation is extensive, but it is **not deployed or live-accepted**. Main reports **210 unit tests / 11 suites** and **140 API tests / 8 suites** passing with fixtures/test doubles only. Final frontend reruns are pending (approximately 55 customer and 65 admin tests); these are not confirmed pass counts.
+The implementation is extensive, but it is **not deployed or live-accepted**. The final local rerun passed **217 API unit tests / 13 suites**, **143 API request/E2E tests / 8 suites**, **55 customer browser tests**, and **65 admin browser tests** using fixtures or intercepted synthetic providers only. These results are local engineering evidence, not production or UAT acceptance.
 
-All **four migrations remain pending**. RLS/revocations are migration source, not applied protection. The prior configuration check rejected database URL syntax; no connection target, role, or grants have been verified. Do not migrate staging until a valid target and role/grants are approved and the migration chain is verified on disposable PostgreSQL. Live verification and separate release approval remain mandatory. Docker and a local Node 22 runtime run are unverified; the preparation host used Node 24.
+All **five migrations remain pending**. RLS/revocations are migration source, not applied protection. The prior configuration check rejected database URL syntax; no connection target, role, or grants have been verified. Do not migrate staging until a valid target and role/grants are approved and the migration chain is verified on disposable PostgreSQL. Live verification and separate release approval remain mandatory. Docker and a local Node 22 runtime run are unverified; the preparation host used Node 24.
 
 See the [targeted completion report](docs/month-1/targeted-completion-report.md), [acceptance gates](docs/month-1/acceptance-validation.md), and [known limitations](docs/month-1/known-limitations.md). Historical hardening reports are not current acceptance evidence.
 
@@ -54,13 +54,22 @@ npm ci
 npm run dev
 ```
 
-`npm run dev` starts only the customer portal. Start other applications in separate terminals:
+`npm run dev` starts the two frontend applications in the normal connected-development profile. It does not start or emulate the API:
 
-| Application | Command                         | Default URL           |
-| ----------- | ------------------------------- | --------------------- |
-| Customer    | `npm run dev`                   | http://localhost:3000 |
-| Admin       | `npm run dev -w @rhc/admin-web` | http://localhost:3002 |
-| API         | `npm run dev -w @rhc/api`       | http://localhost:4000 |
+| Application | Command                | Default URL           |
+| ----------- | ---------------------- | --------------------- |
+| Customer    | `npm run dev:customer` | http://localhost:3002 |
+| Admin       | `npm run dev:admin`    | http://localhost:3003 |
+| API         | `npm run dev:api`      | http://localhost:4000 |
+| All live    | `npm run dev:all`      | ports above           |
+
+For the intentional self-contained local presentation profile, use:
+
+```bash
+npm run dev:demo
+```
+
+On Windows, `npm.cmd run dev:demo` is equivalent when invoking npm directly. Demo mode starts only the customer and admin frontends at `http://127.0.0.1:3002` and `http://127.0.0.1:3003`, hosts a loopback-only fixture hub under the customer app, and persists synthetic state in ignored `.rhc-demo/` files. It does not initialize Supabase, the Nest API, PostgreSQL, Redis, storage, payments, wallet/RPC providers, email, or SMS. It is refused outside the explicit local demo profile. See `docs/demo-guide.md`.
 
 Before starting the API from a clean checkout, generate the Prisma client and build shared libraries:
 
@@ -71,7 +80,7 @@ npm run build:shared
 
 Generation creates local client code; it does not apply migrations or seed a database. Coordinate generation with the schema owner while schema changes are in progress. The API resolves shared packages through their compiled `dist` entry points, so rebuild shared libraries after changing them.
 
-Configure application environment variables before using Supabase authentication or database-backed API routes. There is no opaque UUID bearer-token or runtime mock fallback: API startup rejects `USE_MOCK_DATA=true`. Tests explicitly replace provider boundaries; missing credentials must not become demo success. The legacy `dev:mock` command is only an alias for `dev`, not a mock mode.
+Configure application environment variables before using Supabase authentication or database-backed API routes. Connected mode remains fail-closed: missing credentials never become successful fixture responses, and API startup still rejects `USE_MOCK_DATA=true`. The explicit frontend-only `dev:demo` profile uses mock-only opaque sessions and a local fixture hub; those sessions are never accepted by the real API. `dev:mock` is retained only as a compatibility alias for `dev:demo`.
 
 This hardening handoff is **prepare-only**: do not deploy, migrate, seed, or bootstrap production identities as part of dependency installation or validation. See [the dependency/configuration report](docs/month-1/dependency-hardening-report.md) for exact versions, audit results, and pending validation.
 
@@ -84,6 +93,9 @@ npm run typecheck
 npm run test
 npm run build
 npm run test:e2e
+npm run test:demo:store
+npm run test:demo
+npm run test:demo:browser
 npm run validate
 ```
 

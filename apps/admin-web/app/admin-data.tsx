@@ -10,67 +10,70 @@ import {
   protectedRole,
   type ManagementAction,
 } from './management-controls';
-import { useState, type FormEvent } from 'react';
+import { useState, type FormEvent, type ReactNode } from 'react';
 import {
   Badge,
   Card,
+  CommandMenu,
   EmptyState,
   MetricCard,
   ResourceStatus,
   SignOutButton,
   ThemeToggle,
+  UnavailableFeature,
   Web3Button,
   Web3Shell,
   errorMessage,
+  getRequestAvailability,
   usePagedResource,
   useResource,
   useRuntime,
 } from '@rhc/ui';
 
-type AdminNavItem = readonly [string, string];
+type AdminNavItem = readonly [label: string, href: string];
 export const adminNavGroups: Array<{ section: string; items: AdminNavItem[] }> = [
   {
-    section: 'Overview',
+    section: 'Operations',
     items: [
       ['Command Center', '/'],
-      ['Review Queue', '/verification'],
+      ['Reservations', '/reservations'],
+      ['Properties', '/properties'],
+      ['Amica Tower Inventory', '/amica-tower-inventory'],
+      ['Customer Properties', '/customer-properties'],
+      ['Service Requests', '/service-requests'],
+      ['Operational Reports', '/reports'],
     ],
   },
   {
-    section: 'Customers',
+    section: 'Verification & Records',
     items: [
+      ['Verification Reviews', '/verification'],
       ['Customers', '/customers'],
       ['Digital IDs', '/rhc-digital-ids'],
-      ['Verification Reviews', '/verification'],
+      ['Payments', '/payments'],
+      ['Documents', '/documents'],
+      ['Certificates', '/certificates'],
+      ['Rewards Ledger', '/rewards-ledger'],
+      ['Audit Logs', '/audit-logs'],
     ],
   },
   {
-    section: 'Property Operations',
+    section: 'Ecosystem',
     items: [
       ['Companies', '/companies'],
       ['Projects', '/projects'],
-      ['Inventory', '/properties'],
-      ['Amica Tower Inventory', '/amica-tower-inventory'],
-      ['Reservations', '/reservations'],
-      ['Customer Properties', '/customer-properties'],
-    ],
-  },
-  {
-    section: 'Records & Services',
-    items: [
       ['Business Services', '/business-services'],
       ['Integrations', '/integrations'],
-      ['Feature Flags', '/feature-flags'],
     ],
   },
   {
-    section: 'Governance',
+    section: 'Administration',
     items: [
       ['Users', '/users'],
       ['Roles', '/roles'],
       ['User Roles', '/user-roles'],
       ['Permissions', '/permissions'],
-      ['Audit Logs', '/audit-logs'],
+      ['Feature Flags', '/feature-flags'],
       ['System Settings', '/system-settings'],
     ],
   },
@@ -78,6 +81,38 @@ export const adminNavGroups: Array<{ section: string; items: AdminNavItem[] }> =
 export const adminNavItems: AdminNavItem[] = adminNavGroups.flatMap((group) => group.items);
 export const modules = adminNavItems.map(([label]) => label);
 const routeFor = new Map<string, string>(adminNavItems.map(([label, href]) => [label, href]));
+const routePermissions: Record<string, string | string[] | undefined> = {
+  '/reservations': 'reservation.view',
+  '/properties': 'property.view',
+  '/amica-tower-inventory': 'property.view',
+  '/customer-properties': 'customer_property.view',
+  '/service-requests': 'integration.view',
+  '/reports': ['reservation.view', 'customer.view', 'integration.view', 'audit.view'],
+  '/verification': 'customer.view',
+  '/customers': 'customer.view',
+  '/rhc-digital-ids': 'customer.view',
+  '/payments': 'customer.view',
+  '/documents': 'customer.view',
+  '/certificates': 'customer.view',
+  '/rewards-ledger': 'customer.view',
+  '/audit-logs': 'audit.view',
+  '/companies': 'company.view',
+  '/projects': 'project.view',
+  '/business-services': 'integration.view',
+  '/integrations': 'integration.view',
+  '/users': 'user.view',
+  '/roles': 'role.view',
+  '/user-roles': 'role.view',
+  '/permissions': 'permission.view',
+  '/feature-flags': 'feature_flag.view',
+  '/system-settings': 'system_settings.view',
+};
+export function canAccessAdminRoute(permissions: string[] | undefined, href: string) {
+  const permission = routePermissions[href];
+  if (Array.isArray(permission)) return permission.some((code) => permissions?.includes(code));
+  return !permission || Boolean(permissions?.includes(permission));
+}
+
 type Row = { id: string; [key: string]: unknown };
 type Column = [string, string];
 const columns: Record<string, Column[]> = {
@@ -189,6 +224,48 @@ const columns: Record<string, Column[]> = {
     ['key', 'Key'],
     ['description', 'Description'],
     ['updated_at', 'Updated'],
+  ],
+  payments: [
+    ['reference', 'Reference'],
+    ['customer_id', 'Customer'],
+    ['property_id', 'Property'],
+    ['amount_minor', 'Amount (centavos)'],
+    ['currency', 'Currency'],
+    ['status', 'Status'],
+    ['submitted_at', 'Submitted'],
+  ],
+  documents: [
+    ['title', 'Document'],
+    ['customer_id', 'Customer'],
+    ['category', 'Category'],
+    ['version', 'Version'],
+    ['status', 'Status'],
+    ['issued_at', 'Submitted'],
+  ],
+  certificates: [
+    ['reference', 'Reference'],
+    ['customer_id', 'Customer'],
+    ['type', 'Credential'],
+    ['linked_record', 'Linked record'],
+    ['status', 'Status'],
+    ['blockchain_status', 'Blockchain'],
+  ],
+  'service-requests': [
+    ['reference', 'Reference'],
+    ['customer_id', 'Customer'],
+    ['company_id', 'Company'],
+    ['title', 'Request'],
+    ['status', 'Status'],
+    ['updated_at', 'Updated'],
+  ],
+  'rewards-ledger': [
+    ['date', 'Date'],
+    ['customer_id', 'Customer'],
+    ['source', 'Source'],
+    ['points', 'Points'],
+    ['reason', 'Reason'],
+    ['rule_version', 'Rule'],
+    ['status', 'Status'],
   ],
 };
 function valueAt(row: Row, path: string): unknown {
@@ -438,7 +515,7 @@ export function AdminTable({
     `/admin/${resource}`,
     !['roles', 'permissions', 'feature-flags', 'system-settings'].includes(resource),
   );
-  const { request, user } = useRuntime();
+  const { request, user, dataMode } = useRuntime();
   const [review, setReview] = useState<Row | null>(null);
   const [management, setManagement] = useState<ManagementAction | null>(null);
   const [query, setQuery] = useState('');
@@ -447,6 +524,10 @@ export function AdminTable({
   const [editing, setEditing] = useState<Row | 'new' | null>(null);
   const [flag, setFlag] = useState<Row | null>(null);
   const [reservationAction, setReservationAction] = useState<{ row: Row; action: 'confirm' | 'cancel' | 'expire' | 'convert' } | null>(null);
+  const [workflowAction, setWorkflowAction] = useState<{
+    row: Row;
+    action: 'approve' | 'reject' | 'verify' | 'reverse' | 'revoke' | 'supersede' | 'progress';
+  } | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
@@ -465,7 +546,8 @@ export function AdminTable({
   const canEdit = resource === 'companies' || resource === 'properties';
   const canManage =
     metadataResources.includes(resource) || ['user-roles', 'system-settings'].includes(resource);
-  const actionOpen = Boolean(management || review || editing || flag || reservationAction);
+  const workflowResource = ['payments', 'documents', 'certificates', 'service-requests'].includes(resource);
+  const actionOpen = Boolean(management || review || editing || flag || reservationAction || workflowAction);
   const manage = (mode: ManagementAction['mode'], row?: Row) => {
     setManagement({ resource, mode, row });
     setMessage('');
@@ -476,7 +558,8 @@ export function AdminTable({
     setManagement(null);
     setFlag(null);
     setReservationAction(null);
-    setMessage('Changes saved.');
+    setWorkflowAction(null);
+    setMessage(dataMode === 'demo' ? 'Changes saved and recorded in demo history.' : 'Changes saved.');
     data.refresh();
   };
   async function submitReservationAction() {
@@ -498,6 +581,36 @@ export function AdminTable({
       setBusy(false);
     }
   }
+  async function submitWorkflowAction(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!workflowAction || busy) return;
+    const form = new FormData(event.currentTarget);
+    const reason = String(form.get('reason') || '').trim();
+    const statusValue = String(form.get('status') || '').trim();
+    if (reason.length < 3) {
+      setError('A review reason or progress note is required.');
+      return;
+    }
+    setBusy(true);
+    setError('');
+    try {
+      const action = workflowAction.action;
+      await request(`/admin/${resource}/${encodeURIComponent(workflowAction.row.id)}/${action}`, {
+        method: 'POST',
+        body: JSON.stringify(
+          action === 'progress'
+            ? { status: statusValue, note: reason }
+            : { reason },
+        ),
+      });
+      complete();
+    } catch (cause) {
+      setError(errorMessage(cause));
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function toggleFlag() {
     if (!flag || busy) return;
     setBusy(true);
@@ -514,23 +627,24 @@ export function AdminTable({
       setBusy(false);
     }
   }
+  if (data.unavailable) return <UnavailableFeature unavailable={data.unavailable} />;
   return (
     <>
       {management && (
         <ManagementEditor
           action={management}
-          done={complete}
-          cancel={() => setManagement(null)}
-          refresh={data.refresh}
+          doneAction={complete}
+          cancelAction={() => setManagement(null)}
+          refreshAction={data.refresh}
         />
       )}
       {review && (
         <VerificationReview
           key={review.id}
           candidate={review}
-          cancel={() => setReview(null)}
-          refresh={data.refresh}
-          done={() => {
+          cancelAction={() => setReview(null)}
+          refreshAction={data.refresh}
+          doneAction={() => {
             setReview(null);
             setMessage('Business verification approved.');
             data.refresh();
@@ -558,6 +672,34 @@ export function AdminTable({
             <Web3Button disabled={busy} onClick={submitReservationAction}>Confirm action</Web3Button>
             <Web3Button disabled={busy} variant="secondary" onClick={() => setReservationAction(null)}>Cancel</Web3Button>
           </div>
+        </Card>
+      )}
+      {workflowAction && (
+        <Card title="Review workflow action" className="mb-5">
+          <form onSubmit={submitWorkflowAction}>
+            <p className="text-sm text-[var(--rhc-muted)]">
+              {workflowAction.action.toUpperCase()} {resource} record {String(workflowAction.row.reference || workflowAction.row.title || workflowAction.row.id)}. A reason is required and the result is appended to audit and customer history.
+            </p>
+            {workflowAction.action === 'progress' ? (
+              <label className="mt-4 block text-sm font-semibold">
+                Next status
+                <select name="status" required className="mt-2 w-full rounded-xl border p-3">
+                  <option value="ACKNOWLEDGED">Acknowledged</option>
+                  <option value="IN_PROGRESS">In progress</option>
+                  <option value="COMPLETED">Completed</option>
+                  <option value="CANCELLED">Cancelled</option>
+                </select>
+              </label>
+            ) : null}
+            <label className="mt-4 block text-sm font-semibold">
+              Reason or operator note
+              <textarea name="reason" required minLength={3} maxLength={500} className="mt-2 min-h-24 w-full rounded-xl border p-3" />
+            </label>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <Web3Button type="submit" disabled={busy}>{busy ? 'Applying…' : 'Confirm action'}</Web3Button>
+              <Web3Button variant="secondary" disabled={busy} onClick={() => setWorkflowAction(null)}>Cancel</Web3Button>
+            </div>
+          </form>
         </Card>
       )}
       {flag && (
@@ -675,18 +817,20 @@ export function AdminTable({
           <>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
+                <caption className="sr-only">{resource.replaceAll('-', ' ')} records available within the current operator scope</caption>
                 <thead>
                   <tr>
                     {cols.map(([key, label]) => (
                       <th
                         key={key}
+                        scope="col"
                         className="whitespace-nowrap p-3 text-xs uppercase text-[var(--rhc-muted)]"
                       >
                         {label}
                       </th>
                     ))}
-                    {(canEdit || canReview || canManage || resource === 'feature-flags' || resource === 'reservations') && (
-                      <th className="p-3">Actions</th>
+                    {(canEdit || canReview || canManage || resource === 'feature-flags' || resource === 'reservations' || workflowResource) && (
+                      <th scope="col" className="p-3">Actions</th>
                     )}
                   </tr>
                 </thead>
@@ -823,6 +967,40 @@ export function AdminTable({
                           </div>
                         </td>
                       )}
+                      {workflowResource && (
+                        <td className="p-3">
+                          <div className="flex flex-wrap gap-2">
+                            {resource === 'documents' && ['SUBMITTED', 'UNDER_REVIEW', 'REJECTED'].includes(String(row.status)) ? (
+                              <>
+                                <Web3Button variant="secondary" disabled={actionOpen || data.loading} onClick={() => setWorkflowAction({ row, action: 'approve' })}>Approve</Web3Button>
+                                <Web3Button variant="secondary" disabled={actionOpen || data.loading} onClick={() => setWorkflowAction({ row, action: 'reject' })}>Reject</Web3Button>
+                              </>
+                            ) : null}
+                            {resource === 'payments' && ['SUBMITTED', 'PENDING'].includes(String(row.status)) ? (
+                              <Web3Button variant="secondary" disabled={actionOpen || data.loading} onClick={() => setWorkflowAction({ row, action: 'verify' })}>Verify record</Web3Button>
+                            ) : null}
+                            {resource === 'payments' && row.status === 'POSTED' ? (
+                              <Web3Button variant="secondary" disabled={actionOpen || data.loading} onClick={() => setWorkflowAction({ row, action: 'reverse' })}>Record reversal</Web3Button>
+                            ) : null}
+                            {resource === 'certificates' && row.status === 'ACTIVE' ? (
+                              <>
+                                <Web3Button variant="secondary" disabled={actionOpen || data.loading} onClick={() => setWorkflowAction({ row, action: 'supersede' })}>Supersede</Web3Button>
+                                <Web3Button variant="secondary" disabled={actionOpen || data.loading} onClick={() => setWorkflowAction({ row, action: 'revoke' })}>Revoke</Web3Button>
+                              </>
+                            ) : null}
+                            {resource === 'service-requests' && !['COMPLETED', 'CANCELLED'].includes(String(row.status)) ? (
+                              <Web3Button variant="secondary" disabled={actionOpen || data.loading} onClick={() => setWorkflowAction({ row, action: 'progress' })}>Progress request</Web3Button>
+                            ) : null}
+                            {!['documents', 'payments', 'certificates', 'service-requests'].some((name) => name === resource) ? null :
+                              !(
+                                (resource === 'documents' && ['SUBMITTED', 'UNDER_REVIEW', 'REJECTED'].includes(String(row.status))) ||
+                                (resource === 'payments' && ['SUBMITTED', 'PENDING', 'POSTED'].includes(String(row.status))) ||
+                                (resource === 'certificates' && row.status === 'ACTIVE') ||
+                                (resource === 'service-requests' && !['COMPLETED', 'CANCELLED'].includes(String(row.status)))
+                              ) ? <span className="text-xs text-[var(--rhc-muted)]">No action for current state</span> : null}
+                          </div>
+                        </td>
+                      )}
                       {resource === 'feature-flags' && (
                         <td className="p-3">
                           <Web3Button
@@ -878,39 +1056,161 @@ export function AdminTable({
     </>
   );
 }
-function AdminSidebar({ active }: { active?: string }) {
+function AdminNavigation({
+  activeHref,
+  mobile = false,
+}: {
+  activeHref: string;
+  mobile?: boolean;
+}) {
+  const { user } = useRuntime();
+  const visibleGroups = adminNavGroups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter(([, href]) => canAccessAdminRoute(user?.permissions, href)),
+    }))
+    .filter((group) => group.items.length > 0);
+  return (
+    <nav
+      aria-label={mobile ? 'Mobile admin navigation' : 'Admin navigation'}
+      className={mobile ? 'flex gap-5 overflow-x-auto pb-1' : 'mt-6 space-y-6'}
+    >
+      {visibleGroups.map((group) => (
+        <div
+          key={group.section}
+          className={mobile ? 'flex shrink-0 items-center gap-2' : undefined}
+        >
+          <p
+            className={
+              mobile
+                ? 'whitespace-nowrap text-[0.65rem] font-black uppercase tracking-[0.14em] text-[var(--rhc-primary)]'
+                : 'px-2 text-[0.68rem] font-black uppercase tracking-[0.18em] text-[var(--rhc-primary)]'
+            }
+          >
+            {group.section}
+          </p>
+          <div className={mobile ? 'flex gap-2' : 'mt-2 space-y-1'}>
+            {group.items.map(([label, href]) => {
+              const current = href === activeHref;
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  aria-current={current ? 'page' : undefined}
+                  className={
+                    mobile
+                      ? `whitespace-nowrap rounded-full border px-3 py-2 text-xs font-bold ${
+                          current
+                            ? 'border-[var(--rhc-primary)] bg-[var(--rhc-accent-soft)] text-[var(--rhc-heading)]'
+                            : 'border-[var(--rhc-border)] bg-[var(--rhc-surface-secondary)] text-[var(--rhc-secondary-text)]'
+                        }`
+                      : `flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
+                          current
+                            ? 'bg-[var(--rhc-accent-soft)] text-[var(--rhc-heading)] ring-1 ring-[rgba(212,175,55,.28)]'
+                            : 'text-[var(--rhc-secondary-text)] hover:bg-[var(--rhc-surface-secondary)] hover:text-[var(--rhc-heading)]'
+                        }`
+                  }
+                >
+                  <span>{label}</span>
+                  {!mobile && (
+                    <span
+                      aria-hidden="true"
+                      className={`h-1.5 w-1.5 rounded-full ${
+                        current ? 'bg-[var(--rhc-primary)]' : 'bg-transparent'
+                      }`}
+                    />
+                  )}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </nav>
+  );
+}
+
+function AdminSidebar({ activeHref }: { activeHref: string }) {
   return (
     <aside className="rhc-admin-sidebar fixed hidden h-full w-80 overflow-y-auto border-r border-[var(--rhc-border)] p-6 lg:block">
-      <Link href="/" className="flex items-center gap-3 rounded-2xl p-2 transition hover:bg-[var(--rhc-accent-soft)]">
-        <div className="grid h-12 w-12 place-items-center rounded-2xl border border-[rgba(212,175,55,.35)] bg-[var(--rhc-accent-soft)] font-black text-[var(--rhc-primary)]">RHC</div>
+      <Link
+        href="/"
+        aria-label="RHC command center"
+        className="flex items-center gap-3 rounded-2xl p-2 transition hover:bg-[var(--rhc-accent-soft)]"
+      >
+        <div className="grid h-12 w-12 place-items-center rounded-2xl border border-[rgba(212,175,55,.35)] bg-[var(--rhc-accent-soft)] font-black text-[var(--rhc-primary)]">
+          RHC
+        </div>
         <div>
-          <h1 className="text-base font-black text-[var(--rhc-heading)]">Admin Command Center</h1>
-          <p className="text-xs text-[var(--rhc-muted)]">Operations · RBAC · Audit</p>
+          <p className="text-base font-black text-[var(--rhc-heading)]">RHC</p>
+          <p className="text-xs text-[var(--rhc-muted)]">Admin operations · RBAC · Audit</p>
         </div>
       </Link>
       <div className="mt-5 rounded-2xl border border-[var(--rhc-border)] bg-[var(--rhc-surface-secondary)] p-4">
-        <Badge tone="gold">Demo / controlled admin</Badge>
-        <p className="mt-3 text-xs leading-5 text-[var(--rhc-muted)]">Actions are permission-guarded and should create audit records through the API.</p>
+        <Badge tone="gold">Authenticated access</Badge>
+        <p className="mt-3 text-xs leading-5 text-[var(--rhc-muted)]">
+          Administrative records and actions remain subject to server-enforced permissions.
+        </p>
       </div>
-      <nav aria-label="Admin navigation" className="mt-6 space-y-6">
-        {adminNavGroups.map((group) => (
-          <div key={group.section}>
-            <p className="px-2 text-[0.68rem] font-black uppercase tracking-[0.18em] text-[var(--rhc-primary)]">{group.section}</p>
-            <div className="mt-2 space-y-1">
-              {group.items.map(([label, href]) => {
-                const current = label === active || href === routeFor.get(active || '');
-                return (
-                  <Link key={label} href={href} className={`flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-semibold transition ${current ? 'bg-[var(--rhc-accent-soft)] text-[var(--rhc-heading)] ring-1 ring-[rgba(212,175,55,.28)]' : 'text-[var(--rhc-secondary-text)] hover:bg-[var(--rhc-surface-secondary)] hover:text-[var(--rhc-heading)]'}`}>
-                    <span>{label}</span>
-                    <span className={`h-1.5 w-1.5 rounded-full ${current ? 'bg-[var(--rhc-primary)]' : 'bg-transparent'}`} />
-                  </Link>
-                );
-              })}
+      <AdminNavigation activeHref={activeHref} />
+    </aside>
+  );
+}
+
+export function AdminShell({
+  title,
+  activeHref,
+  children,
+}: {
+  title: string;
+  activeHref: string;
+  children: ReactNode;
+}) {
+  const { user, dataMode } = useRuntime();
+  const availability = getRequestAvailability(dataMode, `/admin${activeHref}`);
+  const commandItems = adminNavGroups.flatMap((group) =>
+    group.items
+      .filter(([, href]) => canAccessAdminRoute(user?.permissions, href))
+      .map(([label, href]) => ({ label, href, group: group.section })),
+  );
+  return (
+    <Web3Shell variant="admin">
+      <a className="rhc-skip-link" href="#admin-main-content">
+        Skip to main content
+      </a>
+      <AdminSidebar activeHref={activeHref} />
+      <div className="min-h-screen lg:pl-80">
+        <header className="sticky top-0 z-20 border-b border-[var(--rhc-border)] bg-[var(--rhc-bg)] px-5 py-4 backdrop-blur-xl md:px-8">
+          <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4">
+            <div>
+              <nav aria-label="Breadcrumb" className="rhc-eyebrow flex items-center gap-2">
+                <Link href="/" className="hover:text-[var(--rhc-heading)]">RHC Admin</Link>
+                <span aria-hidden="true">/</span>
+                <span aria-current="page">{title}</span>
+              </nav>
+              <h1 className="mt-1 text-2xl font-black text-[var(--rhc-heading)] md:text-3xl">
+                {title}
+              </h1>
+            </div>
+            <div className="flex items-center gap-3">
+              <CommandMenu label="Navigate" items={commandItems} />
+              <ThemeToggle />
+              <SignOutButton />
             </div>
           </div>
-        ))}
-      </nav>
-    </aside>
+          <div className="mx-auto mt-4 max-w-7xl lg:hidden">
+            <AdminNavigation activeHref={activeHref} mobile />
+          </div>
+        </header>
+        <div
+          id="admin-main-content"
+          tabIndex={-1}
+          className="mx-auto max-w-7xl px-5 py-6 md:px-8 md:py-8"
+        >
+          {availability.available ? children : <UnavailableFeature unavailable={availability} title={title} />}
+        </div>
+      </div>
+    </Web3Shell>
   );
 }
 
@@ -923,36 +1223,16 @@ export function AdminModule({
   resource: string;
   amicaOnly?: boolean;
 }) {
+  const activeHref = routeFor.get(title) || `/${resource}`;
   return (
-    <Web3Shell variant="admin">
-      <AdminSidebar active={title} />
-      <section className="min-h-screen lg:pl-80">
-        <header className="sticky top-0 z-20 border-b border-[var(--rhc-border)] bg-[var(--rhc-bg)] px-5 py-4 backdrop-blur-xl md:px-8">
-          <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4">
-            <div>
-              <p className="rhc-eyebrow">RHC Digital Admin</p>
-              <h1 className="mt-1 text-2xl font-black text-[var(--rhc-heading)] md:text-3xl">{title}</h1>
-            </div>
-            <div className="flex items-center gap-3">
-              <Link href="/" className="rounded-xl border border-[var(--rhc-border)] px-3 py-2 text-sm font-semibold text-[var(--rhc-secondary-text)] hover:bg-[var(--rhc-surface-secondary)] hover:text-[var(--rhc-heading)]">Command Center</Link>
-              <ThemeToggle />
-              <SignOutButton />
-            </div>
-          </div>
-          <nav aria-label="Mobile admin modules" className="mx-auto mt-4 flex max-w-7xl gap-2 overflow-x-auto pb-1 lg:hidden">
-            {adminNavItems.map(([label, href]) => (
-              <Link key={label} href={href} className="whitespace-nowrap rounded-full border border-[var(--rhc-border)] bg-[var(--rhc-surface-secondary)] px-3 py-2 text-xs font-bold text-[var(--rhc-secondary-text)]">{label}</Link>
-            ))}
-          </nav>
-        </header>
-        <main className="mx-auto max-w-7xl px-5 py-6 md:px-8 md:py-8">
-          <Card className="rhc-card-token" title={`${title} Workspace`}>
-            <p className="mb-5 text-sm leading-6 text-[var(--rhc-muted)]">Search, filter, review, and manage records according to your server-enforced permissions. Demo-only records remain fictional and audited.</p>
-            <AdminTable resource={resource} amicaOnly={amicaOnly} />
-          </Card>
-        </main>
-      </section>
-    </Web3Shell>
+    <AdminShell title={title} activeHref={activeHref}>
+      <Card className="rhc-card-token" title={`${title} Workspace`}>
+        <p className="mb-5 text-sm leading-6 text-[var(--rhc-muted)]">
+          Search, filter, review, and manage records according to your server-enforced permissions.
+        </p>
+        <AdminTable resource={resource} amicaOnly={amicaOnly} />
+      </Card>
+    </AdminShell>
   );
 }
 const metrics = [

@@ -7,11 +7,13 @@
     "@rhc/ui": "0.1.0",
     "@supabase/supabase-js": "^2.49.8",
     "next": "15.5.25",
+    "qrcode": "^1.5.4",
     "react": "19.3.0",
     "react-dom": "19.3.0"
   },
   "devDependencies": {
     "@playwright/test": "1.63.0",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^19.1.16",
     "@types/react-dom": "^19.1.9",
     "autoprefixer": "^10.4.19",
@@ -20,6 +22,7 @@
   },
   "scripts": {
     "dev": "next dev -p 3002",
+    "dev:demo": "next dev -p 3002 -H 127.0.0.1",
     "build": "next build",
     "start": "next start -p 3002",
     "typecheck": "tsc -p tsconfig.json --noEmit",

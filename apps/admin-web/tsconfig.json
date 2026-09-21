@@ -6,9 +6,15 @@
     "moduleResolution": "Bundler",
     "declaration": false,
     "paths": {
-      "@rhc/types": ["packages/types/src"],
-      "@rhc/types/*": ["packages/types/src/*"],
-      "@rhc/ui": ["packages/ui/src"]
+      "@rhc/types": [
+        "packages/types/src"
+      ],
+      "@rhc/types/*": [
+        "packages/types/src/*"
+      ],
+      "@rhc/ui": [
+        "packages/ui/src"
+      ]
     },
     "noEmit": true,
     "allowJs": true,
@@ -20,6 +26,13 @@
     ],
     "isolatedModules": true
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "next-env.d.ts",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

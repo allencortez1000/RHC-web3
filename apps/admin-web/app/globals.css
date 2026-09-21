@@ -1,92 +1,19 @@
 /* css-lint-disable unknownAtRules */
+@import url('../../../packages/ui/styles/meridian-tokens.css');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-:root {
-  color-scheme: dark;
-  --rhc-font-sans:
-    Inter, Manrope, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
-    sans-serif;
-  --rhc-font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-
-  --rhc-bg: #07111f;
-  --rhc-bg-secondary: #0b1728;
-  --rhc-sidebar: #0b1728;
-  --rhc-surface: #101d2e;
-  --rhc-surface-secondary: #142337;
-  --rhc-surface-elevated: #142337;
-  --rhc-border: #24364d;
-  --rhc-border-secondary: #344966;
-
-  --rhc-primary: #d4af37;
-  --rhc-primary-hover: #f2c94c;
-  --rhc-gold-premium: #f2c94c;
-  --rhc-gold-muted: #a88932;
-  --rhc-accent: #d4af37;
-  --rhc-accent-hover: #f2c94c;
-  --rhc-accent-soft: rgba(212, 175, 55, 0.12);
-
-  --rhc-heading: #f8fafc;
-  --rhc-text: #f8fafc;
-  --rhc-secondary-text: #aab6c5;
-  --rhc-muted: #718096;
-
-  --rhc-success: #22c55e;
-  --rhc-warning: #f59e0b;
-  --rhc-danger: #ef4444;
-  --rhc-info: #3b82f6;
-
-  --rhc-input: #101d2e;
-  --rhc-input-text: #f8fafc;
-  --rhc-radius-sm: 8px;
-  --rhc-radius-md: 12px;
-  --rhc-radius-lg: 16px;
-  --rhc-shadow-sm: 0 8px 20px rgba(0, 0, 0, 0.18);
-  --rhc-shadow-md: 0 18px 42px rgba(0, 0, 0, 0.28);
-  --rhc-transition: 180ms ease;
-}
-
-:root[data-theme='light'] {
-  color-scheme: light;
-  --rhc-bg: #f5f7fa;
-  --rhc-bg-secondary: #ffffff;
-  --rhc-sidebar: #101d2e;
-  --rhc-surface: #ffffff;
-  --rhc-surface-secondary: #f8fafc;
-  --rhc-surface-elevated: #f8fafc;
-  --rhc-border: #e4e7ec;
-  --rhc-border-secondary: #cbd5e1;
-
-  --rhc-primary: #b68a22;
-  --rhc-primary-hover: #d4af37;
-  --rhc-gold-premium: #d4af37;
-  --rhc-gold-muted: #8a6a1d;
-  --rhc-accent: #b68a22;
-  --rhc-accent-hover: #d4af37;
-  --rhc-accent-soft: rgba(212, 175, 55, 0.14);
-
-  --rhc-heading: #101828;
-  --rhc-text: #101828;
-  --rhc-secondary-text: #475467;
-  --rhc-muted: #667085;
-
-  --rhc-success: #16a34a;
-  --rhc-warning: #d97706;
-  --rhc-danger: #dc2626;
-  --rhc-info: #2563eb;
-
-  --rhc-input: #ffffff;
-  --rhc-input-text: #101828;
-  --rhc-shadow-sm: 0 8px 20px rgba(16, 24, 40, 0.06);
-  --rhc-shadow-md: 0 18px 42px rgba(16, 24, 40, 0.1);
-}
 
 * {
   box-sizing: border-box;
 }
 html {
   scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }
 body {
   margin: 0;
@@ -140,6 +67,21 @@ pre,
   background: var(--rhc-primary);
   color: #07111f;
 }
+.rhc-skip-link {
+  position: fixed;
+  left: 1rem;
+  top: -5rem;
+  z-index: 9999;
+  border-radius: 0.75rem;
+  background: var(--rhc-primary);
+  color: #07111f;
+  padding: 0.75rem 1rem;
+  font-weight: 900;
+  box-shadow: var(--rhc-shadow-md);
+}
+.rhc-skip-link:focus {
+  top: 1rem;
+}
 
 .rhc-shell {
   min-height: 100vh;
@@ -190,11 +132,21 @@ pre,
     var(--rhc-surface);
 }
 .rhc-card {
+  min-width: 0;
   border: 1px solid var(--rhc-border);
   background: var(--rhc-surface);
   color: var(--rhc-text);
   box-shadow: var(--rhc-shadow-sm);
   border-radius: var(--rhc-radius-md) !important;
+}
+.rhc-card * {
+  min-width: 0;
+}
+.rhc-card p,
+.rhc-card h1,
+.rhc-card h2,
+.rhc-card h3 {
+  overflow-wrap: anywhere;
 }
 .rhc-card:hover {
   border-color: var(--rhc-border-secondary);
@@ -210,7 +162,7 @@ pre,
 
 .rhc-page-title {
   color: var(--rhc-heading);
-  font-size: clamp(1.85rem, 2.8vw, 2.85rem);
+  font-size: clamp(1.75rem, 2.45vw, 2.85rem);
   font-weight: 800;
   line-height: 1.08;
   letter-spacing: -0.04em;
@@ -632,4 +584,46 @@ textarea::placeholder {
 :root[data-theme='light'] .rhc-sign-out:hover {
   background: #fef3f2;
   color: #b42318;
+}
+
+@media print {
+  @page {
+    margin: 14mm;
+  }
+  body {
+    background: #ffffff !important;
+    color: #101828 !important;
+  }
+  .rhc-admin-sidebar,
+  header,
+  .rhc-report-controls,
+  .rhc-mode-pill,
+  .rhc-bg-aura,
+  .rhc-bg-grid,
+  .rhc-demo-controls {
+    display: none !important;
+  }
+  .lg\:pl-80 {
+    padding-left: 0 !important;
+  }
+  #admin-main-content {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+  .rhc-report-sheet {
+    border: 0 !important;
+    background: #ffffff !important;
+    box-shadow: none !important;
+    color: #101828 !important;
+  }
+  .rhc-report-sheet * {
+    color: #101828 !important;
+  }
+  .rhc-report-sheet table {
+    width: 100% !important;
+    font-size: 10pt !important;
+  }
+  .rhc-report-sheet tr {
+    break-inside: avoid;
+  }
 }

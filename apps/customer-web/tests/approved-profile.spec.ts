@@ -140,7 +140,7 @@ test('approval while editing is denied by the API and locks identity after reloa
   fixture.account.verification_status = 'VERIFIED';
   await page.getByRole('button', { name: 'Save profile', exact: true }).click();
   await expect(
-    page.getByRole('alert').filter({ hasText: 'You do not have permission' }),
+    page.getByRole('alert').filter({ hasText: 'Approved identity fields require a separately reviewed administrative change' }),
   ).toBeVisible();
   await expect(page.getByRole('status').filter({ hasText: 'Profile saved.' })).toHaveCount(0);
   expect(fixture.profile.first_name).toBe('Alex');

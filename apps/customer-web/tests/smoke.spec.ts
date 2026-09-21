@@ -94,11 +94,11 @@ test('ID reads do not issue IDs; explicit issue action does', async ({ page }) =
   const fixture = await installFixtures(page, { authenticated: true, businessVerified: true });
   fixture.profile.rhc_id = null;
   await page.goto('/digital-id');
-  await expect(page.getByRole('button', { name: 'Issue RHC ID' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Issue RHC Digital ID' })).toBeVisible();
   expect(
     fixture.requests.filter((item) => item.path === '/me/rhc-id' && item.method === 'POST'),
   ).toHaveLength(0);
-  await page.getByRole('button', { name: 'Issue RHC ID' }).click();
+  await page.getByRole('button', { name: 'Issue RHC Digital ID' }).click();
   await expect(page.getByText('RHC-2026-00000042').first()).toBeVisible();
   expect(
     fixture.requests.filter((item) => item.path === '/me/rhc-id' && item.method === 'POST'),
@@ -110,21 +110,17 @@ test('confirmed email leaves a new account pending review until refreshed API ap
 }) => {
   const fixture = await installFixtures(page, { authenticated: true });
   await page.goto('/digital-id');
-  await expect(
-    page.getByRole('heading', { name: 'Email and business verification' }),
-  ).toBeVisible();
-  await expect(
-    page.getByText('Confirming your email does not approve business verification.', {
-      exact: false,
-    }),
-  ).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Issue RHC ID' })).toBeDisabled();
+  await expect(page.getByRole('heading', { name: 'Eligibility Checklist' })).toBeVisible();
+  await expect(page.getByText('Email confirmation', { exact: true })).toBeVisible();
+  await expect(page.getByText('Business verified', { exact: true })).toBeVisible();
+  await expect(page.getByText('Business review pending', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Issue RHC Digital ID' })).toHaveCount(0);
   expect(fixture.account.auth_email_confirmed_at).toBeTruthy();
   expect(fixture.account.verification_status).toBe('PENDING');
   expect(fixture.requests.filter((item) => item.method === 'POST')).toHaveLength(0);
   fixture.account.verification_status = 'VERIFIED';
-  await page.getByRole('button', { name: 'Refresh eligibility' }).click();
-  await expect(page.getByRole('button', { name: 'Issue RHC ID' })).toBeEnabled();
+  await page.getByRole('button', { name: 'Refresh status' }).click();
+  await expect(page.getByRole('button', { name: 'Issue RHC Digital ID' })).toBeEnabled();
   expect(fixture.requests.filter((item) => item.method === 'POST')).toHaveLength(0);
   await page.goto('/profile');
   await expect(
@@ -146,11 +142,8 @@ for (const [reason, patch] of [
     fixture.profile.rhc_id = null;
     Object.assign(fixture.account, patch);
     await page.goto('/digital-id');
-    await expect(page.getByRole('button', { name: 'Issue RHC ID' })).toBeDisabled();
-    await expect(page.getByRole('button', { name: 'Issue RHC ID' })).not.toHaveAttribute(
-      'title',
-      'Coming soon — Month 2',
-    );
+    await expect(page.getByRole('button', { name: 'Issue RHC Digital ID' })).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Eligibility Checklist' })).toBeVisible();
     expect(
       fixture.requests.filter((item) => item.path === '/me/rhc-id' && item.method === 'POST'),
     ).toHaveLength(0);
@@ -169,16 +162,14 @@ test('eligible ID requests still respect API feature and eligibility denial', as
       : route.fallback(),
   );
   await page.goto('/digital-id');
-  await expect(page.getByRole('button', { name: 'Issue RHC ID' })).toBeEnabled();
-  await page.getByRole('button', { name: 'Issue RHC ID' }).click();
-  await expect(
-    page.getByRole('alert').filter({ hasText: 'You do not have permission' }),
-  ).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Issue RHC Digital ID' })).toBeEnabled();
+  await page.getByRole('button', { name: 'Issue RHC Digital ID' }).click();
+  await expect(page.getByRole('alert').filter({ hasText: 'Access denied' })).toBeVisible();
   await expect(page.getByText('RHC-2026-00000042')).toHaveCount(0);
   expect(fixture.profile.rhc_id).toBeNull();
 });
 
-test('property detail uses authorized sold records; directory and notifications are live', async ({
+test('property detail falls back to authorized sold records and public marketplace stays non-transactional', async ({
   page,
 }) => {
   const fixture = await installFixtures(page, { authenticated: true });
@@ -187,13 +178,12 @@ test('property detail uses authorized sold records; directory and notifications 
   await page.getByRole('link', { name: 'View Property' }).click();
   await expect(page.getByRole('heading', { name: 'FIX-1205' })).toBeVisible();
   await expect(page.getByText('SOLD', { exact: true })).toBeVisible();
-  expect(fixture.requests.some((item) => item.path.startsWith('/properties/'))).toBe(false);
+  expect(fixture.requests.some((item) => item.path.startsWith('/properties/'))).toBe(true);
   await page.goto('/marketplace');
-  await expect(page.getByRole('heading', { name: 'Fixture Resident Services' })).toBeVisible();
-  await page.getByRole('button', { name: 'RHC Businesses', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Fixture Company' })).toBeVisible();
-  await page.getByRole('button', { name: 'Projects', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Fixture Tower' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Useful connections, clearly staged.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Property discovery' })).toBeVisible();
+  await expect(page.getByText('Discovery is not a transaction', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: /checkout|pay|redeem/i })).toHaveCount(0);
 });
 
 test('loading failures are retryable and empty data never becomes demo data', async ({ page }) => {
@@ -226,17 +216,18 @@ test('session rejection hides previously authenticated content', async ({ page }
   await expect(page.getByLabel('First name', { exact: true })).toHaveCount(0);
 });
 
-test('token assets, themes, disabled actions and mobile sign-out retain the UI', async ({
+test('future-token alias preserves restrictions, theme controls, and mobile sign-out', async ({
   page,
 }) => {
   await installFixtures(page, { authenticated: true });
   await page.goto('/token');
-  await expect(page.getByRole('button', { name: /RHC Token 3D coin/ })).toBeVisible();
-  await expect(page.locator('img[src="/images/rhc-token-front.png"]')).toHaveCount(1);
-  await expect(page.getByRole('button', { name: 'Send', exact: true })).toBeDisabled();
-  const before = await page.locator('html').getAttribute('data-theme');
-  await page.getByRole('button', { name: 'Toggle light and dark theme' }).click();
-  await expect(page.locator('html')).not.toHaveAttribute('data-theme', before!);
+  await expect(page).toHaveURL(/\/future-technology#future-token$/);
+  await expect(page.getByRole('heading', { name: 'Future Technology', exact: true })).toBeVisible();
+  await expect(page.getByText(/token issuance.*not active or authorized/i)).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Send', exact: true })).toHaveCount(0);
+  const before = await page.locator('html').getAttribute('data-theme-preference');
+  await page.getByRole('button', { name: /Theme preference/i }).click();
+  await expect(page.locator('html')).not.toHaveAttribute('data-theme-preference', before!);
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(page.getByRole('navigation', { name: 'Mobile navigation' })).toBeVisible();
   await page.getByRole('button', { name: 'Sign out', exact: true }).last().click();

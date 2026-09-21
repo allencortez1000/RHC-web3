@@ -24,7 +24,13 @@ async function requestRecovery(page: Page) {
 }
 
 // Register the same security contract against each app's own adapter and rendered pages.
-export function authCallbackTests(adapter: AuthAdapter, client: SupabaseClient | null) {
+export function authCallbackTests(
+  adapter: AuthAdapter,
+  client: SupabaseClient | null,
+  options: { verificationPath?: string; continuePath?: string } = {},
+) {
+  const verificationPath = options.verificationPath || '/verification';
+  const continuePath = options.continuePath || '/dashboard';
   test('unsupported callbacks never call setSession, verifyOtp, or exchange a code', async () => {
     expect(client, 'Run with the synthetic public Supabase fixture environment').not.toBeNull();
     const auth = client!.auth;
@@ -149,7 +155,7 @@ export function authCallbackTests(adapter: AuthAdapter, client: SupabaseClient |
 
   test('resend confirmation uses a browser-bound PKCE code and scrubs history', async ({ page }) => {
     const fixture = await installFixtures(page);
-    await page.goto('/verification');
+    await page.goto(verificationPath);
     await page.getByLabel('Email address').fill('alex@example.test');
     await page.getByRole('button', { name: 'Resend confirmation' }).click();
     await expect(page.getByRole('status')).toContainText('Check your email');
@@ -157,7 +163,7 @@ export function authCallbackTests(adapter: AuthAdapter, client: SupabaseClient |
     await expect(page.getByRole('status')).toContainText('Email confirmed');
     await expect(page).toHaveURL(/\/auth\/confirm$/);
     await page.getByRole('link', { name: 'Continue to account' }).click();
-    await expect(page).toHaveURL(/\/dashboard$/);
+    await expect(page).toHaveURL(new RegExp(`${continuePath === '/' ? '\\/$' : `${continuePath}$`}`));
     expect(fixture.authRequests.filter((item) => item.path === '/token')).toHaveLength(1);
     expect(fixture.authRequests.some((item) => item.path === '/verify')).toBe(false);
     expect(fixture.requests.some((item) => item.path === '/auth/session')).toBe(true);

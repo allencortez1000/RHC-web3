@@ -261,14 +261,14 @@ function initialValue(field: Field, row?: ManagementRow | Record<string, unknown
 
 export function ManagementEditor({
   action,
-  done,
-  cancel,
-  refresh,
+  doneAction,
+  cancelAction,
+  refreshAction,
 }: {
   action: ManagementAction;
-  done: () => void;
-  cancel: () => void;
-  refresh: () => void;
+  doneAction: () => void;
+  cancelAction: () => void;
+  refreshAction: () => void;
 }) {
   const { request, user } = useRuntime();
   const { resource, mode, row } = action;
@@ -442,11 +442,11 @@ export function ManagementEditor({
               : 'PATCH',
         body: JSON.stringify(pending.body),
       });
-      done();
+      doneAction();
     } catch (cause) {
       if (cause instanceof ApiError && cause.status === 409) {
         setStale(true);
-        refresh();
+        refreshAction();
         setError(
           'The record changed or is no longer eligible. Cancel and review the refreshed records before trying again. No change was confirmed.',
         );
@@ -620,7 +620,7 @@ export function ManagementEditor({
           {error}
         </p>
       )}
-      <Web3Button variant="secondary" disabled={busy} onClick={cancel}>
+      <Web3Button variant="secondary" disabled={busy} onClick={cancelAction}>
         Cancel
       </Web3Button>
     </Card>

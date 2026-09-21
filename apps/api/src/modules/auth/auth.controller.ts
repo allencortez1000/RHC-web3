@@ -2,6 +2,7 @@ import { Controller, Get, Header, UseGuards } from '@nestjs/common';
 import { PrismaService } from '../../platform/prisma.service';
 import { AuthGuard } from '../security/auth.guard';
 import { CurrentUser, AuthUser } from '../security/auth-user.decorator';
+import { RbacService } from '../security/rbac.service';
 
 /**
  * Authentication is performed by Supabase in the browser. This API accepts only
@@ -9,7 +10,10 @@ import { CurrentUser, AuthUser } from '../security/auth-user.decorator';
  */
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly rbac: RbacService,
+  ) {}
 
   @Get('config')
   @Header('Cache-Control', 'no-store')
@@ -20,7 +24,15 @@ export class AuthController {
 
   @Get('session')
   @UseGuards(AuthGuard)
-  session(@CurrentUser() user: AuthUser) {
-    return { authenticated: true, user };
+  async session(@CurrentUser() user: AuthUser) {
+    const capabilities = await this.rbac.capabilities(user.id);
+    return {
+      authenticated: true,
+      user: {
+        ...user,
+        ...capabilities,
+        role: capabilities.roles[0] || 'CUSTOMER',
+      },
+    };
   }
 }

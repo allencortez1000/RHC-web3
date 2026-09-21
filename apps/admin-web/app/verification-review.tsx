@@ -34,14 +34,14 @@ export function approvalBlockReason(candidate: Candidate, actorId?: string): str
 
 export function VerificationReview({
   candidate,
-  done,
-  cancel,
-  refresh,
+  doneAction,
+  cancelAction,
+  refreshAction,
 }: {
   candidate: Candidate;
-  done: () => void;
-  cancel: () => void;
-  refresh: () => void;
+  doneAction: () => void;
+  cancelAction: () => void;
+  refreshAction: () => void;
 }) {
   const { user, request } = useRuntime();
   const [reference, setReference] = useState('');
@@ -87,12 +87,12 @@ export function VerificationReview({
         throw new Error(
           'The API did not confirm approval. Refresh the records before reviewing again.',
         );
-      done();
+      doneAction();
     } catch (cause) {
       if (cause instanceof ApiError && cause.status === 409) {
         setNeedsReview(true);
         setReviewed(false);
-        refresh();
+        refreshAction();
         setError(
           'Approval was not applied because the account changed or is no longer eligible. Cancel this review, refresh the records, and review the current account state before trying again.',
         );
@@ -181,7 +181,7 @@ export function VerificationReview({
           <Web3Button type="submit" disabled={busy || needsReview || !reviewed || Boolean(blocked)}>
             {busy ? 'Approving…' : 'Confirm approval'}
           </Web3Button>
-          <Web3Button variant="secondary" disabled={busy} onClick={cancel}>
+          <Web3Button variant="secondary" disabled={busy} onClick={cancelAction}>
             Cancel review
           </Web3Button>
         </div>

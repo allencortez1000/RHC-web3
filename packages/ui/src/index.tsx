@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useMemo, useState, type MouseEvent, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type MouseEvent, type ReactNode } from 'react';
 import { AuthForm, SignOutButton, type AuthMode } from './runtime';
 export * from './runtime';
 
 type BadgeTone = 'neutral' | 'success' | 'warning' | 'danger' | 'info' | 'gold';
 type Theme = 'dark' | 'light';
+type ThemePreference = Theme | 'system';
 type NavItem = { section?: string; label: string; href: string; icon: string; active?: boolean };
 type RHCToken3DSize = 'small' | 'medium' | 'large';
 type RHCToken3DProps = {
@@ -18,8 +19,15 @@ type RHCToken3DProps = {
   onClick?: (event: MouseEvent<HTMLButtonElement>) => void;
 };
 
-function applyTheme(theme: Theme) {
+function resolveTheme(preference: ThemePreference): Theme {
+  if (preference !== 'system') return preference;
+  return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+}
+
+function applyTheme(preference: ThemePreference) {
+  const theme = resolveTheme(preference);
   document.documentElement.dataset.theme = theme;
+  document.documentElement.dataset.themePreference = preference;
   document.documentElement.style.colorScheme = theme;
 }
 
@@ -92,24 +100,23 @@ export function Web3Button({
     tertiary:
       'border border-transparent bg-transparent text-[var(--rhc-secondary-text)] hover:text-[var(--rhc-heading)]',
   }[variant];
-  const content = (
-    <span
-      className={`inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-bold transition ${classes} ${className}`}
-    >
-      {children}
-    </span>
-  );
-  return href && !disabled ? (
-    <a href={href}>{content}</a>
-  ) : (
+  const buttonClass = `inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-bold transition focus:outline-none focus:ring-2 focus:ring-[var(--rhc-primary)] focus:ring-offset-2 focus:ring-offset-[var(--rhc-bg)] ${classes} ${className}`;
+  if (href) {
+    return (
+      <a href={disabled ? undefined : href} aria-disabled={disabled || undefined} className={`${buttonClass} ${disabled ? 'pointer-events-none opacity-60' : ''}`}>
+        {children}
+      </a>
+    );
+  }
+  return (
     <button
       type={type}
       onClick={onClick}
       disabled={disabled ?? (!onClick && type !== 'submit')}
       title={!onClick && !href && type !== 'submit' ? 'Coming soon — Month 2' : undefined}
-      className="disabled:cursor-not-allowed disabled:opacity-60"
+      className={`${buttonClass} disabled:cursor-not-allowed disabled:opacity-60`}
     >
-      {content}
+      {children}
     </button>
   );
 }
@@ -127,7 +134,7 @@ export function AuthPage({
     <Web3Shell variant={admin ? 'admin' : 'customer'}>
       <section className="mx-auto max-w-4xl px-6 py-10">
         <div className="flex items-center justify-between">
-          <Badge tone="gold">{admin ? 'RHC Administration' : 'RHC Web3 Platform'}</Badge>
+          <Badge tone="gold">{admin ? 'RHC Administration' : 'RHC'}</Badge>
           <ThemeToggle />
         </div>
         <h1 className="rhc-page-title mt-5">{title}</h1>
@@ -137,7 +144,11 @@ export function AuthPage({
               ? 'Use your authorized RHC account. Administrative permissions are enforced by the API.'
               : 'Secure account access powered by Supabase Auth.'}
           </p>
-          <AuthForm mode={mode} />
+          <AuthForm
+            mode={mode}
+            verificationPath={admin ? '/verify-email' : '/verification'}
+            continuePath={admin ? '/' : '/dashboard'}
+          />
         </Card>
       </section>
     </Web3Shell>
@@ -189,65 +200,202 @@ export function MetricCard({
 }
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>('dark');
+  const [preference, setPreference] = useState<ThemePreference>('system');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const current = document.documentElement.dataset.theme as Theme | undefined;
-    const next = current === 'light' || current === 'dark' ? current : 'dark';
-    applyTheme(next);
-    setTheme(next);
+    const stored = window.localStorage.getItem('rhc-theme');
+    const initial: ThemePreference =
+      stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'system';
+    applyTheme(initial);
+    setPreference(initial);
     setMounted(true);
+    const media = window.matchMedia('(prefers-color-scheme: light)');
+    const handleChange = () => {
+      if ((window.localStorage.getItem('rhc-theme') || 'system') === 'system') applyTheme('system');
+    };
+    media.addEventListener('change', handleChange);
+    return () => media.removeEventListener('change', handleChange);
   }, []);
 
-  const visibleTheme = mounted ? theme : 'dark';
+  const visiblePreference = mounted ? preference : 'system';
+  const labels: Record<ThemePreference, string> = {
+    dark: 'Dark',
+    light: 'Light',
+    system: 'System',
+  };
 
   const toggleTheme = () => {
-    const next: Theme = visibleTheme === 'dark' ? 'light' : 'dark';
+    const next: ThemePreference =
+      visiblePreference === 'dark' ? 'light' : visiblePreference === 'light' ? 'system' : 'dark';
     applyTheme(next);
     window.localStorage.setItem('rhc-theme', next);
-    setTheme(next);
+    setPreference(next);
     setMounted(true);
   };
 
   return (
     <button
       type="button"
-      aria-label="Toggle light and dark theme"
-      aria-pressed={visibleTheme === 'light'}
+      aria-label={`Theme preference: ${labels[visiblePreference]}. Activate to change theme.`}
       onClick={toggleTheme}
-      className="rhc-theme-toggle inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-bold"
+      className="rhc-theme-toggle inline-flex min-h-11 items-center gap-2 rounded-lg border px-3 py-2 text-sm font-bold"
     >
       <span className="rhc-toggle-dot grid h-5 w-5 place-items-center rounded-md text-xs">
-        {visibleTheme === 'light' ? 'L' : 'D'}
+        {visiblePreference === 'system' ? 'S' : visiblePreference === 'light' ? 'L' : 'D'}
       </span>
-      <span>{visibleTheme === 'light' ? 'Light' : 'Dark'}</span>
+      <span>{labels[visiblePreference]}</span>
     </button>
+  );
+}
+
+export function CommandMenu({
+  items,
+  label = 'Open command menu',
+}: {
+  items: Array<{ label: string; href: string; group?: string }>;
+  label?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+  const filtered = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    return items.filter((item) => !needle || `${item.group || ''} ${item.label}`.toLowerCase().includes(needle));
+  }, [items, query]);
+
+  useEffect(() => {
+    const handleShortcut = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        setOpen((value) => !value);
+      }
+    };
+    window.addEventListener('keydown', handleShortcut);
+    return () => window.removeEventListener('keydown', handleShortcut);
+  }, []);
+
+  useEffect(() => {
+    if (!open) {
+      setQuery('');
+      return;
+    }
+
+    previousFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const focusTimer = window.setTimeout(() => inputRef.current?.focus(), 0);
+
+    const handleDialogKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setOpen(false);
+        return;
+      }
+      if (event.key !== 'Tab' || !dialogRef.current) return;
+
+      const focusable = Array.from(
+        dialogRef.current.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter((element) => element.getAttribute('aria-hidden') !== 'true');
+      if (!focusable.length) {
+        event.preventDefault();
+        dialogRef.current.focus();
+        return;
+      }
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      } else if (!dialogRef.current.contains(document.activeElement)) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleDialogKey, true);
+    return () => {
+      window.clearTimeout(focusTimer);
+      document.removeEventListener('keydown', handleDialogKey, true);
+      document.body.style.overflow = previousOverflow;
+      const focusTarget = previousFocusRef.current || triggerRef.current;
+      window.setTimeout(() => focusTarget?.focus(), 0);
+    };
+  }, [open]);
+
+  return (
+    <>
+      <button
+        ref={triggerRef}
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-haspopup="dialog"
+        aria-controls="rhc-command-dialog"
+        aria-expanded={open}
+        className="hidden min-h-11 items-center gap-2 rounded-lg border border-[var(--rhc-border)] bg-[var(--rhc-surface-secondary)] px-3 py-2 text-xs font-bold text-[var(--rhc-secondary-text)] md:inline-flex"
+      >
+        <span>{label}</span>
+        <kbd className="rounded border border-[var(--rhc-border-secondary)] px-1.5 py-0.5 font-mono">Ctrl K</kbd>
+      </button>
+      {open ? (
+        <div className="fixed inset-0 z-[120] grid place-items-start bg-[rgba(3,8,17,.72)] px-4 pt-[12vh] backdrop-blur-sm" onMouseDown={(event) => { if (event.currentTarget === event.target) setOpen(false); }}>
+          <section ref={dialogRef} id="rhc-command-dialog" role="dialog" aria-modal="true" aria-labelledby="rhc-command-title" tabIndex={-1} className="mx-auto w-full max-w-2xl overflow-hidden rounded-2xl border border-[var(--rhc-border)] bg-[var(--rhc-surface)] shadow-2xl">
+            <div className="flex items-center justify-between gap-3 border-b border-[var(--rhc-border)] p-4">
+              <div><p className="rhc-eyebrow">Scoped navigation</p><h2 id="rhc-command-title" className="text-lg font-bold text-[var(--rhc-heading)]">Command menu</h2></div>
+              <button type="button" aria-label="Close command menu" onClick={() => setOpen(false)} className="grid h-11 w-11 place-items-center rounded-xl border border-[var(--rhc-border)]">×</button>
+            </div>
+            <div className="p-4">
+              <label className="sr-only" htmlFor="rhc-command-search">Search authorized destinations</label>
+              <input ref={inputRef} id="rhc-command-search" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search destinations…" className="w-full rounded-xl border border-[var(--rhc-border)] bg-[var(--rhc-input)] p-3 text-[var(--rhc-input-text)] outline-none focus:ring-2 focus:ring-[var(--rhc-primary)]" />
+              <nav aria-label="Command results" className="mt-3 max-h-[50vh] overflow-y-auto">
+                {filtered.length ? filtered.map((item) => (
+                  <a key={`${item.group || ''}-${item.href}-${item.label}`} href={item.href} onClick={() => setOpen(false)} className="flex min-h-12 items-center justify-between gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-[var(--rhc-heading)] hover:bg-[var(--rhc-accent-soft)] focus:bg-[var(--rhc-accent-soft)] focus:outline-none">
+                    <span>{item.label}</span>
+                    {item.group ? <span className="text-xs text-[var(--rhc-muted)]">{item.group}</span> : null}
+                  </a>
+                )) : <p role="status" className="p-5 text-center text-sm text-[var(--rhc-muted)]">No authorized destination matches this search.</p>}
+              </nav>
+            </div>
+          </section>
+        </div>
+      ) : null}
+    </>
   );
 }
 
 export function Web3Shell({
   children,
   variant = 'customer',
+  as: Container = 'main',
 }: {
   children: ReactNode;
   variant?: 'customer' | 'admin';
+  as?: 'main' | 'div';
 }) {
   return (
-    <main className="rhc-shell relative min-h-screen overflow-hidden">
+    <Container className="rhc-shell relative min-h-screen overflow-hidden">
       <div className="rhc-bg-aura pointer-events-none fixed inset-0" />
       <div className="rhc-bg-grid pointer-events-none fixed inset-0" />
       <div className="relative z-10">{children}</div>
       <div className="rhc-mode-pill pointer-events-none fixed bottom-4 right-4 hidden rounded-lg border px-3 py-2 text-xs md:block">
-        {variant === 'admin' ? 'Command Center' : 'RHC Web3 Platform'} · Month 1
+        {variant === 'admin' ? 'RHC Admin' : 'RHC'}
       </div>
-    </main>
+    </Container>
   );
 }
 
 export function NetworkBadge() {
   return (
-    <span className="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-bold rhc-network-badge">
+    <span className="inline-flex items-center gap-2 whitespace-nowrap rounded-md border px-3 py-2 text-xs font-bold rhc-network-badge">
       <span className="h-2 w-2 rounded-full bg-[var(--rhc-muted)]" /> Network · Coming soon
     </span>
   );
@@ -255,7 +403,7 @@ export function NetworkBadge() {
 
 export function WalletAddress({ address = 'Not connected' }: { address?: string }) {
   return (
-    <span className="inline-flex items-center gap-2 rounded-md border px-3 py-2 font-mono text-sm font-semibold rhc-address">
+    <span className="inline-flex items-center gap-2 whitespace-nowrap rounded-md border px-3 py-2 font-mono text-xs font-semibold rhc-address">
       <span>{address}</span>
       <span className="font-sans text-[var(--rhc-primary)]">Coming soon</span>
     </span>
@@ -644,10 +792,11 @@ export function AppShell({
     [navItems],
   );
   return (
-    <Web3Shell variant={admin ? 'admin' : 'customer'}>
-      <div className="mx-auto flex min-h-screen max-w-[1540px] gap-5 px-4 py-4 md:px-6">
+    <Web3Shell as="div" variant={admin ? 'admin' : 'customer'}>
+      <a href="#main-content" className="rhc-skip-link">Skip to main content</a>
+      <div className="mx-auto flex min-h-screen w-full max-w-[1720px] gap-3 px-3 py-3 md:px-4 lg:gap-4 lg:py-4">
         {!hideSidebar && (
-        <aside className="rhc-sidebar sticky top-4 hidden h-[calc(100vh-2rem)] w-[18.5rem] shrink-0 rounded-xl border p-5 lg:block">
+        <aside className="rhc-sidebar sticky top-4 hidden h-[calc(100vh-2rem)] w-56 shrink-0 rounded-xl border p-3 xl:w-60 xl:p-4 lg:block">
           <div className="flex h-full flex-col">
             <a href={admin ? '/' : '/dashboard'} className="flex items-center gap-3">
               <div className="rhc-token-mini grid h-11 w-11 place-items-center rounded-full text-xs font-extrabold">
@@ -655,14 +804,14 @@ export function AppShell({
               </div>
               <div>
                 <p className="text-sm font-extrabold uppercase tracking-[0.14em] text-white">
-                  RHC WEB3
+                  RHC DIGITAL
                 </p>
                 <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--rhc-primary)]">
-                  Platform
+                  Customer Portal
                 </p>
               </div>
             </a>
-            <nav className="mt-8 space-y-5 overflow-y-auto pr-1">
+            <nav aria-label="Portal navigation" className="mt-6 space-y-3 overflow-y-auto pr-1">
               {groups.map((group) => (
                 <div key={group.section}>
                   <p className="rhc-nav-section mb-2 px-3">{group.section}</p>
@@ -671,7 +820,8 @@ export function AppShell({
                       <a
                         key={`${group.section}-${item.label}`}
                         href={item.href}
-                        className={`rhc-sidebar-link group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold ${item.active ? 'rhc-nav-active' : ''}`}
+                        aria-current={item.active ? 'page' : undefined}
+                        className={`rhc-sidebar-link group flex items-center gap-2 rounded-lg px-2.5 py-2 text-[12px] font-semibold xl:text-[13px] ${item.active ? 'rhc-nav-active' : ''}`}
                       >
                         <span className="grid h-5 w-5 place-items-center rounded text-[10px] text-[var(--rhc-primary)]">
                           {item.icon}
@@ -692,19 +842,22 @@ export function AppShell({
           </div>
         </aside>
         )}
-        <main className="min-w-0 flex-1">
-          <header className="mb-5 rounded-xl border border-[var(--rhc-border)] bg-[var(--rhc-surface)] p-4 shadow-sm">
+        <main id="main-content" tabIndex={-1} className="min-w-0 flex-1">
+          <header className="mb-5 rounded-xl border border-[var(--rhc-border)] bg-[var(--rhc-surface)] p-3 shadow-sm md:p-4">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
-                <p className="rhc-eyebrow">{admin ? 'Administration' : 'RHC Web3 Platform'}</p>
+                <nav aria-label="Breadcrumb" className="rhc-eyebrow flex items-center gap-2">
+                  <a href={admin ? '/' : '/dashboard'} className="hover:text-[var(--rhc-heading)]">{admin ? 'Administration' : 'My RHC'}</a>
+                  <span aria-hidden="true">/</span>
+                  <span aria-current="page">{title}</span>
+                </nav>
                 <h1 className="text-xl font-bold text-[var(--rhc-heading)]">{title}</h1>
               </div>
-              <div className="flex flex-wrap items-center gap-3">
-                <input
-                  disabled
-                  aria-label="Global search (coming soon)"
-                  placeholder="Search RHC ecosystem"
-                  className="hidden min-w-[240px] rounded-lg border px-3 py-2 text-sm xl:block"
+              <div className="flex flex-wrap items-center justify-end gap-2 md:gap-3">
+
+                <CommandMenu
+                  items={navItems.map((item) => ({ label: item.label, href: item.href, group: item.section }))}
+                  label="Navigate"
                 />
                 {marketplaceItems.length > 0 && (
                   <nav
@@ -715,6 +868,7 @@ export function AppShell({
                       <a
                         key={`header-${item.label}`}
                         href={item.href}
+                        aria-current={item.active ? 'page' : undefined}
                         className={`rounded-md px-3 py-1.5 text-xs font-bold transition hover:bg-[var(--rhc-accent-soft)] hover:text-[var(--rhc-primary)] ${item.active ? 'bg-[var(--rhc-accent-soft)] text-[var(--rhc-primary)]' : 'text-[var(--rhc-secondary-text)]'}`}
                       >
                         Go to Marketplace
@@ -722,8 +876,7 @@ export function AppShell({
                     ))}
                   </nav>
                 )}
-                <NetworkBadge />
-                <WalletAddress />
+
                 <ThemeToggle />
                 <div className="grid h-10 w-10 place-items-center rounded-lg border border-[var(--rhc-border)] bg-[var(--rhc-surface-secondary)] font-bold text-[var(--rhc-primary)]">
                   RHC
@@ -740,7 +893,8 @@ export function AppShell({
                 <a
                   key={item.label}
                   href={item.href}
-                  className="whitespace-nowrap rounded-lg border p-2 text-sm"
+                  aria-current={item.active ? 'page' : undefined}
+                  className={`whitespace-nowrap rounded-lg border p-2 text-sm ${item.active ? 'rhc-nav-active' : ''}`}
                 >
                   {item.label}
                 </a>

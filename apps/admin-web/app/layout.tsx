@@ -3,18 +3,20 @@ import { Providers } from './providers';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'RHC Admin Command Center',
-  description: 'Rabino Holdings Corporation Digital Platform',
+  title: { default: 'RHC Command Center', template: '%s | RHC Admin' },
+  description: 'Evidence-led operations for the RHC digital ecosystem.',
 };
 
 const themeBootScript = `
 (function () {
   try {
     var stored = window.localStorage.getItem('rhc-theme');
-    var theme = stored === 'light' || stored === 'dark'
-      ? stored
-      : (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+    var preference = stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'system';
+    var theme = preference === 'system'
+      ? (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')
+      : preference;
     document.documentElement.dataset.theme = theme;
+    document.documentElement.dataset.themePreference = preference;
     document.documentElement.style.colorScheme = theme;
   } catch (error) {
     document.documentElement.dataset.theme = 'dark';
@@ -29,7 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
       </head>
-      <body><Providers>{children}</Providers></body>
+      <body suppressHydrationWarning><Providers>{children}</Providers></body>
     </html>
   );
 }

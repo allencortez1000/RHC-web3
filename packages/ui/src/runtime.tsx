@@ -5,14 +5,34 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type ReactNode,
   type FormEvent,
 } from 'react';
+import {
+  assertRequestAvailable,
+  FeatureUnavailableError,
+  getRequestAvailability,
+  type FeatureUnavailable,
+} from './api-capabilities';
+import { RequestScope } from './request-scope';
+export * from './api-capabilities';
 
 export type BrowserSession = { access_token: string; user: { id: string; email?: string } };
+export type DemoPersonaOption = {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  application: 'customer' | 'admin';
+  description: string;
+  readOnly?: boolean;
+};
+export type DemoCredentialResult = { account: Account; target: 'customer' | 'admin' };
 export type AuthAdapter = {
+  mode: 'api' | 'demo';
   session: () => Promise<BrowserSession | null>;
   subscribe: (callback: (session: BrowserSession | null) => void) => () => void;
   login: (email: string, password: string) => Promise<void>;
@@ -22,6 +42,13 @@ export type AuthAdapter = {
   reset: (password: string) => Promise<void>;
   confirm: (url: string) => Promise<void>;
   logout: () => Promise<void>;
+  demo?: {
+    application: 'customer' | 'admin';
+    hubUrl: string;
+    personas: DemoPersonaOption[];
+    selectPersona: (personaId: string) => Promise<DemoCredentialResult>;
+    signInWithCredentials?: (email: string, password: string) => Promise<DemoCredentialResult>;
+  };
 };
 export class ApiError extends Error {
   constructor(
@@ -41,248 +68,16 @@ export type Account = {
   roles?: string[];
   is_admin?: boolean;
   permissions?: string[];
+  company_ids?: string[];
+  project_ids?: string[];
 };
 
-const demoAccessToken = 'rhc-demo-token';
-const adminDemoEmails = new Set(['superadmin@example.com', 'systemadmin@example.com', 'sales@example.com', 'finance@example.com', 'propertyadmin@example.com', 'compliance@example.com', 'auditor@example.com']);
-const demoRoles: Record<string, string> = {
-  'superadmin@example.com': 'SUPER_ADMINISTRATOR',
-  'systemadmin@example.com': 'SYSTEM_ADMINISTRATOR',
-  'sales@example.com': 'AMICA_SALES',
-  'finance@example.com': 'AMICA_FINANCE',
-  'propertyadmin@example.com': 'PROPERTY_ADMINISTRATOR',
-  'compliance@example.com': 'COMPLIANCE_OFFICER',
-  'auditor@example.com': 'INTERNAL_AUDITOR',
-};
-const demoAccount: Account = {
-  id: 'mock-user-customer',
-  email: 'demo@rhc.local',
-  account_status: 'ACTIVE',
-  verification_status: 'VERIFIED',
-  auth_email_confirmed_at: '2026-01-01T00:00:00.000Z',
-  role: 'CUSTOMER',
-  roles: ['CUSTOMER'],
-  is_admin: false,
-};
-function accountForDemoToken(token: string): Account {
-  const email = decodeURIComponent(token.slice(`${demoAccessToken}:`.length));
-  if (!email || email === token || email === 'demo@rhc.local') return demoAccount;
-  const role = demoRoles[email] || 'CUSTOMER';
-  return {
-    id: `mock-${role.toLowerCase().replaceAll('_', '-')}`,
-    email,
-    account_status: 'ACTIVE',
-    verification_status: 'VERIFIED',
-    auth_email_confirmed_at: '2026-01-01T00:00:00.000Z',
-    role,
-    roles: [role],
-    is_admin: adminDemoEmails.has(email),
-  };
-}
-function isDemoToken(token: string) { return token === demoAccessToken || token.startsWith(`${demoAccessToken}:`); }
-export function isAdminAccount(account?: Account | null) { return Boolean(account?.is_admin || account?.roles?.some((role) => role !== 'CUSTOMER') || (account?.role && account.role !== 'CUSTOMER')); }
-const demoProfile = {
-  first_name: 'Demo',
-  last_name: 'Customer',
-  rhc_id: 'RHC-DEMO-0001',
-  mobile_number: '+639123456789',
-  country: 'Philippines',
-};
-const demoInventory = [
-  {
-    id: 'demo-property-available-1',
-    property_code: 'AMICA-R1-A-01-01',
-    asset_type: 'RESIDENTIAL',
-    status: 'AVAILABLE',
-    tower: 'Building A',
-    floor: '1',
-    unit_number: '101',
-    area: '32.50',
-    list_price: '2450000.00',
-    currency: 'PHP',
-    metadata: { unit_type: '1 BEDROOM', demo_data: true },
-    project: { id: 'demo-project-1', project_code: 'AMICA-R1', project_name: 'Amica Residences 1', company: { company_code: 'AMICA', display_name: 'Amica' } },
-  },
-  {
-    id: 'demo-property-reserved-1',
-    property_code: 'AMICA-R1-A-01-03',
-    asset_type: 'RESIDENTIAL',
-    status: 'RESERVED',
-    tower: 'Building A',
-    floor: '1',
-    unit_number: '103',
-    area: '48.00',
-    list_price: '3650000.00',
-    currency: 'PHP',
-    metadata: { unit_type: '2 BEDROOM', demo_data: true },
-    project: { id: 'demo-project-1', project_code: 'AMICA-R1', project_name: 'Amica Residences 1', company: { company_code: 'AMICA', display_name: 'Amica' } },
-  },
-  {
-    id: 'demo-property-blocked-1',
-    property_code: 'AMICA-R2-A-04-01',
-    asset_type: 'RESIDENTIAL',
-    status: 'BLOCKED',
-    tower: 'Building A',
-    floor: '4',
-    unit_number: '401',
-    area: '48.00',
-    list_price: '3780000.00',
-    currency: 'PHP',
-    metadata: { unit_type: '2 BEDROOM', demo_data: true },
-    project: { id: 'demo-project-2', project_code: 'AMICA-R2', project_name: 'Amica Residences 2', company: { company_code: 'AMICA', display_name: 'Amica' } },
-  },
-];
-const demoPropertyLinks = [
-  {
-    id: 'demo-property-link-1',
-    relationship_type: 'Authorized viewer',
-    status: 'ACTIVE',
-    property: {
-      ...demoInventory[1],
-    },
-  },
-];
-
-function demoResponse(path: string, token = demoAccessToken): unknown {
-  const route = path.split('?')[0];
-  const account = accountForDemoToken(token);
-  if (route === '/auth/session') return { authenticated: true, user: account };
-  if (route === '/me') return { user: account, profile: demoProfile };
-  if (route === '/me/rhc-id') return { rhc_id: demoProfile.rhc_id };
-  if (route === '/me/properties') return demoPropertyLinks;
-  if (route === '/me/reservations') {
-    return [
-      {
-        id: 'demo-reservation-1',
-        reservation_number: 'RSV-DEMO-0001',
-        status: 'PENDING',
-        expires_at: '2026-01-04T08:00:00.000Z',
-        created_at: '2026-01-01T08:00:00.000Z',
-        property: demoPropertyLinks[0].property,
-        events: [],
-      },
-    ];
-  }
-  if (route === '/me/notifications') {
-    return [
-      {
-        id: 'demo-notification-1',
-        subject: 'Welcome to RHC Digital',
-        body: 'Sample records for testing and presentation. No real customer transaction is processed.',
-        channel: 'IN_APP',
-        status: 'Unread',
-        created_at: '2026-01-01T08:00:00.000Z',
-      },
-      {
-        id: 'demo-notification-2',
-        subject: 'Demo payment record posted',
-        body: 'A fictional payment record was posted to your demo account.',
-        channel: 'IN_APP',
-        status: 'Unread',
-        created_at: '2026-01-02T08:00:00.000Z',
-      },
-    ];
-  }
-  if (route === '/me/demo-records') {
-    return {
-      payments: [
-        { id: 'pay-1', reference: 'DEMO-PAY-0001', property_code: 'DEMO-AMICA-T1-1204', due_date: '2026-09-20', amount: 125000, currency: 'PHP', status: 'POSTED', description: 'Reservation fee demo record', document_id: 'doc-1' },
-        { id: 'pay-2', reference: 'DEMO-PAY-0002', property_code: 'DEMO-AMICA-T1-1204', due_date: '2026-10-20', amount: 275000, currency: 'PHP', status: 'PENDING', description: 'Contract milestone pending review', document_id: 'doc-2' },
-        { id: 'pay-3', reference: 'DEMO-PAY-0003', property_code: 'DEMO-AMICA-T1-1204', due_date: '2026-08-20', amount: 25000, currency: 'PHP', status: 'REVERSED', description: 'Reversal preserves original posted entry', document_id: 'doc-3' },
-      ],
-      documents: [
-        { id: 'doc-1', title: 'Demo Reservation Acknowledgement', category: 'Reservation', status: 'Issued', version: '1.0', issued_at: '2026-09-11', property_code: 'DEMO-AMICA-T1-1204', issuer: 'Amica Demo Records', hash: 'b96f1a3d7c2e-demo' },
-        { id: 'doc-2', title: 'Demo Payment Evidence', category: 'Payment', status: 'Under review', version: '1.1', issued_at: '2026-09-12', property_code: 'DEMO-AMICA-T1-1204', issuer: 'RHC Finance Demo', hash: 'a81d4e29bc11-demo' },
-        { id: 'doc-3', title: 'Demo Contract Summary', category: 'Contract', status: 'Issued', version: '2.0', issued_at: '2026-09-13', property_code: 'DEMO-AMICA-T1-1204', issuer: 'RHC Digital Demo', hash: 'cc317bc992af-demo' },
-      ],
-      certificates: [
-        { id: 'cert-1', reference: 'DEMO-CERT-0001', type: 'RHC Customer Verification Certificate', status: 'ACTIVE', issued_at: '2026-09-14', linked_record: 'RHC-DEMO-0001', issuer: 'RHC Digital Demo' },
-        { id: 'cert-2', reference: 'DEMO-CERT-0002', type: 'Demo Property Record Certificate', status: 'SUPERSEDED', issued_at: '2026-09-10', linked_record: 'DEMO-AMICA-T1-1204', issuer: 'Amica Demo Records' },
-        { id: 'cert-3', reference: 'DEMO-CERT-0003', type: 'Demo Turnover Readiness Certificate', status: 'REVOKED', issued_at: '2026-09-09', linked_record: 'TURN-DEMO-0001', issuer: 'RHC Digital Demo' },
-      ],
-      milestones: [
-        { id: 'mile-1', title: 'Foundation Works Demo Update', description: 'Fictional milestone update for presentation only; not an official project progress report.', status: 'Reviewed', date: '2026-09-01', reviewer: 'Property Admin Demo' },
-        { id: 'mile-2', title: 'Structural Works Demo Update', description: 'Demo update connected to customer property lifecycle visibility.', status: 'In progress', date: '2026-09-08', reviewer: 'Amica Demo Reviewer' },
-        { id: 'mile-3', title: 'Document Review Demo Update', description: 'Sample review queue activity for documents and certificates.', status: 'Pending review', date: '2026-09-15', reviewer: 'Compliance Demo' },
-      ],
-      benefits: [
-        { id: 'benefit-1', title: 'Demo Amica Mart voucher', cost: 300, status: 'Available', detail: 'Fictional benefit offer; no merchant settlement occurs.' },
-        { id: 'benefit-2', title: 'Demo Water service priority', cost: 500, status: 'Available', detail: 'Local mock connector only; no utility integration is active.' },
-        { id: 'benefit-3', title: 'Demo document assistance', cost: 200, status: 'Available', detail: 'Creates a local demo request only.' },
-      ],
-      rewards: {
-        balance: 1300,
-        earned: 1500,
-        redeemed: 200,
-        entries: [
-          { id: 'rw-1', date: '2026-09-01', source: 'Amica Demo', points: 1000, reason: 'Demo property milestone', reference: 'DEMO-RW-0001' },
-          { id: 'rw-2', date: '2026-09-05', source: 'Amica Mart Demo', points: 500, reason: 'Demo retail event', reference: 'DEMO-RW-0002' },
-          { id: 'rw-3', date: '2026-09-08', source: 'RHC Benefits Demo', points: -200, reason: 'Demo benefit redemption', reference: 'DEMO-RW-0003' },
-        ],
-      },
-      turnover: {
-        case_number: 'TURN-DEMO-0001',
-        status: 'Checklist in progress',
-        note: 'Turnover is a demo workflow only and is not a legal transfer or title issuance.',
-        checklist: [
-          { label: 'Demo identity verified', complete: true },
-          { label: 'Demo payment records reviewed', complete: true },
-          { label: 'Demo document package acknowledged', complete: true },
-          { label: 'Demo site inspection scheduled', complete: false },
-        ],
-      },
-    };
-  }
-  if (route === '/companies') {
-    return [
-      { id: 'demo-company-rhc', company_code: 'RHC', display_name: 'Rabino Holdings Corporation', legal_name: 'Rabino Holdings Corporation', status: 'ACTIVE' },
-      { id: 'demo-company-amica', company_code: 'AMICA_CONDO', display_name: 'Amica', legal_name: 'Amica Condominium Realty Corporation', status: 'ACTIVE' },
-    ];
-  }
-  if (route === '/projects') {
-    return [
-      { id: 'demo-project-1', project_code: 'AMICA-R1', project_name: 'Amica Residences 1', status: 'ACTIVE', company: { display_name: 'Amica' } },
-    ];
-  }
-  if (route === '/properties') return demoInventory;
-  if (route.startsWith('/properties/')) return demoInventory.find((property) => property.id === route.split('/').at(-1)) || null;
-  if (route === '/admin/dashboard') return { totalUsers: 19, verifiedCustomers: 8, companies: 11, activeProjects: 2, totalAmicaProperties: 30, availableProperties: 12, reservedProperties: 4, activeIntegrations: 0, auditCount: 38 };
-  if (route === '/admin/customers' || route === '/admin/users') return [
-    { id: 'demo-customer-1', email: 'miguel.reyes@example.com', account_status: 'ACTIVE', verification_status: 'VERIFIED', created_at: '2026-09-01T08:00:00.000Z', profile: { first_name: 'Miguel', last_name: 'Reyes', rhc_id: 'RHC-2026-000001' } },
-    { id: 'demo-customer-2', email: 'angela.santos@example.com', account_status: 'ACTIVE', verification_status: 'VERIFIED', created_at: '2026-09-02T08:00:00.000Z', profile: { first_name: 'Angela', last_name: 'Santos', rhc_id: 'RHC-2026-000002' } },
-    { id: 'demo-customer-4', email: 'sofia.navarro@example.com', account_status: 'ACTIVE', verification_status: 'PENDING', created_at: '2026-09-04T08:00:00.000Z', profile: { first_name: 'Sofia', last_name: 'Navarro', rhc_id: null } },
-  ];
-  if (route === '/admin/companies') return [
-    { id: 'demo-company-rhc', company_code: 'RHC', display_name: 'Rabino Holdings Corporation', legal_name: 'Rabino Holdings Corporation', status: 'ACTIVE', integration_status: 'ACTIVE' },
-    { id: 'demo-company-amica', company_code: 'AMICA', display_name: 'Amica', legal_name: 'Amica', status: 'ACTIVE', integration_status: 'ACTIVE' },
-  ];
-  if (route === '/admin/projects') return [{ id: 'demo-project-1', project_code: 'AMICA-R1', project_name: 'Amica Residences 1', status: 'ACTIVE', location: 'Central Luzon, Philippines', company: { display_name: 'Amica' } }];
-  if (route === '/admin/properties') return demoInventory;
-  if (route === '/admin/reservations') return [{ id: 'demo-reservation-1', reservation_number: 'RES-2026-000001', status: 'CONFIRMED', expires_at: '2026-09-18T08:00:00.000Z', created_at: '2026-09-15T08:00:00.000Z', customer: { email: 'miguel.reyes@example.com', profile: { rhc_id: 'RHC-2026-000001' } }, property: demoInventory[1] }];
-  if (route === '/admin/audit-logs') return [
-    { id: 'demo-audit-1', action: 'RESERVATION_CONFIRMED', entity_type: 'reservation', entity_id: 'demo-reservation-1', created_at: '2026-09-16T08:00:00.000Z' },
-    { id: 'demo-audit-2', action: 'DIGITAL_ID_CREATED', entity_type: 'rhc_digital_id', entity_id: 'RHC-2026-000001', created_at: '2026-09-15T08:00:00.000Z' },
-  ];
-  if (route === '/admin/roles') return [{ id: 'role-super', code: 'SUPER_ADMINISTRATOR', name: 'SUPER ADMINISTRATOR', is_system: true, role_permissions: [] }, { id: 'role-customer', code: 'CUSTOMER', name: 'CUSTOMER', is_system: true, role_permissions: [] }];
-  if (route === '/admin/permissions') return [{ id: 'permission-customer-view', code: 'customer.view', description: 'customer.view' }, { id: 'permission-audit-view', code: 'audit.view', description: 'audit.view' }];
-  if (route === '/admin/customer-properties') return [{ id: 'demo-customer-property-1', customer_id: 'demo-customer-1', property_id: 'demo-property-reserved-1', relationship_type: 'BUYER', status: 'ACTIVE', effective_from: '2026-09-01T08:00:00.000Z', created_at: '2026-09-01T08:00:00.000Z', updated_at: '2026-09-01T08:00:00.000Z' }];
-  if (route === '/admin/business-services') return [{ id: 'demo-service-1', service_code: 'PROPERTY_SERVICES', service_name: 'Property Services', service_type: 'PROPERTY', status: 'ACTIVE', integration_status: 'PREPARED', company: { display_name: 'Amica' } }];
-  if (route === '/admin/integrations') return [{ id: 'demo-integration-1', integration_key: 'AMICA_PROPERTY_SERVICES', name: 'Amica Property Services', status: 'PREPARED', updated_at: '2026-09-16T08:00:00.000Z', company: { display_name: 'Amica', company_code: 'AMICA' } }];
-  if (route === '/admin/user-roles') return [{ id: 'demo-user-role-1', user_id: 'mock-superadmin', role: { name: 'SUPER ADMINISTRATOR', code: 'SUPER_ADMINISTRATOR' }, company_id: null, project_id: null, expires_at: null }];
-  if (route === '/admin/feature-flags') return [{ id: 'flag-wallet', key: 'ENABLE_WALLET', enabled: false, scope: 'GLOBAL', description: 'Month 2 wallet flag', updated_at: '2026-09-16T08:00:00.000Z' }];
-  if (route === '/admin/system-settings') return [{ id: 'setting-web3', key: 'web3_placeholder_status', value: { wallet_status: 'NOT_ACTIVATED', token_status: 'MONTH_2' }, description: 'Month 1 Web3 placeholder state', updated_at: '2026-09-16T08:00:00.000Z' }];
-  if (route === '/business-services') {
-    return [
-      {
-        id: 'demo-service-1',
-        service_name: 'RHC Marketplace Preview',
-        description: 'Sample marketplace service for local dashboard testing.',
-        status: 'Coming soon',
-        company: { display_name: 'Rabino Holdings Corporation' },
-      },
-    ];
-  }
-  return null;
+export function isAdminAccount(account?: Account | null) {
+  return Boolean(
+    account?.is_admin ||
+      account?.roles?.some((role) => role !== 'CUSTOMER') ||
+      (account?.role && account.role !== 'CUSTOMER'),
+  );
 }
 
 export function isAuthEmailConfirmed(value: unknown): boolean {
@@ -302,6 +97,8 @@ export function isRhcIdEligible(account?: Account | null): boolean {
 type Runtime = {
   auth: AuthAdapter;
   apiUrl?: string;
+  dataMode: 'api' | 'demo';
+  demoRevision?: number;
   user: Account | null;
   dataRevision: number;
   request: <T>(path: string, init?: RequestInit) => Promise<T>;
@@ -317,6 +114,124 @@ export function useRuntime() {
 export function errorMessage(error: unknown) {
   return error instanceof Error ? error.message : 'The request could not be completed.';
 }
+
+export function createDemoAuthAdapter({
+  application,
+  hubUrl,
+  personas,
+}: {
+  application: 'customer' | 'admin';
+  hubUrl: string;
+  personas: DemoPersonaOption[];
+}): AuthAdapter {
+  const cookieName = application === 'customer' ? 'rhc_customer_demo_session' : 'rhc_admin_demo_session';
+  const subscribers = new Set<(session: BrowserSession | null) => void>();
+
+  function readCookie(name: string) {
+    if (typeof document === 'undefined') return null;
+    return document.cookie
+      .split('; ')
+      .find((part) => part.startsWith(`${name}=`))
+      ?.split('=')
+      .slice(1)
+      .join('=') || null;
+  }
+  function readSession(): BrowserSession | null {
+    const encoded = readCookie(cookieName);
+    if (!encoded) return null;
+    try {
+      const parsed = JSON.parse(decodeURIComponent(encoded)) as BrowserSession;
+      return parsed?.access_token && parsed?.user?.id ? parsed : null;
+    } catch {
+      return null;
+    }
+  }
+  function storeSession(target: 'customer' | 'admin', session: BrowserSession | null) {
+    if (typeof document === 'undefined') return;
+    const targetCookie = target === 'customer' ? 'rhc_customer_demo_session' : 'rhc_admin_demo_session';
+    document.cookie = session
+      ? `${targetCookie}=${encodeURIComponent(JSON.stringify(session))}; path=/; max-age=43200; SameSite=Strict`
+      : `${targetCookie}=; path=/; max-age=0; SameSite=Strict`;
+    document.cookie = 'rhc_demo_email=; path=/; max-age=0; SameSite=Lax';
+    if (target === application) {
+      const next = readSession();
+      subscribers.forEach((callback) => callback(next));
+    }
+  }
+  async function hub<T>(path: string, init: RequestInit = {}) {
+    const response = await fetch(`${hubUrl.replace(/\/$/, '')}${path}`, {
+      ...init,
+      cache: 'no-store',
+      credentials: 'omit',
+      headers: { 'Content-Type': 'application/json', ...init.headers },
+    });
+    const body = await response.json().catch(() => null);
+    if (!response.ok) throw new ApiError(response.status, body?.error?.message || 'The local demo session request failed.');
+    return (body?.success === true ? body.data : body) as T;
+  }
+  const unavailable = async () => {
+    throw new Error('This provider action is unavailable in the isolated local demo profile.');
+  };
+  const adapter: AuthAdapter = {
+    mode: 'demo',
+    async session() {
+      return readSession();
+    },
+    subscribe(callback) {
+      subscribers.add(callback);
+      queueMicrotask(() => callback(readSession()));
+      return () => subscribers.delete(callback);
+    },
+    async login() {
+      throw new Error('Choose a named demo persona instead of entering credentials.');
+    },
+    register: unavailable,
+    recover: unavailable,
+    resend: unavailable,
+    reset: unavailable,
+    confirm: unavailable,
+    async logout() {
+      const current = readSession();
+      storeSession(application, null);
+      if (!current) return;
+      await hub('/session', {
+        method: 'DELETE',
+        headers: { Authorization: `Demo ${current.access_token}` },
+      }).catch(() => undefined);
+    },
+    demo: {
+      application,
+      hubUrl,
+      personas,
+      async selectPersona(personaId) {
+        const result = await hub<{
+          session: BrowserSession;
+          account: Account;
+          target: 'customer' | 'admin';
+        }>('/session', {
+          method: 'POST',
+          body: JSON.stringify({ persona_id: personaId }),
+        });
+        storeSession(result.target, result.session);
+        return { account: result.account, target: result.target };
+      },
+      async signInWithCredentials(email, password) {
+        const result = await hub<{
+          session: BrowserSession;
+          account: Account;
+          target: 'customer' | 'admin';
+        }>('/session/credentials', {
+          method: 'POST',
+          body: JSON.stringify({ email, password }),
+        });
+        storeSession(result.target, result.session);
+        return { account: result.account, target: result.target };
+      },
+    },
+  };
+  return adapter;
+}
+
 function adminUrl(path = '/') {
   if (typeof window === 'undefined') return path;
   const configured = process.env.NEXT_PUBLIC_ADMIN_WEB_URL;
@@ -346,64 +261,106 @@ export function PortalProvider({
   const [error, setError] = useState('');
   const [retry, setRetry] = useState(0);
   const [dataRevision, setDataRevision] = useState(0);
+  const [demoRevision, setDemoRevision] = useState<number>();
   const isPublic = publicRoutes.some((route) => route.endsWith('/*') ? pathname.startsWith(route.slice(0, -1)) : route === pathname);
   const generation = useRef(0);
+  const requestScope = useMemo(() => new RequestScope(), [auth, apiUrl]);
+  const sessionSnapshot = useRef<BrowserSession | null | undefined>(undefined);
+  const signingOut = useRef(false);
+  const acceptSession = useCallback((next: BrowserSession | null) => {
+    const previous = sessionSnapshot.current;
+    // Supabase can emit the same session on refocus. Do not tear down resources.
+    if (previous !== undefined && previous?.access_token === next?.access_token && previous?.user.id === next?.user.id) return;
+    sessionSnapshot.current = next;
+    requestScope.invalidate();
+    generation.current++;
+    setSession(next);
+    setUser(null);
+    setError('');
+    setDemoRevision(undefined);
+    setDataRevision((n) => n + 1);
+  }, [requestScope]);
   useEffect(() => {
     let active = true;
     let changed = false;
-    const unsubscribe = auth.subscribe((next) => {
-      changed = true;
-      if (active) {
-        setSession(next);
-        setUser(null);
-        setError('');
-      }
-    });
+    let unsubscribe: () => void = () => undefined;
+    try {
+      unsubscribe = auth.subscribe((next) => {
+        changed = true;
+        if (active) acceptSession(next);
+      });
+    } catch (cause) {
+      acceptSession(null);
+      setError(errorMessage(cause));
+    }
     auth
       .session()
       .then((next) => {
-        if (active && !changed) setSession(next);
+        if (active && !changed) acceptSession(next);
       })
       .catch((cause) => {
-        if (active) setError(errorMessage(cause));
+        if (active) {
+          acceptSession(null);
+          setError(errorMessage(cause));
+        }
       });
     return () => {
       active = false;
       unsubscribe();
+      requestScope.invalidate();
+      sessionSnapshot.current = undefined;
     };
-  }, [auth]);
+  }, [auth, acceptSession, requestScope]);
   const request = useCallback(
     async <T,>(path: string, init: RequestInit = {}): Promise<T> => {
       if (!path.startsWith('/') || path.startsWith('//')) throw new Error('Invalid API path.');
+      assertRequestAvailable(auth.mode, path, init.method);
+      if (signingOut.current) throw new DOMException('Signing out.', 'AbortError');
+      const pending = requestScope.open(init.signal);
+      try {
+      pending.assertCurrent();
       const current = await auth.session();
+      pending.assertCurrent();
       if (!current) {
-        setSession(null);
-        setUser(null);
+        acceptSession(null);
         throw new ApiError(401, 'Your session has ended. Please sign in again.');
       }
-      if (isDemoToken(current.access_token)) {
-        if (path.split('?')[0] === '/me/reservations' && init.method?.toUpperCase() === 'POST') {
-          setDataRevision((n) => n + 1);
-          return { id: 'demo-reservation-new', reservation_number: 'RSV-DEMO-NEW', status: 'PENDING' } as T;
-        }
-        const localDemoResponse = demoResponse(path, current.access_token);
-        if (localDemoResponse !== null) return localDemoResponse as T;
+      const demo = auth.mode === 'demo';
+      const baseUrl = demo ? auth.demo?.hubUrl : apiUrl;
+      if (!baseUrl) {
+        throw new Error(
+          demo
+            ? 'The local demo fixture hub is not configured.'
+            : 'The public API URL is not configured.',
+        );
       }
-      if (!apiUrl) throw new Error('The public API URL is not configured.');
       const headers = new Headers(init.headers);
-      headers.set('Authorization', `Bearer ${current.access_token}`);
+      headers.set('Authorization', `${demo ? 'Demo' : 'Bearer'} ${current.access_token}`);
       if (init.body) headers.set('Content-Type', 'application/json');
-      const response = await fetch(`${apiUrl.replace(/\/$/, '')}${path}`, {
+      const response = await fetch(`${baseUrl.replace(/\/$/, '')}${path}`, {
         ...init,
+        signal: pending.signal,
         headers,
         cache: 'no-store',
         credentials: 'omit',
       });
       const body = await response.json().catch(() => null);
+      pending.assertCurrent();
+      if (auth.mode === 'demo' && Number.isSafeInteger(body?.meta?.revision)) {
+        setDemoRevision(body.meta.revision);
+      }
       if (!response.ok) {
+        const forbiddenDetail =
+          typeof body?.error?.message === 'string'
+            ? body.error.message
+            : typeof body?.message === 'string'
+              ? body.message
+              : '';
         const message =
           response.status === 403
-            ? 'You do not have permission to access this resource.'
+            ? forbiddenDetail.toLowerCase().startsWith('you do not have permission')
+              ? forbiddenDetail
+              : `You do not have permission to complete this action.${forbiddenDetail ? ` ${forbiddenDetail}` : ''}`
             : response.status === 401
               ? 'Your session or account is unavailable. Please sign in again.'
               : Array.isArray(body?.message)
@@ -422,8 +379,11 @@ export function PortalProvider({
       if (init.method && !['GET', 'HEAD'].includes(init.method.toUpperCase()))
         setDataRevision((n) => n + 1);
       return (body?.success === true && 'data' in body ? body.data : body) as T;
+      } finally {
+        pending.close();
+      }
     },
-    [apiUrl, auth],
+    [apiUrl, auth, acceptSession, requestScope],
   );
   useEffect(() => {
     const id = ++generation.current;
@@ -432,14 +392,9 @@ export function PortalProvider({
       navigate('/login');
       return;
     }
-    if (isDemoToken(session.access_token)) {
-      const demoUser = accountForDemoToken(session.access_token);
-      setError('');
-      setUser(demoUser);
-      return;
-    }
     setError('');
-    request<{ authenticated: boolean; user: Account }>('/auth/session')
+    const controller = new AbortController();
+    request<{ authenticated: boolean; user: Account }>('/auth/session', { signal: controller.signal })
       .then((result) => {
         if (id !== generation.current) return;
         if (!result.authenticated || !result.user?.id)
@@ -447,19 +402,42 @@ export function PortalProvider({
         setUser(result.user);
       })
       .catch((cause) => {
-        if (id === generation.current) setError(errorMessage(cause));
+        if (id === generation.current && !controller.signal.aborted) setError(errorMessage(cause));
       });
     return () => {
+      controller.abort();
       generation.current++;
     };
   }, [isPublic, session, request, navigate, retry]);
   const logout = useCallback(async () => {
-    await auth.logout();
+    signingOut.current = true;
+    requestScope.invalidate();
+    generation.current++;
     setUser(null);
-    setSession(null);
-    navigate('/login');
-  }, [auth, navigate]);
-  const value = { auth, apiUrl, user, request, logout, navigate, dataRevision };
+    setDemoRevision(undefined);
+    setDataRevision((n) => n + 1);
+    try {
+      await auth.logout();
+      acceptSession(null);
+      navigate('/login');
+    } catch (cause) {
+      setError(errorMessage(cause));
+      throw cause;
+    } finally {
+      signingOut.current = false;
+    }
+  }, [auth, navigate, acceptSession, requestScope]);
+  const value = {
+    auth,
+    apiUrl,
+    dataMode: auth.mode,
+    demoRevision,
+    user,
+    request,
+    logout,
+    navigate,
+    dataRevision,
+  };
   return (
     <RuntimeContext.Provider value={value}>
       {isPublic ? (
@@ -491,7 +469,163 @@ export function PortalProvider({
           Verifying your session…
         </p>
       )}
+      {auth.mode === 'demo' ? <DemoEnvironmentControls active={Boolean(user && session)} /> : null}
     </RuntimeContext.Provider>
+  );
+}
+
+type DemoControls = {
+  scenario: 'baseline' | 'empty' | 'exceptions';
+  latency_ms: number;
+  fail_next_request: boolean;
+  empty_state: boolean;
+  clock: string;
+};
+
+function DemoEnvironmentControls({ active }: { active: boolean }) {
+  const { request, user, logout, demoRevision } = useRuntime();
+  const [open, setOpen] = useState(false);
+  const [controls, setControls] = useState<DemoControls>();
+  const [confirmation, setConfirmation] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+
+  const load = useCallback(async () => {
+    if (!active) return;
+    try {
+      setControls(await request<DemoControls>('/control'));
+    } catch (cause) {
+      setError(errorMessage(cause));
+    }
+  }, [active, request]);
+
+  useEffect(() => {
+    if (open) void load();
+  }, [open, load]);
+
+  async function update(body: Partial<DemoControls>, success: string) {
+    setBusy(true);
+    setError('');
+    setMessage('');
+    try {
+      const next = await request<DemoControls>('/control', {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+      });
+      setControls(next);
+      setMessage(success);
+    } catch (cause) {
+      setError(errorMessage(cause));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function reset() {
+    if (confirmation !== 'RESET RHC DEMO') return;
+    setBusy(true);
+    setError('');
+    try {
+      await request('/reset', {
+        method: 'POST',
+        body: JSON.stringify({ confirmation }),
+      });
+      setMessage('Deterministic baseline restored. Choose a persona again.');
+      setConfirmation('');
+      await logout().catch(() => undefined);
+    } catch (cause) {
+      setError(errorMessage(cause));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="rhc-demo-controls fixed bottom-3 left-14 z-[90] max-w-[calc(100vw-4.25rem)]">
+      {open ? (
+        <section
+          role="dialog"
+          aria-modal="false"
+          aria-labelledby="rhc-demo-controls-title"
+          className="mb-2 w-[min(420px,calc(100vw-1.5rem))] rounded-2xl border border-[var(--rhc-border)] bg-[var(--rhc-surface)] p-4 shadow-2xl"
+        >
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="rhc-eyebrow">Local fixture controls</p>
+              <h2 id="rhc-demo-controls-title" className="text-lg font-bold text-[var(--rhc-heading)]">Demo environment</h2>
+              <p className="mt-1 text-xs text-[var(--rhc-muted)]">Synthetic data · revision {demoRevision ?? '—'}</p>
+            </div>
+            <button type="button" onClick={() => setOpen(false)} className="grid h-11 w-11 place-items-center rounded-xl border border-[var(--rhc-border)]" aria-label="Close demo controls">×</button>
+          </div>
+          {active && controls ? (
+            <div className="mt-4 grid gap-4">
+              <div className="rounded-xl border border-[var(--rhc-border)] bg-[var(--rhc-surface-secondary)] p-3 text-sm">
+                <p className="font-bold text-[var(--rhc-heading)]">{user?.email}</p>
+                <p className="text-[var(--rhc-muted)]">{user?.role || 'Demo persona'} · session isolated by application</p>
+              </div>
+              <label className="text-sm font-semibold">
+                Scenario
+                <select className="mt-1 w-full rounded-xl border p-3" value={controls.scenario} disabled={busy} onChange={(event) => void update({ scenario: event.target.value as DemoControls['scenario'] }, 'Scenario updated.') }>
+                  <option value="baseline">Baseline</option>
+                  <option value="empty">Empty-state review</option>
+                  <option value="exceptions">Exception review</option>
+                </select>
+              </label>
+              <label className="text-sm font-semibold">
+                Deterministic latency
+                <select className="mt-1 w-full rounded-xl border p-3" value={controls.latency_ms} disabled={busy} onChange={(event) => void update({ latency_ms: Number(event.target.value) }, 'Latency updated.') }>
+                  <option value={0}>None</option>
+                  <option value={250}>250 ms</option>
+                  <option value={750}>750 ms</option>
+                  <option value={1500}>1.5 seconds</option>
+                </select>
+              </label>
+              <label className="text-sm font-semibold">
+                Demo clock (local display input)
+                <input
+                  type="datetime-local"
+                  value={controls.clock.slice(0, 16)}
+                  disabled={busy}
+                  onChange={(event) => {
+                    if (event.target.value) void update({ clock: new Date(event.target.value).toISOString() }, 'Demo clock updated.');
+                  }}
+                  className="mt-1 w-full rounded-xl border p-3"
+                />
+              </label>
+              <label className="flex min-h-11 items-center gap-3 text-sm font-semibold">
+                <input type="checkbox" checked={controls.empty_state} disabled={busy} onChange={(event) => void update({ empty_state: event.target.checked }, event.target.checked ? 'Empty-state mode enabled.' : 'Populated records restored.') } />
+                Show empty collection states
+              </label>
+              <div className="flex flex-wrap gap-2">
+                <button type="button" disabled={busy} onClick={() => void update({ fail_next_request: true }, 'The next data request will fail once, then recover.')} className="rhc-web3-btn-secondary min-h-11 rounded-xl px-3 py-2 text-sm font-bold">Fail next request</button>
+                <button type="button" disabled={busy} onClick={() => void load()} className="rhc-web3-btn-secondary min-h-11 rounded-xl px-3 py-2 text-sm font-bold">Refresh controls</button>
+              </div>
+              <div className="border-t border-[var(--rhc-border)] pt-4">
+                <label className="text-sm font-semibold">
+                  Reset confirmation
+                  <input value={confirmation} onChange={(event) => setConfirmation(event.target.value)} placeholder="RESET RHC DEMO" className="mt-1 w-full rounded-xl border p-3" />
+                </label>
+                <button type="button" disabled={busy || confirmation !== 'RESET RHC DEMO'} onClick={() => void reset()} className="mt-2 min-h-11 rounded-xl border border-[var(--rhc-danger)] px-3 py-2 text-sm font-bold text-[var(--rhc-danger)] disabled:opacity-50">Restore deterministic baseline</button>
+              </div>
+            </div>
+          ) : (
+            <p className="mt-4 text-sm leading-6 text-[var(--rhc-muted)]">Choose a named persona on the sign-in page to access scenario, latency, failure, empty-state, clock, and reset controls.</p>
+          )}
+          {message ? <p role="status" className="mt-3 text-sm text-[var(--rhc-success)]">{message}</p> : null}
+          {error ? <p role="alert" className="mt-3 text-sm text-[var(--rhc-danger)]">{error}</p> : null}
+        </section>
+      ) : null}
+      <button
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        aria-expanded={open}
+        className="flex min-h-11 items-center gap-2 rounded-xl border border-[rgba(212,175,55,.45)] bg-[var(--rhc-surface)] px-3 py-2 text-xs font-bold text-[var(--rhc-heading)] shadow-lg"
+      >
+        <span className="h-2.5 w-2.5 rounded-full bg-[var(--rhc-warning)]" aria-hidden="true" />
+        Demo environment — synthetic data
+      </button>
+    </div>
   );
 }
 
@@ -528,38 +662,65 @@ export function SignOutButton({
   );
 }
 
+export type ResourceState<T> = {
+  data?: T;
+  error?: string;
+  unavailable?: FeatureUnavailable;
+  loading: boolean;
+};
+
+function resourceFailure(cause: unknown) {
+  return {
+    error: errorMessage(cause),
+    unavailable: cause instanceof FeatureUnavailableError ? cause.unavailable : undefined,
+    loading: false,
+  };
+}
+
 export function useResource<T>(path: string) {
-  const { request, dataRevision } = useRuntime();
-  const [state, setState] = useState<{ data?: T; error?: string; loading: boolean }>({
-    loading: true,
-  });
+  const { request, dataRevision, dataMode } = useRuntime();
   const [revision, setRevision] = useState(0);
+  const key = useMemo(() => ({ path, request, dataRevision, revision }), [path, request, dataRevision, revision]);
+  const availability = useMemo(() => getRequestAvailability(dataMode, path), [dataMode, path]);
+  const [state, setState] = useState<ResourceState<T> & { key?: object }>({ loading: true });
   useEffect(() => {
+    if (!availability.available) return;
     const controller = new AbortController();
-    setState({ loading: true });
+    setState({ key, loading: true });
     request<T>(path, { signal: controller.signal })
       .then((data) => {
-        if (!controller.signal.aborted) setState({ data, loading: false });
+        if (!controller.signal.aborted) setState({ key, data, loading: false });
       })
       .catch((cause) => {
-        if (!controller.signal.aborted) setState({ error: errorMessage(cause), loading: false });
+        if (!controller.signal.aborted) setState({ key, ...resourceFailure(cause) });
       });
     return () => controller.abort();
-  }, [path, request, revision, dataRevision]);
-  return { ...state, reload: () => setRevision((n) => n + 1) };
+  }, [key, availability, path, request]);
+  // Hide old data on the render that changes scope, not one effect later.
+  const current: ResourceState<T> = !availability.available
+    ? { unavailable: availability, error: availability.message, loading: false }
+    : state.key === key ? state : { loading: true };
+  return {
+    data: current.data,
+    error: current.error,
+    unavailable: current.unavailable,
+    loading: current.loading,
+    reload: () => setRevision((n) => n + 1),
+  };
 }
+
 export function usePagedResource<T extends { id: string }>(path: string, paginated = true) {
-  const { request } = useRuntime();
-  const [data, setData] = useState<T[]>();
-  const [error, setError] = useState<string>();
-  const [loading, setLoading] = useState(true);
-  const [offset, setOffset] = useState(0);
+  const { request, dataRevision, dataMode } = useRuntime();
   const [revision, setRevision] = useState(0);
-  const [hasMore, setHasMore] = useState(false);
+  const key = useMemo(() => ({ path, paginated, request, dataRevision, revision }), [path, paginated, request, dataRevision, revision]);
+  const availability = useMemo(() => getRequestAvailability(dataMode, path), [dataMode, path]);
+  const [page, setPage] = useState<{ key: object; offset: number }>();
+  const offset = page?.key === key ? page.offset : 0;
+  const [state, setState] = useState<ResourceState<T[]> & { key?: object; hasMore: boolean; offset?: number }>({ loading: true, hasMore: false });
   useEffect(() => {
+    if (!availability.available) return;
     const controller = new AbortController();
-    setLoading(true);
-    setError(undefined);
+    setState((previous) => ({ key, offset, data: previous.key === key ? previous.data : undefined, loading: true, hasMore: false }));
     const url = paginated
       ? `${path}${path.includes('?') ? '&' : '?'}take=100&skip=${offset}`
       : path;
@@ -567,48 +728,60 @@ export function usePagedResource<T extends { id: string }>(path: string, paginat
       .then((rows) => {
         if (controller.signal.aborted) return;
         if (!Array.isArray(rows)) throw new Error('The API returned an invalid record list.');
-        setData((previous) =>
-          offset === 0
+        setState((previous) => ({
+          key,
+          offset,
+          data: offset === 0 || previous.key !== key
             ? rows
-            : Array.from(
-                new Map([...(previous || []), ...rows].map((row) => [row.id, row])).values(),
-              ),
-        );
-        setHasMore(paginated && rows.length === 100 && offset < 100000);
-        setLoading(false);
+            : Array.from(new Map([...(previous.data || []), ...rows].map((row) => [row.id, row])).values()),
+          hasMore: paginated && rows.length === 100 && offset < 100000,
+          loading: false,
+        }));
       })
       .catch((cause) => {
-        if (!controller.signal.aborted) {
-          setError(errorMessage(cause));
-          setLoading(false);
-        }
+        if (!controller.signal.aborted) setState({ key, offset, ...resourceFailure(cause), hasMore: false });
       });
     return () => controller.abort();
-  }, [path, paginated, request, offset, revision]);
+  }, [key, availability, path, paginated, request, offset]);
+  const current: ResourceState<T[]> & { hasMore: boolean } = !availability.available
+    ? { unavailable: availability, error: availability.message, loading: false, hasMore: false }
+    : state.key === key ? { ...state, loading: state.loading || state.offset !== offset } : { loading: true, hasMore: false };
+  const refresh = () => setRevision((n) => n + 1);
   return {
-    data,
-    error,
-    loading,
-    hasMore,
-    loadMore: () => setOffset((n) => n + 100),
-    reload: () => setRevision((n) => n + 1),
-    refresh: () => {
-      setOffset(0);
-      setData(undefined);
-      setRevision((n) => n + 1);
+    data: current.data,
+    error: current.error,
+    unavailable: current.unavailable,
+    loading: current.loading,
+    hasMore: current.hasMore,
+    loadMore: () => {
+      if (current.hasMore && !current.loading) setPage({ key, offset: offset + 100 });
     },
+    reload: refresh,
+    refresh,
   };
+}
+
+export function UnavailableFeature({ unavailable, title }: { unavailable: FeatureUnavailable; title?: string }) {
+  return (
+    <section role="status" className="rounded-xl border border-[var(--rhc-border)] bg-[var(--rhc-surface-secondary)] p-5" data-capability={unavailable.capability}>
+      <h2 className="font-bold text-[var(--rhc-heading)]">{title || unavailable.feature} — unavailable in API mode</h2>
+      <p className="mt-2 text-sm leading-6 text-[var(--rhc-muted)]">{unavailable.message}</p>
+    </section>
+  );
 }
 
 export function ResourceStatus({
   loading,
   error,
+  unavailable,
   reload,
 }: {
   loading: boolean;
   error?: string;
+  unavailable?: FeatureUnavailable;
   reload: () => void;
 }) {
+  if (unavailable) return <UnavailableFeature unavailable={unavailable} />;
   if (loading)
     return (
       <p role="status" className="p-4">
@@ -629,7 +802,113 @@ export function ResourceStatus({
 
 export type AuthMode =
   'login' | 'register' | 'forgot-password' | 'reset-password' | 'verification' | 'confirm';
-export function AuthForm({ mode }: { mode: AuthMode }) {
+
+function DemoPersonaForm({ auth, navigate }: { auth: AuthAdapter; navigate: (path: string) => void }) {
+  const personas = auth.demo?.personas || [];
+  const [selected, setSelected] = useState(personas[0]?.id || '');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => setHydrated(true), []);
+  const customerPersonas = personas.filter((persona) => persona.application === 'customer');
+  const staffPersonas = personas.filter((persona) => persona.application === 'admin');
+
+  function openResult(result: DemoCredentialResult) {
+    if (result.target === 'admin') window.location.assign(adminUrl('/'));
+    else navigate('/dashboard');
+  }
+
+  async function enterDemo() {
+    if (!selected || !auth.demo || busy) return;
+    setBusy(true);
+    setError('');
+    try {
+      openResult(await auth.demo.selectPersona(selected));
+    } catch (cause) {
+      setError(errorMessage(cause));
+      setBusy(false);
+    }
+  }
+
+  async function enterWithCredentials(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!auth.demo?.signInWithCredentials || busy) return;
+    setBusy(true);
+    setError('');
+    try {
+      openResult(await auth.demo.signInWithCredentials(email, password));
+    } catch (cause) {
+      setError(errorMessage(cause));
+      setBusy(false);
+    }
+  }
+
+  const group = (title: string, items: DemoPersonaOption[]) => items.length ? (
+    <fieldset className="rounded-2xl border border-[var(--rhc-border)] bg-[var(--rhc-surface-secondary)] p-3">
+      <legend className="px-2 text-xs font-black uppercase tracking-[0.14em] text-[var(--rhc-primary)]">{title}</legend>
+      <div className="grid gap-2">
+        {items.map((persona) => (
+          <label key={persona.id} className={`flex min-h-14 cursor-pointer items-start gap-3 rounded-xl border p-3 transition ${selected === persona.id ? 'border-[var(--rhc-primary)] bg-[var(--rhc-accent-soft)]' : 'border-[var(--rhc-border)] bg-[var(--rhc-surface)]'}`}>
+            <input type="radio" name="demo_persona" value={persona.id} checked={selected === persona.id} disabled={!hydrated || busy} onChange={() => setSelected(persona.id)} className="mt-1" />
+            <span className="min-w-0">
+              <span className="block font-bold text-[var(--rhc-heading)]">{persona.name}</span>
+              <span className="block text-xs font-semibold uppercase tracking-[0.1em] text-[var(--rhc-primary)]">{persona.role.replaceAll('_', ' ')}{persona.readOnly ? ' · Read only' : ''}</span>
+              <span className="mt-1 block text-sm leading-5 text-[var(--rhc-muted)]">{persona.description}</span>
+            </span>
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  ) : null;
+
+  return (
+    <div className="mt-8 space-y-4">
+      <div className="rounded-xl border border-[rgba(212,175,55,.35)] bg-[var(--rhc-accent-soft)] p-4 text-sm leading-6">
+        <p className="font-bold text-[var(--rhc-heading)]">Local presentation profile</p>
+        <p className="text-[var(--rhc-secondary-text)]">Choose a named synthetic persona or use the local demo credential shortcut. No Supabase session, production credential, or real provider is used.</p>
+      </div>
+      {auth.demo?.signInWithCredentials ? (
+        <form onSubmit={(event) => void enterWithCredentials(event)} className="space-y-3 rounded-2xl border border-[var(--rhc-border)] bg-[var(--rhc-surface)] p-4">
+          <div>
+            <p className="text-sm font-black uppercase tracking-[0.14em] text-[var(--rhc-primary)]">Demo credential shortcut</p>
+            <p className="mt-1 text-xs leading-5 text-[var(--rhc-muted)]">For local demo only. These are not Supabase or production credentials. Customer: demo@rhc.local · Admin: superadmin@example.com</p>
+          </div>
+          <label className="block text-sm font-semibold text-[var(--rhc-heading)]">
+            Email
+            <input type="email" autoComplete="username" required value={email} disabled={!hydrated || busy} onChange={(event) => setEmail(event.currentTarget.value)} placeholder="demo@rhc.local" className="mt-1 min-h-11 w-full rounded-xl border border-[var(--rhc-border)] bg-[var(--rhc-surface-secondary)] px-3 text-[var(--rhc-heading)]" />
+          </label>
+          <label className="block text-sm font-semibold text-[var(--rhc-heading)]">
+            Password
+            <input type="password" autoComplete="current-password" required value={password} disabled={!hydrated || busy} onChange={(event) => setPassword(event.currentTarget.value)} placeholder="Local demo password" className="mt-1 min-h-11 w-full rounded-xl border border-[var(--rhc-border)] bg-[var(--rhc-surface-secondary)] px-3 text-[var(--rhc-heading)]" />
+          </label>
+          <button type="submit" disabled={!hydrated || busy || !email || !password} className="rhc-web3-btn-primary min-h-11 w-full rounded-xl px-5 py-2 font-bold disabled:opacity-60">
+            {busy ? 'Opening workspace…' : 'Sign in to demo'}
+          </button>
+        </form>
+      ) : null}
+      {group('Customer journeys', customerPersonas)}
+      {group('Authorized staff journeys', staffPersonas)}
+      {error ? <p role="alert" className="rounded-xl border border-[var(--rhc-danger)] p-3 text-sm">{error}</p> : null}
+      <button type="button" data-demo-ready={hydrated ? 'true' : 'false'} disabled={!hydrated || busy || !selected} onClick={() => void enterDemo()} className="rhc-web3-btn-primary min-h-12 w-full rounded-xl px-5 py-3 font-bold disabled:opacity-60">
+        {busy ? 'Opening workspace…' : 'Enter selected workspace'}
+      </button>
+      <p className="text-xs leading-5 text-[var(--rhc-muted)]">Personas demonstrate workflow and scope behavior only. The local fixture hub is not a production authorization system.</p>
+    </div>
+  );
+}
+
+export function AuthForm({
+  mode,
+  verificationPath = '/verification',
+  continuePath = '/dashboard',
+}: {
+  mode: AuthMode;
+  verificationPath?: string;
+  continuePath?: string;
+}) {
   const { auth, apiUrl, request, navigate } = useRuntime();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -659,6 +938,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
         setError(errorMessage(cause));
       });
   }, [auth, mode, request]);
+  if (mode === 'login' && auth.demo) return <DemoPersonaForm auth={auth} navigate={navigate} />;
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy || !ready) return;
@@ -806,7 +1086,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
       {mode === 'confirm' ? (
         ready &&
         !error && (
-          <a href="/dashboard" className="rhc-web3-btn-primary inline-block rounded-lg p-3">
+          <a href={continuePath} className="rhc-web3-btn-primary inline-block rounded-lg p-3">
             Continue to account
           </a>
         )
@@ -835,7 +1115,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
       {error && ['confirm', 'reset-password'].includes(mode) && (
         <a
           className="block text-sm"
-          href={mode === 'confirm' ? '/verification' : '/forgot-password'}
+          href={mode === 'confirm' ? verificationPath : '/forgot-password'}
         >
           Request a new link
         </a>

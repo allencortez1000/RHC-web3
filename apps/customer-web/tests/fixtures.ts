@@ -54,7 +54,7 @@ export async function installFixtures(
 ) {
   await page.route('**/*', (route) => {
     const origin = new URL(route.request().url()).origin;
-    return ['http://127.0.0.1:3000', 'http://127.0.0.1:3002'].includes(origin)
+    return ['http://127.0.0.1:3000', 'http://127.0.0.1:3002', 'http://127.0.0.1:3003'].includes(origin)
       ? route.continue()
       : route.abort('blockedbyclient');
   });
@@ -290,7 +290,21 @@ export async function installFixtures(
     const ok = (data: unknown) =>
       route.fulfill({ json: { success: true, data, meta: { request_id: 'fixture-request' } } });
     if (path === '/auth/config') return ok({ registration_enabled: options.registrationEnabled !== false });
-    if (path === '/auth/session') return ok({ authenticated: true, user: account });
+    if (path === '/auth/session') {
+      const adminApp = new URL(page.url()).port === '3003';
+      return ok({
+        authenticated: true,
+        user: adminApp
+          ? {
+              ...account,
+              is_admin: true,
+              role: 'SYSTEM_ADMIN',
+              roles: ['SYSTEM_ADMIN'],
+              permissions: ['company.view', 'company.manage', 'user.view', 'user.manage'],
+            }
+          : account,
+      });
+    }
     if (path === '/me') {
       if (method === 'PATCH') {
         const identityLocked =
@@ -427,8 +441,9 @@ export async function installFixtures(
 }
 export async function signIn(page: Page) {
   await page.goto('/login');
+  const adminApp = new URL(page.url()).port === '3003';
   await page.getByLabel('Email address').fill(user.email);
   await page.getByLabel('Password', { exact: true }).fill('Synthetic-password-42!');
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
-  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page).toHaveURL(adminApp ? /:3003\/$/ : /\/dashboard$/);
 }

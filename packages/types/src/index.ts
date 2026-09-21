@@ -109,6 +109,8 @@ export type DomainEventType =
   | 'ROLE.ASSIGNED'
   | 'INTEGRATION.UPDATED';
 
+export * from './demo';
+
 export type FeatureFlagKey =
   | 'ENABLE_REGISTRATION'
   | 'ENABLE_RHC_ID'

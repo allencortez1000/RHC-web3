@@ -47,7 +47,7 @@ describe('API environment bootstrap order', () => {
   });
 
   it('rejects bad environment input before creating providers or opening a listener', async () => {
-    jest.mocked(loadEnv).mockImplementation(() => parse({ TRUSTED_PROXY_CIDRS: 'true' }));
+    jest.mocked(loadEnv).mockImplementation(() => parse({ NODE_ENV: 'test', TRUSTED_PROXY_CIDRS: 'true' }));
     await expect(bootstrap()).rejects.toThrow('Invalid environment configuration: TRUSTED_PROXY_CIDRS');
     expect(create).not.toHaveBeenCalled();
   });

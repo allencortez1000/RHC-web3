@@ -20,9 +20,31 @@ export default function Page() {
   const { request } = useRuntime();
   const [propertyId, setPropertyId] = useState('');
   const [busy, setBusy] = useState(false);
+  const [cancellingId, setCancellingId] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const available = properties.data?.filter((property) => property.status === 'AVAILABLE') || [];
+
+  async function cancelReservation(reservation: Reservation) {
+    if (cancellingId) return;
+    if (!window.confirm(`Cancel ${reservation.reservation_number}? The history will be retained and no payment or refund record will be created.`)) return;
+    setCancellingId(reservation.id);
+    setError('');
+    setMessage('');
+    try {
+      await request(`/me/reservations/${encodeURIComponent(reservation.id)}/cancel`, {
+        method: 'POST',
+        body: JSON.stringify({ reason: 'Customer requested cancellation' }),
+      });
+      setMessage(`${reservation.reservation_number} was cancelled. Its event history remains available.`);
+      reservations.reload();
+      properties.reload();
+    } catch (cause) {
+      setError(errorMessage(cause));
+    } finally {
+      setCancellingId('');
+    }
+  }
 
   async function createReservation() {
     if (!propertyId || busy) return;
@@ -83,9 +105,16 @@ export default function Page() {
                     <Badge tone={reservation.status === 'CONFIRMED' ? 'gold' : 'info'}>{reservation.status}</Badge>
                   </div>
                   <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
-                    <div><dt className="text-[var(--rhc-muted)]">Expires</dt><dd className="font-semibold text-[var(--rhc-heading)]">{new Date(reservation.expires_at).toLocaleString()}</dd></div>
-                    <div><dt className="text-[var(--rhc-muted)]">Created</dt><dd className="font-semibold text-[var(--rhc-heading)]">{new Date(reservation.created_at).toLocaleString()}</dd></div>
+                    <div><dt className="text-[var(--rhc-muted)]">Expires</dt><dd className="font-semibold text-[var(--rhc-heading)]">{new Date(reservation.expires_at).toLocaleString('en-PH', { timeZone: 'Asia/Manila' })}</dd></div>
+                    <div><dt className="text-[var(--rhc-muted)]">Created</dt><dd className="font-semibold text-[var(--rhc-heading)]">{new Date(reservation.created_at).toLocaleString('en-PH', { timeZone: 'Asia/Manila' })}</dd></div>
                   </dl>
+                  {['PENDING', 'CONFIRMED'].includes(reservation.status) ? (
+                    <div className="mt-4 border-t border-[var(--rhc-border)] pt-4">
+                      <Web3Button variant="secondary" disabled={Boolean(cancellingId)} onClick={() => void cancelReservation(reservation)}>
+                        {cancellingId === reservation.id ? 'Cancelling…' : 'Cancel reservation'}
+                      </Web3Button>
+                    </div>
+                  ) : null}
                 </div>
               ))}
             </div>

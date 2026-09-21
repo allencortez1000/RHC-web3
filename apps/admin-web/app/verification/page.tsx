@@ -1,2 +1,5 @@
-import { AuthPage } from '@rhc/ui';
-export default function Page() { return <AuthPage admin mode="verification" title="Email Verification" />; }
+import { AdminModule } from '../admin-data';
+
+export default function Page() {
+  return <AdminModule title="Verification Reviews" resource="customers" />;
+}

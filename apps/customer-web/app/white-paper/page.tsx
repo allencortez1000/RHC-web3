@@ -217,14 +217,15 @@ export default function Page() {
   const [activeNumber, ...activeTitleParts] = activeSection.title.split('. ');
 
   return (
-    <AppShell title="White Paper" navItems={navFor('White Paper')} hideSidebar>
-      <div className="mb-5 flex justify-start">
-        <Web3Button href="/dashboard" variant="secondary">
-          ← Back to Dashboard
-        </Web3Button>
+    <AppShell title="White Paper" navItems={navFor('White Paper')}>
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <Web3Button href="/dashboard" variant="secondary">← Back to Dashboard</Web3Button>
+        <div className="min-w-[220px] rounded-full border border-[var(--rhc-border)] bg-[var(--rhc-surface-secondary)] p-1" aria-label="Reading progress">
+          <div className="h-2 rounded-full bg-[var(--rhc-primary)] transition-all" style={{ width: `${((safeSelectedSection + 1) / sections.length) * 100}%` }} />
+        </div>
       </div>
 
-      <section className="relative overflow-hidden rounded-2xl border border-[var(--rhc-border)] bg-[var(--rhc-surface)] p-6 shadow-sm md:p-10">
+      <section className="relative overflow-hidden rounded-3xl border border-[var(--rhc-border)] bg-[var(--rhc-surface)] p-6 shadow-sm md:p-10">
         <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-[var(--rhc-accent-soft)] blur-3xl" />
         <div className="pointer-events-none absolute -bottom-32 left-10 h-72 w-72 rounded-full bg-[rgba(212,175,55,.08)] blur-3xl" />
         <div className="relative grid gap-8 xl:grid-cols-[1.1fr_.9fr] xl:items-center">
@@ -291,7 +292,7 @@ export default function Page() {
       </section>
 
       <div className="mt-5 grid gap-5 xl:grid-cols-[20rem_1fr]">
-        <aside className="rounded-2xl border border-[var(--rhc-border)] bg-[var(--rhc-surface)] p-5 shadow-sm xl:h-[calc(100vh-8rem)]">
+        <aside className="sticky top-5 rounded-2xl border border-[var(--rhc-border)] bg-[var(--rhc-surface)] p-5 shadow-sm xl:h-[calc(100vh-8rem)]">
           <div className="flex items-center justify-between gap-3">
             <p className="rhc-eyebrow">Table of Contents</p>
             <Badge tone="gold">{safeSelectedSection + 1} / {sections.length}</Badge>
@@ -308,6 +309,7 @@ export default function Page() {
                   key={section.title}
                   type="button"
                   onClick={() => setSelectedSection(index)}
+                  aria-current={active ? 'step' : undefined}
                   className={`group flex items-start gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold transition ${
                     active
                       ? 'bg-[var(--rhc-accent-soft)] text-[var(--rhc-primary)]'
