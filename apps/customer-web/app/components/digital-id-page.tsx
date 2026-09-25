@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import {
   AppShell,
   Badge,
@@ -24,22 +24,17 @@ function maskedReference(value?: string | null) {
   return parts.length >= 3 ? `${parts[0]}-${parts[1]}-${parts[2].slice(0, 4)}••••` : value;
 }
 
-function verificationToken(rhcId?: string | null) {
-  if (!rhcId || typeof window === 'undefined') return null;
-  return window.btoa(rhcId).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-}
-
 function VerificationQr({ rhcId }: { rhcId?: string | null }) {
-  const cells = useMemo(
-    () =>
-      Array.from({ length: 49 }, (_, index) => {
-        const seed = rhcId ? rhcId.charCodeAt(index % rhcId.length) + index : index;
-        return seed % 3 !== 0;
-      }),
-    [rhcId],
-  );
+  const cells = Array.from({ length: 49 }, (_, index) => {
+    const seed = rhcId ? rhcId.charCodeAt(index % rhcId.length) + index : index;
+    return seed % 3 !== 0;
+  });
   return (
-    <div className="rounded-2xl border border-[var(--rhc-border)] bg-white p-4 shadow-sm">
+    <div
+      className="rounded-2xl border border-[var(--rhc-border)] bg-white p-4 shadow-sm"
+      aria-label="Non-scannable verification reference placeholder"
+      role="img"
+    >
       <div className="grid grid-cols-7 gap-1">
         {cells.map((active, index) => (
           <span key={index} className={`h-4 w-4 rounded-sm ${active ? 'bg-slate-950' : 'bg-white'}`} />
@@ -60,7 +55,6 @@ export function DigitalIdPage() {
   const account = me.data?.user;
   const profile = me.data?.profile;
   const rhcId = id.data?.rhc_id || profile?.rhc_id;
-  const token = verificationToken(rhcId);
   const eligible = isRhcIdEligible(account);
 
   async function issue() {
@@ -140,14 +134,16 @@ export function DigitalIdPage() {
                 <Badge tone={rhcId ? 'gold' : 'neutral'}>{rhcId ? 'Issued' : 'Pending issuance'}</Badge>
                 <p className="mt-4 font-mono text-xl font-black text-[var(--rhc-heading)]">{maskedReference(rhcId)}</p>
                 <p className="mt-3 text-sm leading-6 text-[var(--rhc-muted)]">
-                  The QR-style reference resolves through RHC systems and contains only a verification
-                  reference, not address, birthday, phone, email, wallet, or private profile data.
+                  This is a non-scannable visual placeholder. Public RHC Digital ID verification is
+                  unavailable until an approved sharing contract defines a protected reference and the
+                  minimum disclosure. No address, birthday, phone, email, wallet, or private profile data
+                  is exposed here.
                 </p>
-                {token && (
-                  <div className="mt-4">
-                    <Web3Button href={`/verify/rhc-id/${token}`} variant="secondary">Open public verification</Web3Button>
-                  </div>
-                )}
+                <div className="mt-4">
+                  <Web3Button variant="secondary" disabled>
+                    Public verification unavailable
+                  </Web3Button>
+                </div>
               </div>
             </div>
           </Card>

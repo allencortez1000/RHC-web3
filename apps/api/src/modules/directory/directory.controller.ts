@@ -3,24 +3,6 @@ import { PrismaService } from '../../platform/prisma.service';
 import { listQuery, propertyQuery, uuid } from '../../platform/dto';
 import { RequireFeature } from '../security/feature.guard';
 
-function decodeRhcVerificationToken(token: string) {
-  if (!/^[A-Za-z0-9_-]{6,160}$/.test(token)) return null;
-  try {
-    const padded = token.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(token.length / 4) * 4, '=');
-    const decoded = Buffer.from(padded, 'base64').toString('utf8').trim().toUpperCase();
-    return /^RHC-\d{4}-\d{8}$/.test(decoded) ? decoded : null;
-  } catch {
-    return null;
-  }
-}
-
-function maskName(first?: string | null, last?: string | null) {
-  const safeFirst = first?.trim();
-  const safeLast = last?.trim();
-  if (!safeFirst && !safeLast) return 'RHC customer';
-  const maskedLast = safeLast ? `${safeLast[0]}${'•'.repeat(Math.max(safeLast.length - 1, 1))}` : '';
-  return [safeFirst, maskedLast].filter(Boolean).join(' ');
-}
 
 const publicCompany = { id: true, company_code: true, display_name: true, description: true, business_type: true, status: true, integration_status: true, rewards_enabled: true, digital_services_enabled: true } as const;
 
@@ -64,29 +46,15 @@ export class DirectoryController {
   }
 
   @Get('verify/rhc-id/:token')
-  async verifyRhcId(@Param('token') token: string) {
-    const rhcId = decodeRhcVerificationToken(token);
-    if (!rhcId) return { valid: false, status: 'INVALID', message: 'RHC Digital ID verification token is invalid.' };
-    const profile = await this.prisma.userProfile.findUnique({
-      where: { rhc_id: rhcId },
-      select: {
-        rhc_id: true,
-        rhc_id_issued_at: true,
-        verification_status: true,
-        account_status: true,
-        first_name: true,
-        last_name: true,
-      },
-    });
-    if (!profile) return { valid: false, status: 'INVALID', rhc_id: rhcId, message: 'RHC Digital ID was not found.' };
-    const valid = profile.account_status === 'ACTIVE' && profile.verification_status === 'VERIFIED';
+  verifyRhcId(@Param('token') _token: string) {
+    void _token;
+    // An RHC ID is an internal identifier, not an anonymous bearer credential.
+    // Public verification stays unavailable until an approved sharing contract
+    // defines an unguessable reference, disclosure fields, and revocation rules.
     return {
-      valid,
-      status: valid ? 'VALID' : profile.account_status === 'DISABLED' || profile.account_status === 'LOCKED' ? 'REVOKED' : 'INACTIVE',
-      rhc_id: profile.rhc_id,
-      display_name: maskName(profile.first_name, profile.last_name),
-      verification_status: profile.verification_status,
-      issued_at: profile.rhc_id_issued_at,
+      valid: false,
+      status: 'UNAVAILABLE',
+      message: 'Public RHC Digital ID verification is not configured.',
     };
   }
 

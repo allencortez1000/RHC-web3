@@ -105,6 +105,22 @@ test('ID reads do not issue IDs; explicit issue action does', async ({ page }) =
   ).toHaveLength(1);
 });
 
+test('Digital ID page labels the QR-style pattern as non-scannable and disables public verification', async ({ page }) => {
+  const fixture = await installFixtures(page, { authenticated: true, businessVerified: true });
+  await page.goto('/digital-id');
+  await expect(page.getByRole('img', { name: 'Non-scannable verification reference placeholder' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Public verification unavailable', exact: true })).toBeDisabled();
+  expect(fixture.requests.some((item) => item.path.startsWith('/verify/rhc-id/'))).toBe(false);
+});
+
+test('public Digital ID route is honest and performs no guessed-identifier lookup', async ({ page }) => {
+  const fixture = await installFixtures(page);
+  await page.goto('/verify/rhc-id/UkhDLTIwMjYtMDAwMDAwMDE');
+  await expect(page.getByRole('heading', { name: 'Public Verification Unavailable' })).toBeVisible();
+  await expect(page.getByText('No identifier was looked up and no customer identity data is displayed.', { exact: false })).toBeVisible();
+  expect(fixture.requests.some((item) => item.path.startsWith('/verify/rhc-id/'))).toBe(false);
+});
+
 test('confirmed email leaves a new account pending review until refreshed API approval', async ({
   page,
 }) => {
