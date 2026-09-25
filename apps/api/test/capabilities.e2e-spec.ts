@@ -64,6 +64,42 @@ describe('authenticated admin capabilities', () => {
     expect(response.body.data.mutation_grants).toEqual({ 'company.manage': [{ company_id: ids.companyA, project_id: null }] });
   });
 
+  it('keeps global role viewers aligned with both role endpoints', async () => {
+    h.grant('role.view');
+    const response = await get().expect(200);
+
+    expect(response.body.data.modules).toEqual(expect.arrayContaining([
+      expect.objectContaining({ path: '/roles', usable: true }),
+      expect.objectContaining({ path: '/user-roles', usable: true }),
+    ]));
+    await request(h.app.getHttpServer()).get('/api/v1/admin/roles').set('Authorization', `Bearer ${h.token}`).expect(200);
+    await request(h.app.getHttpServer()).get('/api/v1/admin/user-roles').set('Authorization', `Bearer ${h.token}`).expect(200);
+  });
+
+  it('keeps company role viewers on Roles but denies User Roles before its assignment query', async () => {
+    h.grant('role.view', ids.companyA);
+    const response = await get().expect(200);
+
+    expect(response.body.data.modules.find((module: { path: string }) => module.path === '/roles')?.usable).toBe(true);
+    expect(response.body.data.modules.find((module: { path: string }) => module.path === '/user-roles')?.usable).toBe(false);
+    await request(h.app.getHttpServer()).get('/api/v1/admin/roles').set('Authorization', `Bearer ${h.token}`).expect(200);
+    h.prisma.userRole.findMany.mockClear();
+    await request(h.app.getHttpServer()).get('/api/v1/admin/user-roles').set('Authorization', `Bearer ${h.token}`).expect(403);
+    // The permission guard resolves the caller grant once; the controller list
+    // query must not run after that denial.
+    expect(h.prisma.userRole.findMany).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps project role viewers consistent with the global-only role endpoints', async () => {
+    h.grant('role.view', ids.companyA, ids.projectA);
+    const response = await get().expect(200);
+
+    expect(response.body.data.modules.find((module: { path: string }) => module.path === '/roles')?.usable).toBe(false);
+    expect(response.body.data.modules.find((module: { path: string }) => module.path === '/user-roles')?.usable).toBe(false);
+    await request(h.app.getHttpServer()).get('/api/v1/admin/roles').set('Authorization', `Bearer ${h.token}`).expect(403);
+    await request(h.app.getHttpServer()).get('/api/v1/admin/user-roles').set('Authorization', `Bearer ${h.token}`).expect(403);
+  });
+
   it('does not treat a project-scoped company grant as company-list or dashboard access', async () => {
     h.grant('company.view', ids.companyA, ids.projectA);
     const response = await get().expect(200);

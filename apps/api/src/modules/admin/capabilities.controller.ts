@@ -43,6 +43,7 @@ type CapabilityModule = {
   path: string;
   permission: (typeof ADMIN_CAPABILITY_PERMISSIONS)[number];
   list?: ListResource;
+  globalOnly?: boolean;
 };
 
 // Keep this list aligned with the Admin Portal destinations and their actual list guards.
@@ -60,7 +61,7 @@ export const ADMIN_CAPABILITY_MODULES: readonly CapabilityModule[] = [
   { path: '/business-services', permission: 'integration.view', list: 'service' },
   { path: '/users', permission: 'user.view', list: 'user' },
   { path: '/roles', permission: 'role.view', list: 'role' },
-  { path: '/user-roles', permission: 'role.view', list: 'role' },
+  { path: '/user-roles', permission: 'role.view', list: 'role', globalOnly: true },
   { path: '/permissions', permission: 'permission.view' },
   { path: '/integrations', permission: 'integration.view', list: 'integration' },
   { path: '/feature-flags', permission: 'feature_flag.view' },
@@ -68,7 +69,8 @@ export const ADMIN_CAPABILITY_MODULES: readonly CapabilityModule[] = [
   { path: '/system-settings', permission: 'system_settings.view' },
 ];
 
-function listGrantIsUsable(grant: Grant, list?: ListResource) {
+function listGrantIsUsable(grant: Grant, list?: ListResource, globalOnly = false) {
+  if (globalOnly) return !grant.company_id && !grant.project_id;
   if (!list) return !grant.company_id && !grant.project_id;
   if (['company', 'integration', 'service', 'role'].includes(list)) return !grant.project_id;
   return true;
@@ -94,7 +96,7 @@ export class CapabilitiesController {
     const effectiveModules = ADMIN_CAPABILITY_MODULES.map((module) => ({
       path: module.path,
       permission: module.permission,
-      usable: grantsFor(module.permission).some((grant) => listGrantIsUsable(grant, module.list)),
+      usable: grantsFor(module.permission).some((grant) => listGrantIsUsable(grant, module.list, module.globalOnly)),
     }));
 
     return {
