@@ -5,8 +5,6 @@ import { Authorization, PermissionPolicy, REQUIRED_PERMISSION } from './permissi
 import { RbacService, ResourceScope } from './rbac.service';
 import { PrismaService } from '../../platform/prisma.service';
 
-type ReservationDelegates = { reservation: any };
-const reservationDb = <T extends object>(client: T) => client as T & ReservationDelegates;
 
 @Injectable()
 export class PermissionGuard implements CanActivate {
@@ -49,7 +47,7 @@ export class PermissionGuard implements CanActivate {
       scope = { company_id: relationship.property.project.company_id, project_id: relationship.property.project_id };
     } else if (target === 'reservation') {
       const id = z.string().uuid().parse(req.params.id);
-      const reservation = await reservationDb(this.prisma).reservation.findUnique({ where: { id }, select: { property: { select: { project_id: true, project: { select: { company_id: true } } } } } });
+      const reservation = await this.prisma.reservation.findUnique({ where: { id }, select: { property: { select: { project_id: true, project: { select: { company_id: true } } } } } });
       if (!reservation) throw new NotFoundException('Resource not found');
       scope = { company_id: reservation.property.project.company_id, project_id: reservation.property.project_id };
     } else if (target === 'integration' || target === 'service') {
