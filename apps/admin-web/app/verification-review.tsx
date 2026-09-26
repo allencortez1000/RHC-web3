@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import {
   ApiError,
   Card,
@@ -9,6 +9,8 @@ import {
   isAuthEmailConfirmed,
   useRuntime,
 } from '@rhc/ui';
+import { globalScope, hasEffectiveGrant, type AdminCapabilities } from './capability-scopes';
+import { useMutationIntent } from './capability-request-coordinator';
 
 type Candidate = { id: string; [key: string]: unknown };
 const reviewableStatuses = ['UNVERIFIED', 'PENDING', 'REJECTED'];
@@ -37,23 +39,32 @@ export function VerificationReview({
   done,
   cancel,
   refresh,
+  capabilitiesReady,
+  revalidateCapabilities,
 }: {
   candidate: Candidate;
   done: () => void;
   cancel: () => void;
   refresh: () => void;
+  capabilitiesReady: boolean;
+  revalidateCapabilities: () => Promise<AdminCapabilities | null>;
 }) {
   const { user, request } = useRuntime();
   const [reference, setReference] = useState('');
   const [reviewed, setReviewed] = useState(false);
-  const [busy, setBusy] = useState(false);
+  const mutation = useMutationIntent(candidate);
+  const busy = mutation.busy;
   const [error, setError] = useState('');
   const [needsReview, setNeedsReview] = useState(false);
-  const submitting = useRef(false);
+
   const blocked = approvalBlockReason(candidate, user?.id);
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (submitting.current || needsReview) return;
+    if (busy || needsReview) return;
+    if (!capabilitiesReady) {
+      setError('Permissions are refreshing. Wait for the current capability state before approving.');
+      return;
+    }
     if (blocked) {
       setError(blocked);
       return;
@@ -69,10 +80,19 @@ export function VerificationReview({
       );
       return;
     }
-    submitting.current = true;
-    setBusy(true);
+    const intent = mutation.begin();
+    if (intent === null) return;
     setError('');
     try {
+      const latest = await revalidateCapabilities();
+      if (!mutation.isCurrent(intent)) return;
+      if (!latest || !hasEffectiveGrant(latest, 'user.manage', globalScope())) {
+        setNeedsReview(true);
+        refresh();
+        setError('Approval permission changed or could not be refreshed. Cancel this review and review the current account state again. No approval was submitted.');
+        return;
+      }
+      if (!mutation.markSubmitted(intent)) return;
       const result = await request<{ id: string; verification_status: string }>(
         `/admin/users/${encodeURIComponent(candidate.id)}/verification/approve`,
         {
@@ -83,12 +103,14 @@ export function VerificationReview({
           }),
         },
       );
+      if (!mutation.isCurrent(intent)) return;
       if (result.id !== candidate.id || result.verification_status !== 'VERIFIED')
         throw new Error(
           'The API did not confirm approval. Refresh the records before reviewing again.',
         );
       done();
     } catch (cause) {
+      if (!mutation.isCurrent(intent)) return;
       if (cause instanceof ApiError && cause.status === 409) {
         setNeedsReview(true);
         setReviewed(false);
@@ -102,8 +124,7 @@ export function VerificationReview({
         );
       } else setError(errorMessage(cause));
     } finally {
-      submitting.current = false;
-      setBusy(false);
+      mutation.finish(intent);
     }
   }
   return (
@@ -181,7 +202,10 @@ export function VerificationReview({
           <Web3Button type="submit" disabled={busy || needsReview || !reviewed || Boolean(blocked)}>
             {busy ? 'Approving…' : 'Confirm approval'}
           </Web3Button>
-          <Web3Button variant="secondary" disabled={busy} onClick={cancel}>
+          <Web3Button variant="secondary" disabled={mutation.submitted} onClick={() => {
+            mutation.invalidate();
+            cancel();
+          }}>
             Cancel review
           </Web3Button>
         </div>

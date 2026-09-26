@@ -38,6 +38,7 @@ export type Captured = {
   body: Record<string, unknown> | null;
   authorization?: string;
 };
+export type FixtureGrant = { company_id: string | null; project_id: string | null };
 export async function installFixtures(
   page: Page,
   options: {
@@ -54,6 +55,8 @@ export async function installFixtures(
     empty?: boolean;
     adminPermissions?: string[];
     adminMutationPermissions?: string[];
+    adminGrants?: Record<string, FixtureGrant[]>;
+    adminMutationGrants?: Record<string, FixtureGrant[]>;
   } = {},
 ) {
   await page.route('**/*', (route) => {
@@ -127,6 +130,16 @@ export async function installFixtures(
     relationship_type: 'OWNER',
     status: 'ACTIVE',
   };
+  const reservation = {
+    id: '99999999-9999-4999-8999-999999999991',
+    reservation_number: 'RSV-FIXTURE-1',
+    status: 'PENDING',
+    expires_at: '2026-09-21T00:00:00.000Z',
+    created_at: '2026-09-18T00:00:00.000Z',
+    updated_at: '2026-09-18T00:00:00.000Z',
+    customer: account,
+    property: { ...property, status: 'HELD' },
+  };
   const flags = [
     {
       id: '77777777-7777-4777-8777-777777777777',
@@ -167,6 +180,7 @@ export async function installFixtures(
     '/admin/companies': [company],
     '/admin/projects': [project],
     '/admin/properties': [property],
+    '/admin/reservations': [reservation],
     '/admin/customer-properties': [
       {
         id: relationship.id,
@@ -174,12 +188,16 @@ export async function installFixtures(
         property_id: relationship.property_id,
         relationship_type: relationship.relationship_type,
         status: relationship.status,
+        property_code: property.property_code,
+        property_project_id: project.id,
+        property_company_id: company.id,
       },
     ],
     '/admin/customers': [{ ...account, profile }, ...(options.reviewCandidate ? [candidate] : [])],
     '/admin/users': [{ ...account, profile }, ...(options.reviewCandidate ? [candidate] : [])],
     '/admin/feature-flags': flags,
-    '/admin/roles': [{ id: 'role-1', code: 'OPERATOR', name: 'Fixture Operator' }],
+    '/admin/roles': [{ id: 'role-1', code: 'OPERATOR', name: 'Fixture Operator', company_id: company.id }],
+    '/admin/user-roles': [{ id: 'user-role-1', user_id: account.id, role_id: 'role-1', company_id: company.id, project_id: null, expires_at: null, role: { code: 'OPERATOR', name: 'Fixture Operator' } }],
     '/admin/permissions': [
       { id: 'permission-1', code: 'company.view', description: 'View companies' },
     ],
@@ -376,6 +394,25 @@ export async function installFixtures(
         'customer_property.manage', 'user.manage', 'role.manage', 'permission.manage',
         'integration.manage', 'feature_flag.manage', 'system_settings.manage',
       ];
+      const globalGrant: FixtureGrant = { company_id: null, project_id: null };
+      const grants = Object.fromEntries(permissions.map((permission) => [
+        permission,
+        options.adminGrants?.[permission] ?? [globalGrant],
+      ]));
+      const mutation_grants = Object.fromEntries(mutation_permissions.map((permission) => [
+        permission,
+        options.adminMutationGrants?.[permission] ?? [globalGrant],
+      ]));
+      const listWithoutProjectScope = new Set(['/', '/companies', '/business-services', '/integrations', '/roles']);
+      const globalOnly = new Set(['/user-roles', '/permissions', '/feature-flags', '/system-settings']);
+      const moduleGrantUsable = (path: string, permission: string) => {
+        const allowed = grants[permission] || [];
+        return allowed.some((grant) => {
+          if (globalOnly.has(path)) return grant.company_id === null && grant.project_id === null;
+          if (listWithoutProjectScope.has(path)) return grant.project_id === null;
+          return true;
+        });
+      };
       const modules = [
         ['/', 'company.view'], ['/customers', 'customer.view'], ['/rhc-digital-ids', 'customer.view'],
         ['/companies', 'company.view'], ['/projects', 'project.view'], ['/properties', 'property.view'],
@@ -384,14 +421,8 @@ export async function installFixtures(
         ['/users', 'user.view'], ['/roles', 'role.view'], ['/user-roles', 'role.view'],
         ['/permissions', 'permission.view'], ['/integrations', 'integration.view'],
         ['/feature-flags', 'feature_flag.view'], ['/audit-logs', 'audit.view'], ['/system-settings', 'system_settings.view'],
-      ].map(([path, permission]) => ({ path, permission, usable: permissions.includes(permission) && (path !== '/' || permissions.includes('company.view')) }));
-      return ok({
-        permissions,
-        grants: Object.fromEntries(permissions.map((permission) => [permission, []])),
-        mutation_permissions,
-        mutation_grants: Object.fromEntries(mutation_permissions.map((permission) => [permission, []])),
-        modules,
-      });
+      ].map(([path, permission]) => ({ path, permission, usable: moduleGrantUsable(path, permission) }));
+      return ok({ permissions, grants, mutation_permissions, mutation_grants, modules });
     }
     if (path === '/admin/dashboard')
       return ok({
@@ -460,7 +491,9 @@ export async function installFixtures(
     candidate,
     company,
     project,
+    reservation,
     flags,
+    options,
   };
 }
 export async function signIn(page: Page, destination: RegExp = /\/dashboard$/) {

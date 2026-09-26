@@ -13,8 +13,10 @@ import {
   Web3Button,
   Web3Shell,
   usePagedResource,
+  useRuntime,
 } from '@rhc/ui';
 import { AdminNavigation, useAdminCapabilities } from '../admin-data';
+import { hasEffectiveGrant } from '../capability-scopes';
 import { VerificationReview, approvalBlockReason } from '../verification-review';
 
 type CustomerRow = {
@@ -54,7 +56,9 @@ function digitalIdState(customer: CustomerRow) {
 export default function Page() {
   const customers = usePagedResource<CustomerRow>('/admin/customers', true);
   const capabilities = useAdminCapabilities();
-  const canReview = capabilities.data?.mutation_permissions?.includes('user.manage') === true;
+  const { user } = useRuntime();
+  const capabilitiesReady = Boolean(capabilities.data) && !capabilities.loading && !capabilities.error;
+  const canReview = capabilitiesReady && hasEffectiveGrant(capabilities.data, 'user.manage');
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState('all');
   const [review, setReview] = useState<CustomerRow | null>(null);
@@ -121,9 +125,12 @@ export default function Page() {
           <ResourceStatus {...customers} />
           {review && (
             <VerificationReview
+              key={review.id}
               candidate={review}
               cancel={() => setReview(null)}
               refresh={customers.refresh}
+              capabilitiesReady={capabilitiesReady}
+              revalidateCapabilities={capabilities.revalidate}
               done={() => {
                 setReview(null);
                 customers.refresh();
@@ -168,7 +175,7 @@ export default function Page() {
                 </thead>
                 <tbody>
                   {filtered.map((customer) => {
-                    const blockReason = approvalBlockReason(customer);
+                    const blockReason = approvalBlockReason(customer, user?.id);
                     return (
                       <tr key={customer.id} className="border-b align-top">
                         <td className="p-3">

@@ -10,6 +10,16 @@ import {
   usePagedResource,
   useRuntime,
 } from '@rhc/ui';
+import {
+  globalScope,
+  hasRequiredMutationGrants,
+  referenceIsAuthorized,
+  requiredMutationPermissions,
+  targetForResource,
+  type AdminCapabilities,
+  type ScopeTarget,
+} from './capability-scopes';
+import { useMutationIntent } from './capability-request-coordinator';
 
 export type ManagementRow = { id: string; [key: string]: unknown };
 export type ManagementAction = {
@@ -23,6 +33,7 @@ type Field = {
   required?: boolean;
   options?: string[];
   source?: string;
+  scopePermission?: string;
   type?: 'datetime-local' | 'checkbox' | 'email';
   max?: number;
   pattern?: string;
@@ -34,6 +45,7 @@ const integrationStatuses = ['NOT_CONFIGURED', 'PREPARED', 'ACTIVE', 'SUSPENDED'
 const accountStatuses = ['PENDING', 'ACTIVE', 'DISABLED', 'LOCKED'];
 const description: Field = { key: 'description', label: 'Description', max: 500, nullable: true };
 const company: Field = { key: 'company_id', label: 'Company', source: 'companies', required: true };
+const integrationCompany: Field = { ...company, scopePermission: 'integration.manage' };
 const reference: Field = {
   key: 'review_reference',
   label: 'Review reference',
@@ -81,7 +93,7 @@ const metadata: Record<string, Field[]> = {
     description,
   ],
   integrations: [
-    company,
+    integrationCompany,
     {
       key: 'integration_key',
       label: 'Integration key',
@@ -93,7 +105,7 @@ const metadata: Record<string, Field[]> = {
     { key: 'status', label: 'Status', options: integrationStatuses },
   ],
   'business-services': [
-    company,
+    integrationCompany,
     { key: 'service_code', label: 'Service code', required: true, max: 80, pattern: codePattern },
     { key: 'service_name', label: 'Service name', required: true },
     { key: 'service_type', label: 'Service type', required: true, max: 80, pattern: codePattern },
@@ -144,12 +156,40 @@ function labelFor(row: ManagementRow) {
     row.email || row.display_name || row.project_name || row.name || row.code || row.id,
   );
 }
+
+function targetForPendingMutation(
+  resource: string,
+  body: Record<string, unknown>,
+  row: ManagementRow | undefined,
+  choices: Record<string, ManagementRow[] | undefined>,
+): ScopeTarget {
+  if (row) return targetForResource(resource, row) || globalScope();
+  if (resource === 'projects' && typeof body.company_id === 'string')
+    return { company_id: body.company_id, project_id: null };
+  if ((resource === 'integrations' || resource === 'business-services') && typeof body.company_id === 'string')
+    return { company_id: body.company_id, project_id: null };
+  if (resource === 'customer-properties' && typeof body.property_id === 'string') {
+    const property = choices.property_id?.find((choice) => choice.id === body.property_id);
+    return property ? targetForResource('properties', property) || globalScope() : globalScope();
+  }
+  return globalScope();
+}
+
+function mutationAction(resource: string, mode: ManagementAction['mode']) {
+  if (mode === 'status') return 'status';
+  if (mode === 'permissions') return 'permissions';
+  if (mode === 'setting') return 'setting';
+  return mode;
+}
+
 function ReferenceField({
   field,
   choices,
+  capabilities,
 }: {
   field: Field;
   choices: Record<string, ManagementRow[] | undefined>;
+  capabilities?: AdminCapabilities;
 }) {
   const { user } = useRuntime();
   const resource = usePagedResource<ManagementRow>(
@@ -157,9 +197,10 @@ function ReferenceField({
     field.source !== 'roles',
   );
   const rows = (resource.data || []).filter((row) =>
-    field.source === 'users'
+    (field.source === 'users'
       ? row.id !== user?.id && row.account_status === 'ACTIVE'
-      : field.source !== 'roles' || row.code !== 'SUPER_ADMIN',
+      : field.source !== 'roles' || row.code !== 'SUPER_ADMIN') &&
+    referenceIsAuthorized(capabilities, field.scopePermission, field.source, row),
   );
   choices[field.key] = resource.loading || resource.error ? undefined : rows;
   return (
@@ -264,11 +305,17 @@ export function ManagementEditor({
   done,
   cancel,
   refresh,
+  capabilities,
+  capabilitiesReady,
+  revalidateCapabilities,
 }: {
   action: ManagementAction;
   done: () => void;
   cancel: () => void;
   refresh: () => void;
+  capabilities?: AdminCapabilities;
+  capabilitiesReady: boolean;
+  revalidateCapabilities: () => Promise<AdminCapabilities | null>;
 }) {
   const { request, user } = useRuntime();
   const { resource, mode, row } = action;
@@ -277,10 +324,11 @@ export function ManagementEditor({
     body: Record<string, unknown>;
     summary: [string, string][];
   } | null>(null);
-  const [busy, setBusy] = useState(false);
+  const mutation = useMutationIntent(action);
+  const busy = mutation.busy;
   const [stale, setStale] = useState(false);
   const [error, setError] = useState('');
-  const submitting = useRef(false);
+
   const choices = useRef<Record<string, ManagementRow[] | undefined>>({});
   const isRemoval = mode === 'remove' || mode === 'delete-role';
   let fields = metadata[resource] || [];
@@ -309,7 +357,7 @@ export function ManagementEditor({
 
   function review(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (submitting.current || stale) return;
+    if (busy || stale) return;
     setError('');
     try {
       const form = new FormData(event.currentTarget);
@@ -421,9 +469,15 @@ export function ManagementEditor({
     }
   }
   async function confirm() {
-    if (!pending || submitting.current || stale) return;
-    submitting.current = true;
-    setBusy(true);
+    if (!pending || busy || stale) return;
+    if (!capabilitiesReady) {
+      setError('Permissions are refreshing. Wait for the current capability state before confirming.');
+      return;
+    }
+    const target = targetForPendingMutation(resource, pending.body, row, choices.current);
+    const permissions = requiredMutationPermissions(resource, mutationAction(resource, mode));
+    const intent = mutation.begin();
+    if (intent === null) return;
     setError('');
     const suffix =
       mode === 'setting'
@@ -432,6 +486,15 @@ export function ManagementEditor({
           ? `/${encodeURIComponent(row.id)}${mode === 'status' ? '/status' : mode === 'permissions' ? '/permissions' : ''}`
           : '';
     try {
+      const latest = await revalidateCapabilities();
+      if (!mutation.isCurrent(intent)) return;
+      if (!latest || !permissions.length || !hasRequiredMutationGrants(latest, permissions, target)) {
+        setStale(true);
+        refresh();
+        setError('Your permissions changed or could not be refreshed. No change was submitted; cancel and review the current record.');
+        return;
+      }
+      if (!mutation.markSubmitted(intent)) return;
       await request(`/admin/${resource}${suffix}`, {
         method: isRemoval
           ? 'DELETE'
@@ -442,8 +505,9 @@ export function ManagementEditor({
               : 'PATCH',
         body: JSON.stringify(pending.body),
       });
-      done();
+      if (mutation.isCurrent(intent)) done();
     } catch (cause) {
+      if (!mutation.isCurrent(intent)) return;
       if (cause instanceof ApiError && cause.status === 409) {
         setStale(true);
         refresh();
@@ -452,8 +516,7 @@ export function ManagementEditor({
         );
       } else setError(errorMessage(cause));
     } finally {
-      submitting.current = false;
-      setBusy(false);
+      mutation.finish(intent);
     }
   }
   return (
@@ -509,7 +572,7 @@ export function ManagementEditor({
         </p>
       )}
       <form onSubmit={review} hidden={Boolean(pending)}>
-        <fieldset disabled={busy || stale}>
+        <fieldset disabled={busy || stale || !capabilitiesReady}>
           {mode === 'setting' && (
             <label className="block text-sm">
               Setting key
@@ -534,7 +597,7 @@ export function ManagementEditor({
               <label key={field.key} className="block text-sm">
                 {field.label}
                 {field.source ? (
-                  <ReferenceField field={field} choices={choices.current} />
+                  <ReferenceField field={field} choices={choices.current} capabilities={capabilities} />
                 ) : field.options ? (
                   <select
                     name={field.key}
@@ -575,7 +638,7 @@ export function ManagementEditor({
               number.
             </p>
           )}
-          <Web3Button type="submit">Review changes</Web3Button>
+          <Web3Button type="submit" disabled={!capabilitiesReady}>Review changes</Web3Button>
         </fieldset>
       </form>
       {pending && (
@@ -599,13 +662,14 @@ export function ManagementEditor({
             ))}
           </dl>
           <div className="flex gap-3">
-            <Web3Button disabled={busy || stale} onClick={confirm}>
+            <Web3Button disabled={busy || stale || !capabilitiesReady} onClick={confirm}>
               {busy ? 'Saving…' : 'Confirm changes'}
             </Web3Button>
             <Web3Button
               variant="secondary"
-              disabled={busy || stale}
+              disabled={mutation.submitted || stale}
               onClick={() => {
+                mutation.invalidate();
                 setPending(null);
                 setError('');
               }}
@@ -620,7 +684,10 @@ export function ManagementEditor({
           {error}
         </p>
       )}
-      <Web3Button variant="secondary" disabled={busy} onClick={cancel}>
+      <Web3Button variant="secondary" disabled={mutation.submitted} onClick={() => {
+        mutation.invalidate();
+        cancel();
+      }}>
         Cancel
       </Web3Button>
     </Card>

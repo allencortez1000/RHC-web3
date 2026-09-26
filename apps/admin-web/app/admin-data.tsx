@@ -10,7 +10,7 @@ import {
   protectedRole,
   type ManagementAction,
 } from './management-controls';
-import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import {
   Badge,
   Card,
@@ -26,8 +26,22 @@ import {
   useResource,
   useRuntime,
 } from '@rhc/ui';
+import {
+  hasAnyEffectiveGrant,
+  hasEffectiveGrant,
+  hasRequiredMutationGrants,
+  requiredMutationPermissions,
+  referenceIsAuthorized,
+  resourceMutationAllowed,
+  targetForReference,
+  targetForResource,
+  globalScope,
+  type AdminCapabilities,
+  type ScopeTarget,
+} from './capability-scopes';
+import { CapabilityRequestCoordinator, useMutationIntent } from './capability-request-coordinator';
 
-export type AdminModuleDefinition = { label: string; path: string; permission: string };
+export type AdminModuleDefinition = { label: string; path: string; permission: string; globalOnly?: boolean };
 export const moduleDefinitions: readonly AdminModuleDefinition[] = [
   { label: 'Dashboard', path: '/', permission: 'company.view' },
   { label: 'Customers', path: '/customers', permission: 'customer.view' },
@@ -41,7 +55,7 @@ export const moduleDefinitions: readonly AdminModuleDefinition[] = [
   { label: 'Business Services', path: '/business-services', permission: 'integration.view' },
   { label: 'Users', path: '/users', permission: 'user.view' },
   { label: 'Roles', path: '/roles', permission: 'role.view' },
-  { label: 'User Roles', path: '/user-roles', permission: 'role.view' },
+  { label: 'User Roles', path: '/user-roles', permission: 'role.view', globalOnly: true },
   { label: 'Permissions', path: '/permissions', permission: 'permission.view' },
   { label: 'Integrations', path: '/integrations', permission: 'integration.view' },
   { label: 'Feature Flags', path: '/feature-flags', permission: 'feature_flag.view' },
@@ -49,34 +63,70 @@ export const moduleDefinitions: readonly AdminModuleDefinition[] = [
   { label: 'System Settings', path: '/system-settings', permission: 'system_settings.view' },
 ];
 export const modules = moduleDefinitions.map((module) => module.label);
-export type AdminCapabilities = {
-  permissions: string[];
-  grants: Record<string, unknown>;
-  mutation_permissions?: string[];
-  mutation_grants?: Record<string, unknown>;
-  modules?: Array<{ path: string; permission: string; usable: boolean }>;
-};
+export type { AdminCapabilities } from './capability-scopes';
 export function visibleModules(capabilities?: AdminCapabilities) {
   if (!capabilities) return [];
   if (capabilities.modules) {
     const usable = new Set(capabilities.modules.filter((module) => module.usable).map((module) => module.path));
     return moduleDefinitions.filter((module) => usable.has(module.path));
   }
-  return moduleDefinitions.filter((module) => capabilities.permissions.includes(module.permission));
+  return moduleDefinitions.filter((module) =>
+    capabilities.permissions.includes(module.permission) &&
+    (!module.globalOnly || hasEffectiveGrant(capabilities, module.permission, globalScope(), false)),
+  );
 }
 export function useAdminCapabilities() {
-  const { request } = useRuntime();
+  const { request, dataRevision } = useRuntime();
   const [state, setState] = useState<{ data?: AdminCapabilities; error?: string; loading: boolean }>({ loading: true });
   const [revision, setRevision] = useState(0);
+  const coordinator = useRef(new CapabilityRequestCoordinator<AdminCapabilities>());
+  useLayoutEffect(() => {
+    const instance = coordinator.current;
+    return () => instance.invalidate();
+  }, []);
+  const load = useCallback((signal?: AbortSignal) => request<AdminCapabilities>('/admin/capabilities', { signal }), [request]);
   useEffect(() => {
+    const instance = coordinator.current;
     const controller = new AbortController();
-    setState({ loading: true });
-    request<AdminCapabilities>('/admin/capabilities', { signal: controller.signal })
-      .then((data) => { if (!controller.signal.aborted) setState({ data, loading: false }); })
-      .catch((cause) => { if (!controller.signal.aborted) setState({ error: errorMessage(cause), loading: false }); });
-    return () => controller.abort();
-  }, [request, revision]);
-  return { ...state, reload: () => setRevision((value) => value + 1) };
+    const requestId = instance.begin();
+    setState((current) => ({ ...current, loading: true, error: undefined }));
+    load(controller.signal)
+      .then((data) => {
+        if (!controller.signal.aborted && instance.commitSuccess(requestId, data)) {
+          setState({ data, loading: false });
+        }
+      })
+      .catch((cause) => {
+        const message = errorMessage(cause);
+        if (!controller.signal.aborted && instance.commitError(requestId, message)) {
+          setState((current) => ({ ...current, error: message, loading: false }));
+        }
+      });
+    return () => {
+      instance.invalidate();
+      controller.abort();
+    };
+  }, [dataRevision, load, revision]);
+  const revalidate = useCallback(async () => {
+    const requestId = coordinator.current.begin();
+    setState((current) => ({ ...current, loading: true, error: undefined }));
+    try {
+      const data = await load();
+      if (!coordinator.current.commitSuccess(requestId, data)) return null;
+      setState({ data, loading: false });
+      return data;
+    } catch (cause) {
+      const message = errorMessage(cause);
+      if (!coordinator.current.commitError(requestId, message)) return null;
+      setState((current) => ({ ...current, error: message, loading: false }));
+      return null;
+    }
+  }, [load]);
+  const reload = () => {
+    coordinator.current.invalidate();
+    setRevision((value) => value + 1);
+  };
+  return { ...state, reload, revalidate };
 }
 export function AdminNavigation({ capabilities, ariaLabel = 'Admin modules', className = 'mt-5 flex gap-4 overflow-x-auto', linkClassName = 'whitespace-nowrap text-sm' }: { capabilities?: AdminCapabilities; ariaLabel?: string; className?: string; linkClassName?: string }) {
   const visible = visibleModules(capabilities);
@@ -157,7 +207,7 @@ const columns: Record<string, Column[]> = {
   ],
   'customer-properties': [
     ['customer.email', 'Customer'],
-    ['property.property_code', 'Property'],
+    ['property_code', 'Property'],
     ['relationship_type', 'Relationship'],
     ['status', 'Status'],
     ['effective_from', 'Effective from'],
@@ -248,6 +298,7 @@ type Field = {
   required?: boolean;
   options?: string[];
   source?: string;
+  scopePermission?: string;
   type?: string;
   max?: number;
 };
@@ -260,7 +311,7 @@ const forms: Record<string, Field[]> = {
     { key: 'business_type', label: 'Business type' },
   ],
   projects: [
-    { key: 'company_id', label: 'Company', required: true, source: 'companies' },
+    { key: 'company_id', label: 'Company', required: true, source: 'companies', scopePermission: 'project.create' },
     { key: 'project_code', label: 'Project code', required: true, max: 80 },
     { key: 'project_name', label: 'Project name', required: true },
     {
@@ -272,7 +323,7 @@ const forms: Record<string, Field[]> = {
     { key: 'description', label: 'Description' },
   ],
   properties: [
-    { key: 'project_id', label: 'Project', required: true, source: 'projects' },
+    { key: 'project_id', label: 'Project', required: true, source: 'projects', scopePermission: 'property.create' },
     { key: 'property_code', label: 'Property code', required: true, max: 80 },
     { key: 'tower', label: 'Tower', max: 80 },
     { key: 'floor', label: 'Floor', max: 32 },
@@ -290,11 +341,11 @@ const forms: Record<string, Field[]> = {
   ],
   reservations: [
     { key: 'customer_id', label: 'Customer', required: true, source: 'customers' },
-    { key: 'property_id', label: 'Property', required: true, source: 'properties' },
+    { key: 'property_id', label: 'Property', required: true, source: 'properties', scopePermission: 'reservation.create' },
   ],
   'customer-properties': [
     { key: 'customer_id', label: 'Customer', required: true, source: 'customers' },
-    { key: 'property_id', label: 'Property', required: true, source: 'properties' },
+    { key: 'property_id', label: 'Property', required: true, source: 'properties', scopePermission: 'customer_property.manage' },
     {
       key: 'relationship_type',
       label: 'Relationship',
@@ -303,8 +354,21 @@ const forms: Record<string, Field[]> = {
     },
   ],
 };
-function ReferenceSelect({ field, initial }: { field: Field; initial: string }) {
+function ReferenceSelect({
+  field,
+  initial,
+  capabilities,
+  onTargetChange,
+}: {
+  field: Field;
+  initial: string;
+  capabilities?: AdminCapabilities;
+  onTargetChange?: (target: ScopeTarget | null) => void;
+}) {
   const resource = usePagedResource<Row>(`/admin/${field.source}`);
+  const rows = (resource.data || []).filter((row) =>
+    referenceIsAuthorized(capabilities, field.scopePermission, field.source, row),
+  );
   return (
     <>
       <select
@@ -312,11 +376,15 @@ function ReferenceSelect({ field, initial }: { field: Field; initial: string }) 
         name={field.key}
         defaultValue={initial}
         required={field.required}
-        disabled={resource.loading || Boolean(resource.error)}
+        disabled={resource.loading || Boolean(resource.error) || (Boolean(field.scopePermission) && !rows.length)}
+        onChange={(event) => {
+          const selected = resource.data?.find((row) => row.id === event.target.value);
+          onTargetChange?.(selected ? targetForReference(field.source, selected) : null);
+        }}
         className="mt-2 w-full rounded-lg border p-3"
       >
         <option value="">Select {field.label.toLowerCase()}</option>
-        {resource.data?.map((row) => (
+        {rows.map((row) => (
           <option key={row.id} value={row.id}>
             {display(
               row.display_name || row.project_name || row.email || row.property_code || row.id,
@@ -324,6 +392,9 @@ function ReferenceSelect({ field, initial }: { field: Field; initial: string }) 
           </option>
         ))}
       </select>
+      {field.scopePermission && resource.data && !rows.length && !resource.loading && !resource.error && (
+        <p className="mt-2 text-xs text-[var(--rhc-muted)]">No authorized target is available for this action.</p>
+      )}
       <ResourceStatus {...resource} />
       {resource.hasMore && (
         <Web3Button variant="secondary" disabled={resource.loading} onClick={resource.loadMore}>
@@ -338,19 +409,36 @@ function Editor({
   row,
   done,
   cancel,
+  capabilities,
+  capabilitiesReady,
+  revalidateCapabilities,
 }: {
   resource: string;
   row?: Row;
   done: () => void;
   cancel: () => void;
+  capabilities?: AdminCapabilities;
+  capabilitiesReady: boolean;
+  revalidateCapabilities: () => Promise<AdminCapabilities | null>;
 }) {
   const { request } = useRuntime();
-  const [busy, setBusy] = useState(false);
+  const mutation = useMutationIntent(row ?? resource);
+  const busy = mutation.busy;
   const [error, setError] = useState('');
+  const [selectedTarget, setSelectedTarget] = useState<ScopeTarget | null>(() =>
+    row ? targetForResource(resource, row) : null,
+  );
+  const canChangePropertyStatus = resource === 'properties' && resourceMutationAllowed(
+    capabilities,
+    resource,
+    'change_status',
+    row,
+    selectedTarget,
+  );
   const fields: Field[] = (forms[resource] || []).filter(
     (field) =>
-      !row ||
-      (resource === 'companies' ? field.key !== 'company_code' : field.key !== 'project_id'),
+      (!row || (resource === 'companies' ? field.key !== 'company_code' : field.key !== 'project_id')) &&
+      !(resource === 'properties' && field.key === 'status' && row && !canChangePropertyStatus),
   );
   if (row && resource === 'companies')
     fields.push({
@@ -381,29 +469,51 @@ function Editor({
       setError('No changes to save.');
       return;
     }
-    setBusy(true);
+    if (!capabilitiesReady) {
+      setError('Permissions are refreshing. Wait for the current capability state before saving.');
+      return;
+    }
+    const target = resource === 'projects' && typeof body.company_id === 'string'
+      ? { company_id: body.company_id, project_id: null }
+      : selectedTarget ?? (row ? targetForResource(resource, row) : globalScope());
+    const action = row ? 'edit' : 'create';
+    const permissions = requiredMutationPermissions(resource, action, body);
+    const intent = mutation.begin();
+    if (intent === null) return;
     setError('');
     try {
+      const latest = await revalidateCapabilities();
+      if (!mutation.isCurrent(intent)) return;
+      if (!latest || !hasRequiredMutationGrants(latest, permissions, target)) {
+        setError('Your permissions changed or could not be refreshed. No change was submitted; close this form and review the current record.');
+        return;
+      }
+      if (!mutation.markSubmitted(intent)) return;
       await request(`/admin/${resource}${row ? `/${encodeURIComponent(row.id)}` : ''}`, {
         method: row ? 'PATCH' : 'POST',
         body: JSON.stringify(body),
       });
-      done();
+      if (mutation.isCurrent(intent)) done();
     } catch (cause) {
-      setError(errorMessage(cause));
+      if (mutation.isCurrent(intent)) setError(errorMessage(cause));
     } finally {
-      setBusy(false);
+      mutation.finish(intent);
     }
   }
   return (
     <Card title={`${row ? 'Edit' : 'Create'} ${resource}`} className="mb-5">
       <form onSubmit={submit}>
-        <div className="grid gap-4 md:grid-cols-2">
+        <fieldset disabled={busy} className="grid gap-4 md:grid-cols-2">
           {fields.map((field) => (
             <label key={field.key} className="block text-sm">
               {field.label}
               {field.source ? (
-                <ReferenceSelect field={field} initial={String(row?.[field.key] ?? '')} />
+                <ReferenceSelect
+                  field={field}
+                  initial={String(row?.[field.key] ?? '')}
+                  capabilities={capabilities}
+                  onTargetChange={field.source === 'projects' || field.source === 'properties' ? setSelectedTarget : undefined}
+                />
               ) : field.options ? (
                 <select
                   aria-label={field.label}
@@ -411,7 +521,9 @@ function Editor({
                   defaultValue={String(row?.[field.key] ?? field.options[0])}
                   className="mt-2 w-full rounded-lg border p-3"
                 >
-                  {field.options.map((value) => (
+                  {(resource === 'properties' && field.key === 'status' && !canChangePropertyStatus
+                    ? ['AVAILABLE']
+                    : field.options).map((value) => (
                     <option key={value}>{value}</option>
                   ))}
                 </select>
@@ -429,7 +541,7 @@ function Editor({
               )}
             </label>
           ))}
-        </div>
+        </fieldset>
         <p className="my-4 text-sm text-[var(--rhc-muted)]">
           Changes are submitted to the API with your account permissions. Review these values before
           saving.
@@ -440,10 +552,13 @@ function Editor({
           </p>
         )}
         <div className="flex gap-3">
-          <Web3Button type="submit" disabled={busy}>
+          <Web3Button type="submit" disabled={busy || !capabilitiesReady}>
             {busy ? 'Saving…' : 'Save changes'}
           </Web3Button>
-          <Web3Button variant="secondary" disabled={busy} onClick={cancel}>
+          <Web3Button variant="secondary" disabled={mutation.submitted} onClick={() => {
+            mutation.invalidate();
+            cancel();
+          }}>
             Cancel
           </Web3Button>
         </div>
@@ -464,7 +579,9 @@ export function AdminTable({
   );
   const { request, user } = useRuntime();
   const capabilities = useAdminCapabilities();
-  const hasMutation = (permission: string) => capabilities.data?.mutation_permissions?.includes(permission) === true;
+  const capabilitiesReady = Boolean(capabilities.data) && !capabilities.loading && !capabilities.error;
+  const hasMutation = (permission: string) => hasEffectiveGrant(capabilities.data, permission);
+  const hasAnyMutation = (permission: string) => hasAnyEffectiveGrant(capabilities.data, permission);
   const [review, setReview] = useState<Row | null>(null);
   const [management, setManagement] = useState<ManagementAction | null>(null);
   const [query, setQuery] = useState('');
@@ -473,7 +590,8 @@ export function AdminTable({
   const [editing, setEditing] = useState<Row | 'new' | null>(null);
   const [flag, setFlag] = useState<Row | null>(null);
   const [reservationAction, setReservationAction] = useState<{ row: Row; action: 'confirm' | 'cancel' | 'expire' | 'convert' } | null>(null);
-  const [busy, setBusy] = useState(false);
+  const mutation = useMutationIntent(reservationAction ?? flag ?? resource);
+  const busy = mutation.busy;
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const cols = columns[resource] || [];
@@ -488,35 +606,40 @@ export function AdminTable({
     ) || [];
   const lastPage = Math.max(0, Math.ceil(filtered.length / 20) - 1);
   const currentPage = Math.min(page, lastPage);
-  const canEdit =
-    (resource === 'companies' && hasMutation('company.manage')) ||
-    (resource === 'properties' && hasMutation('property.edit') && hasMutation('property.change_status'));
-  const canManage =
-    (metadataResources.includes(resource) &&
-      ((resource === 'projects' && hasMutation('project.edit')) ||
-        (resource === 'customer-properties' && hasMutation('customer_property.manage')) ||
-        (['roles', 'integrations', 'business-services'].includes(resource) && hasMutation(resource === 'roles' ? 'role.manage' : 'integration.manage')))) ||
-    (resource === 'user-roles' && hasMutation('role.manage') && hasMutation('user.manage')) ||
-    (resource === 'system-settings' && hasMutation('system_settings.manage'));
-  const canReview = (resource === 'users' || resource === 'customers') && hasMutation('user.manage');
+  const canEditRow = (row: Row) =>
+    (resource === 'companies' && resourceMutationAllowed(capabilities.data, resource, 'edit', row)) ||
+    (resource === 'properties' && resourceMutationAllowed(capabilities.data, resource, 'edit', row));
+  const canManageRow = (row: Row) =>
+    (resource === 'projects' && resourceMutationAllowed(capabilities.data, resource, 'edit', row)) ||
+    (resource === 'customer-properties' && resourceMutationAllowed(capabilities.data, resource, 'manage', row)) ||
+    (['roles'].includes(resource) && resourceMutationAllowed(capabilities.data, resource, 'manage', row)) ||
+    (['integrations', 'business-services'].includes(resource) && resourceMutationAllowed(capabilities.data, resource, 'manage', row)) ||
+    (resource === 'user-roles' && resourceMutationAllowed(capabilities.data, resource, 'manage', row)) ||
+    (resource === 'system-settings' && resourceMutationAllowed(capabilities.data, resource, 'manage', row));
+  const canReview = (resource === 'users' || resource === 'customers') && resourceMutationAllowed(capabilities.data, resource, 'manage');
   const canCreate =
-    (resource === 'companies' && hasMutation('company.manage')) ||
-    (resource === 'projects' && hasMutation('project.create')) ||
-    (resource === 'properties' && hasMutation('property.create') && hasMutation('property.change_status')) ||
-    (resource === 'customer-properties' && hasMutation('customer_property.manage')) ||
-    (resource === 'reservations' && hasMutation('reservation.create')) ||
-    (resource === 'roles' && hasMutation('role.manage')) ||
-    (resource === 'integrations' && hasMutation('integration.manage')) ||
-    (resource === 'business-services' && hasMutation('integration.manage')) ||
-    (resource === 'user-roles' && hasMutation('role.manage') && hasMutation('user.manage')) ||
-    (resource === 'system-settings' && hasMutation('system_settings.manage'));
-  const canFeatureManage = resource === 'feature-flags' && hasMutation('feature_flag.manage');
-  const canReservationManage = resource === 'reservations' && hasMutation('reservation.manage');
-  const canReservationCancel = resource === 'reservations' && hasMutation('reservation.cancel');
+    (resource === 'companies' && resourceMutationAllowed(capabilities.data, resource, 'create')) ||
+    (resource === 'projects' && resourceMutationAllowed(capabilities.data, resource, 'create')) ||
+    (resource === 'properties' && resourceMutationAllowed(capabilities.data, resource, 'create')) ||
+    (resource === 'customer-properties' && hasAnyMutation('customer_property.manage')) ||
+    (resource === 'reservations' && hasAnyMutation('reservation.create')) ||
+    (resource === 'roles' && resourceMutationAllowed(capabilities.data, resource, 'manage')) ||
+    (resource === 'integrations' && resourceMutationAllowed(capabilities.data, resource, 'create')) ||
+    (resource === 'business-services' && resourceMutationAllowed(capabilities.data, resource, 'create')) ||
+    (resource === 'user-roles' && resourceMutationAllowed(capabilities.data, resource, 'manage')) ||
+    (resource === 'system-settings' && resourceMutationAllowed(capabilities.data, resource, 'manage'));
+  const canFeatureManage = resource === 'feature-flags' && resourceMutationAllowed(capabilities.data, resource, 'manage');
+  const canReservationManage = (row: Row) => resource === 'reservations' && resourceMutationAllowed(capabilities.data, resource, 'manage', row);
+  const canReservationCancel = (row: Row) => resource === 'reservations' && resourceMutationAllowed(capabilities.data, resource, 'cancel', row);
+  const hasRowActions = filtered.some((row) => canEditRow(row) || canManageRow(row) || canReservationManage(row) || canReservationCancel(row));
   const actionOpen = Boolean(management || review || editing || flag || reservationAction);
   const manage = (mode: ManagementAction['mode'], row?: Row) => {
     setManagement({ resource, mode, row });
     setMessage('');
+  };
+  const refreshAll = () => {
+    data.refresh();
+    capabilities.reload();
   };
   const complete = () => {
     setEditing(null);
@@ -528,9 +651,24 @@ export function AdminTable({
   };
   async function submitReservationAction() {
     if (!reservationAction || busy) return;
-    setBusy(true);
+    if (!capabilitiesReady) {
+      setError('Permissions are refreshing. Wait for the current capability state before confirming.');
+      return;
+    }
+    const target = targetForResource('reservations', reservationAction.row);
+    const permission = reservationAction.action === 'cancel' ? 'cancel' : 'manage';
+    const intent = mutation.begin();
+    if (intent === null) return;
     setError('');
     try {
+      const latest = await capabilities.revalidate();
+      if (!mutation.isCurrent(intent)) return;
+      if (!latest || !hasRequiredMutationGrants(latest, requiredMutationPermissions('reservations', permission), target)) {
+        setReservationAction(null);
+        setError('Your reservation permission changed or could not be refreshed. No action was submitted.');
+        return;
+      }
+      if (!mutation.markSubmitted(intent)) return;
       await request(`/admin/reservations/${encodeURIComponent(reservationAction.row.id)}/${reservationAction.action}`, {
         method: 'POST',
         body: JSON.stringify({
@@ -538,37 +676,54 @@ export function AdminTable({
           note: `Admin ${reservationAction.action} action`,
         }),
       });
-      complete();
+      if (mutation.isCurrent(intent)) complete();
     } catch (cause) {
-      setError(errorMessage(cause));
+      if (mutation.isCurrent(intent)) setError(errorMessage(cause));
     } finally {
-      setBusy(false);
+      mutation.finish(intent);
     }
   }
   async function toggleFlag() {
     if (!flag || busy) return;
-    setBusy(true);
+    if (!capabilitiesReady) {
+      setError('Permissions are refreshing. Wait for the current capability state before confirming.');
+      return;
+    }
+    const intent = mutation.begin();
+    if (intent === null) return;
     setError('');
     try {
+      const latest = await capabilities.revalidate();
+      if (!mutation.isCurrent(intent)) return;
+      if (!latest || !hasRequiredMutationGrants(latest, requiredMutationPermissions('feature-flags', 'manage'), globalScope())) {
+        setFlag(null);
+        setError('Your feature-control permission changed or could not be refreshed. No action was submitted.');
+        return;
+      }
+      if (!mutation.markSubmitted(intent)) return;
       await request(`/admin/feature-flags/${encodeURIComponent(flag.id)}`, {
         method: 'PATCH',
         body: JSON.stringify({ enabled: !flag.enabled }),
       });
-      complete();
+      if (mutation.isCurrent(intent)) complete();
     } catch (cause) {
-      setError(errorMessage(cause));
+      if (mutation.isCurrent(intent)) setError(errorMessage(cause));
     } finally {
-      setBusy(false);
+      mutation.finish(intent);
     }
   }
   return (
     <>
       {management && (
         <ManagementEditor
+          key={`${management.resource}:${management.mode}:${management.row?.id ?? 'new'}`}
           action={management}
           done={complete}
           cancel={() => setManagement(null)}
-          refresh={data.refresh}
+          refresh={refreshAll}
+          capabilities={capabilities.data}
+          capabilitiesReady={capabilitiesReady}
+          revalidateCapabilities={capabilities.revalidate}
         />
       )}
       {review && (
@@ -576,7 +731,9 @@ export function AdminTable({
           key={review.id}
           candidate={review}
           cancel={() => setReview(null)}
-          refresh={data.refresh}
+          refresh={refreshAll}
+          capabilitiesReady={capabilitiesReady}
+          revalidateCapabilities={capabilities.revalidate}
           done={() => {
             setReview(null);
             setMessage('Business verification approved.');
@@ -591,6 +748,9 @@ export function AdminTable({
           row={editing === 'new' ? undefined : editing}
           done={complete}
           cancel={() => setEditing(null)}
+          capabilities={capabilities.data}
+          capabilitiesReady={capabilitiesReady}
+          revalidateCapabilities={capabilities.revalidate}
         />
       )}
       {reservationAction && (
@@ -602,8 +762,11 @@ export function AdminTable({
             This writes reservation events, property status history, and audit logs.
           </p>
           <div className="flex gap-3">
-            <Web3Button disabled={busy} onClick={submitReservationAction}>Confirm action</Web3Button>
-            <Web3Button disabled={busy} variant="secondary" onClick={() => setReservationAction(null)}>Cancel</Web3Button>
+            <Web3Button disabled={busy || !capabilitiesReady} onClick={submitReservationAction}>Confirm action</Web3Button>
+            <Web3Button disabled={mutation.submitted} variant="secondary" onClick={() => {
+              mutation.invalidate();
+              setReservationAction(null);
+            }}>Cancel</Web3Button>
           </div>
         </Card>
       )}
@@ -613,10 +776,13 @@ export function AdminTable({
             {flag.enabled ? 'Disable' : 'Enable'} {String(flag.key)}?
           </p>
           <div className="flex gap-3">
-            <Web3Button disabled={busy} onClick={toggleFlag}>
+            <Web3Button disabled={busy || !capabilitiesReady} onClick={toggleFlag}>
               Confirm change
             </Web3Button>
-            <Web3Button disabled={busy} variant="secondary" onClick={() => setFlag(null)}>
+            <Web3Button disabled={mutation.submitted} variant="secondary" onClick={() => {
+              mutation.invalidate();
+              setFlag(null);
+            }}>
               Cancel
             </Web3Button>
           </div>
@@ -663,7 +829,7 @@ export function AdminTable({
             </select>
           </label>
         )}
-        <Web3Button variant="secondary" disabled={actionOpen} onClick={data.refresh}>
+        <Web3Button variant="secondary" disabled={actionOpen} onClick={refreshAll}>
           Refresh records
         </Web3Button>
         {resource === 'user-roles' && (
@@ -733,7 +899,7 @@ export function AdminTable({
                         {label}
                       </th>
                     ))}
-                    {(canEdit || canReview || canManage || canFeatureManage || canReservationManage || canReservationCancel) && (
+                    {(canReview || canFeatureManage || hasRowActions) && (
                       <th className="p-3">Actions</th>
                     )}
                   </tr>
@@ -775,7 +941,7 @@ export function AdminTable({
                           )}
                         </td>
                       )}
-                      {canManage && (
+                      {canManageRow(row) && (
                         <td className="p-3">
                           {metadataResources.includes(resource) &&
                             (resource !== 'roles' || !protectedRole(row)) && (
@@ -839,7 +1005,7 @@ export function AdminTable({
                             ))}
                         </td>
                       )}
-                      {canEdit && (
+                      {canEditRow(row) && (
                         <td className="p-3">
                           <Web3Button
                             variant="secondary"
@@ -853,19 +1019,19 @@ export function AdminTable({
                           </Web3Button>
                         </td>
                       )}
-                      {resource === 'reservations' && (canReservationManage || canReservationCancel) && (
+                      {resource === 'reservations' && (canReservationManage(row) || canReservationCancel(row)) && (
                         <td className="p-3">
                           <div className="flex flex-wrap gap-2">
-                            {canReservationManage && row.status === 'PENDING' && (
+                            {canReservationManage(row) && row.status === 'PENDING' && (
                               <>
                                 <Web3Button variant="secondary" disabled={actionOpen || data.loading} onClick={() => setReservationAction({ row, action: 'confirm' })}>Confirm</Web3Button>
                                 <Web3Button variant="secondary" disabled={actionOpen || data.loading} onClick={() => setReservationAction({ row, action: 'expire' })}>Expire</Web3Button>
                               </>
                             )}
-                            {canReservationCancel && (row.status === 'PENDING' || row.status === 'CONFIRMED') && (
+                            {canReservationCancel(row) && (row.status === 'PENDING' || row.status === 'CONFIRMED') && (
                               <Web3Button variant="secondary" disabled={actionOpen || data.loading} onClick={() => setReservationAction({ row, action: 'cancel' })}>Cancel</Web3Button>
                             )}
-                            {canReservationManage && row.status === 'CONFIRMED' && (
+                            {canReservationManage(row) && row.status === 'CONFIRMED' && (
                               <Web3Button variant="secondary" disabled={actionOpen || data.loading} onClick={() => setReservationAction({ row, action: 'convert' })}>Convert</Web3Button>
                             )}
                           </div>
