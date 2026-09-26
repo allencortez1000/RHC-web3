@@ -161,7 +161,7 @@ export default function AdminHome() {
             </Card>
             <div className="space-y-6">
               <OperationsSnapshot />
-              <RecentActivity />
+              {auditModule && <RecentActivity />}
             </div>
           </section>
         </main>
