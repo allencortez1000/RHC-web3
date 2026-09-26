@@ -1,7 +1,8 @@
 import 'reflect-metadata';
 import { Test } from '@nestjs/testing';
 import { INestApplication, ServiceUnavailableException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, PropertyStatus, type Property, type PropertyStatusHistory } from '@prisma/client';
+import { randomUUID } from 'crypto';
 import { createServer, Server } from 'http';
 import { AddressInfo } from 'net';
 import { exportJWK, generateKeyPair, SignJWT, JWTPayload } from 'jose';
@@ -41,8 +42,8 @@ function project(record: any, select?: Record<string, any>): any {
   if (!select) return { ...record };
   return Object.fromEntries(Object.entries(select).filter(([, value]) => value).map(([key, value]) => [key, value === true ? record[key] : project(record[key], value.select)]));
 }
-function required(record: any) {
-  if (!record) throw new Prisma.PrismaClientKnownRequestError('Fixture resource missing', { code: 'P2025', clientVersion: 'test' });
+function required<T>(record: T | null | undefined): T {
+  if (record == null) throw new Prisma.PrismaClientKnownRequestError('Fixture resource missing', { code: 'P2025', clientVersion: 'test' });
   return record;
 }
 
@@ -62,7 +63,18 @@ export function databaseFixture() {
   const userResult = (record: any, args: any) => project(record ? { ...record, ...(args.select?.profile || args.include?.profile ? { profile: profiles.get(record.id) ?? null } : {}) } : null, args.select);
   const findProfile = (where: any) => where.user_id ? profiles.get(where.user_id) : [...profiles.values()].find((value) => where.id ? value.id === where.id : value.rhc_id === where.rhc_id);
   const projects = [{ id: ids.projectA, company_id: ids.companyA }, { id: ids.projectB, company_id: ids.companyB }];
-  const properties = [{ id: ids.propertyA, project_id: ids.projectA, property_code: 'A-101', status: 'AVAILABLE', project: projects[0] }, { id: ids.propertyB, project_id: ids.projectB, property_code: 'B-101', status: 'AVAILABLE', project: projects[1] }];
+  const properties: Array<Pick<Property, 'id' | 'project_id' | 'property_code' | 'status' | 'floor'> & { project: typeof projects[number] }> = [
+    { id: ids.propertyA, project_id: ids.projectA, property_code: 'A-101', status: PropertyStatus.AVAILABLE, floor: null, project: projects[0] },
+    { id: ids.propertyB, project_id: ids.projectB, property_code: 'B-101', status: PropertyStatus.AVAILABLE, floor: null, project: projects[1] },
+  ];
+  const propertyResult = (record: typeof properties[number] | undefined, args: any) => {
+    if (!record) return null;
+    const { project: relation, ...scalars } = record;
+    return project({ ...scalars, ...(args.select?.project || args.include?.project ? { project: relation } : {}) }, args.select);
+  };
+  const propertyHistory: PropertyStatusHistory[] = [];
+  const auditLogs: Array<Prisma.AuditLogUncheckedCreateInput & { id: string }> = [];
+  const activityEvents: Array<Prisma.ActivityEventUncheckedCreateInput & { id: string }> = [];
   const prisma: any = {
     mockMode: false,
     userRole: { findMany: jest.fn(async (args) => users.get(args.where.user_id)?.account_status === 'ACTIVE' ? grants.get(args.where.role.role_permissions.some.permission.code) ?? [] : []) },
@@ -104,18 +116,47 @@ export function databaseFixture() {
     },
     company: { findUnique: jest.fn(async ({ where }) => [ids.companyA, ids.companyB].includes(where.id) ? { id: where.id, api_enabled: true, status: 'ACTIVE' } : null), findUniqueOrThrow: jest.fn(async ({ where }) => ({ id: where.id, api_enabled: true, status: 'ACTIVE' })), findMany: jest.fn(async () => []), create: jest.fn(async ({ data }) => ({ id: ids.companyA, ...data })), update: jest.fn(async ({ where, data }) => ({ id: where.id, ...data })), count: jest.fn(async () => 0) },
     project: { findUnique: jest.fn(async ({ where }) => projects.find((p) => p.id === where.id) ?? null), findMany: jest.fn(async () => []), create: jest.fn(async ({ data }) => ({ id: ids.projectA, ...data })), count: jest.fn(async () => 0) },
-    property: { findUnique: jest.fn(async ({ where }) => properties.find((p) => p.id === where.id) ?? null), findUniqueOrThrow: jest.fn(async ({ where }) => properties.find((p) => p.id === where.id)), findFirst: jest.fn(async () => null), findMany: jest.fn(async () => []), create: jest.fn(async ({ data }) => ({ id: ids.propertyA, ...data })), update: jest.fn(async ({ where, data }) => ({ ...properties.find((p) => p.id === where.id), ...data })), count: jest.fn(async () => 0) },
+    property: {
+      findUnique: jest.fn(async (args) => propertyResult(properties.find((p) => p.id === args.where.id), args)),
+      findUniqueOrThrow: jest.fn(async (args) => propertyResult(required(properties.find((p) => p.id === args.where.id)), args)),
+      findFirst: jest.fn(async () => null), findMany: jest.fn(async () => []),
+      create: jest.fn(async ({ data }) => ({ id: ids.propertyA, ...data })),
+      update: jest.fn(async ({ where, data, ...args }) => { const property = required(properties.find((p) => p.id === where.id)); Object.assign(property, data); return propertyResult(property, args); }),
+      count: jest.fn(async () => 0),
+    },
+    propertyStatusHistory: { create: jest.fn(async ({ data }: { data: Prisma.PropertyStatusHistoryUncheckedCreateInput }) => {
+      const history: PropertyStatusHistory = { id: data.id ?? randomUUID(), property_id: data.property_id, previous_status: data.previous_status ?? null, next_status: data.next_status, reason: data.reason ?? null, actor_user_id: data.actor_user_id ?? null, reservation_id: data.reservation_id ?? null, created_at: typeof data.created_at === 'string' ? new Date(data.created_at) : data.created_at ?? new Date() };
+      propertyHistory.push(history);
+      return { ...history };
+    }) },
     customerProperty: { findMany: jest.fn(async () => []), create: jest.fn(async ({ data }) => ({ id: ids.propertyA, ...data })) },
-    auditLog: { create: jest.fn(async ({ data }) => ({ id: 'audit', ...data })), findMany: jest.fn(async () => []), count: jest.fn(async () => 0) },
-    activityEvent: { create: jest.fn(async ({ data }) => ({ id: 'event', ...data })) },
+    // Keep the first synthetic receipt IDs stable for existing shared-fixture consumers.
+    auditLog: { create: jest.fn(async ({ data }: { data: Prisma.AuditLogUncheckedCreateInput }) => { const audit = { ...data, id: data.id ?? (auditLogs.length ? `audit-${auditLogs.length + 1}` : 'audit') }; auditLogs.push(audit); return { ...audit }; }), findMany: jest.fn(async () => []), count: jest.fn(async () => 0) },
+    activityEvent: { create: jest.fn(async ({ data }: { data: Prisma.ActivityEventUncheckedCreateInput }) => { const event = { ...data, id: data.id ?? (activityEvents.length ? `event-${activityEvents.length + 1}` : 'event') }; activityEvents.push(event); return { ...event }; }) },
     companyIntegration: { findMany: jest.fn(async () => []), count: jest.fn(async () => 0) },
     businessService: { findMany: jest.fn(async () => []) },
     companyApiClient: { findUnique: jest.fn(async () => null), findUniqueOrThrow: jest.fn(), findMany: jest.fn(async () => []), create: jest.fn(async ({ data }) => { const safe = { ...data }; delete safe.credential_ref; return { id: ids.propertyA, status: 'ACTIVE', ...safe }; }), update: jest.fn(async ({ where, data }) => ({ id: where.id, company_id: ids.companyA, ...data })) },
     role: { findMany: jest.fn(async () => []) }, permission: { findMany: jest.fn(async () => []) }, systemSetting: { findMany: jest.fn(async () => []) }, notification: { findMany: jest.fn(async () => []) },
     $executeRaw: jest.fn(async () => 1), $queryRaw: jest.fn(async () => [{ '?column?': 1 }]),
   };
-  prisma.$transaction = jest.fn(async (callback) => callback(prisma));
-  return { prisma, grants, flags, user, users, profiles, sequences, grant(permission: string, company: string | null = null, project: string | null = null) { grants.set(permission, [{ company_id: company, project_id: project, expires_at: null, role: { company_id: null }, project: project ? { company_id: company ?? ids.companyA } : null }]); } };
+  prisma.$transaction = jest.fn(async (callback) => {
+    // Model rollback for the manual property mutation and all of its evidence writes.
+    // This does not simulate PostgreSQL locking, isolation, or concurrent transactions.
+    const snapshot = structuredClone({ properties, propertyHistory, auditLogs, activityEvents });
+    // Distinct delegates expose accidental root-client writes through mock.contexts,
+    // while sharing jest functions keeps per-test failure injection configurable.
+    const tx = { ...prisma, property: { ...prisma.property }, propertyStatusHistory: { ...prisma.propertyStatusHistory }, auditLog: { ...prisma.auditLog }, activityEvent: { ...prisma.activityEvent } };
+    try {
+      return await callback(tx);
+    } catch (error) {
+      properties.splice(0, properties.length, ...snapshot.properties);
+      propertyHistory.splice(0, propertyHistory.length, ...snapshot.propertyHistory);
+      auditLogs.splice(0, auditLogs.length, ...snapshot.auditLogs);
+      activityEvents.splice(0, activityEvents.length, ...snapshot.activityEvents);
+      throw error;
+    }
+  });
+  return { prisma, grants, flags, user, users, profiles, sequences, properties, propertyHistory, auditLogs, activityEvents, grant(permission: string, company: string | null = null, project: string | null = null) { grants.set(permission, [{ company_id: company, project_id: project, expires_at: null, role: { company_id: null }, project: project ? { company_id: company ?? ids.companyA } : null }]); } };
 }
 
 export async function createHarness(options: { consentPolicies?: readonly PublishedConsentPolicy[] } = {}) {

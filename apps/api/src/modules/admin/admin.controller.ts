@@ -15,8 +15,6 @@ import { CurrentUser, AuthUser } from '../security/auth-user.decorator';
 import { RbacService } from '../security/rbac.service';
 
 const userSelect = { id: true, email: true, account_status: true, verification_status: true, created_at: true, profile: { select: { first_name: true, last_name: true, rhc_id: true } } } satisfies Prisma.UserSelect;
-type AdminDelegates = { propertyStatusHistory: any };
-const adminDb = <T extends object>(client: T) => client as T & AdminDelegates;
 
 @Controller('admin')
 @UseGuards(AuthGuard, PermissionGuard)
@@ -157,22 +155,49 @@ export class AdminController {
     const data = propertyUpdate.parse(body);
     if (data.status !== undefined) await this.rbac.require(user.id, 'property.change_status', access.scope);
     return this.prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM properties WHERE id = ${id}::uuid FOR UPDATE`;
       const before = await tx.property.findUniqueOrThrow({ where: { id } });
       const after = await tx.property.update({ where: { id }, data });
       const context = { actor_user_id: user.id, ...access.scope, entity_type: 'property', entity_id: id };
-      if (before.status !== after.status && adminDb(tx).propertyStatusHistory?.create) {
-        await adminDb(tx).propertyStatusHistory.create({ data: { property_id: id, previous_status: before.status, next_status: after.status, reason: 'Admin property status update', actor_user_id: user.id } });
+      const statusChanged = before.status !== after.status;
+      if (statusChanged) {
+        await tx.propertyStatusHistory.create({ data: { property_id: id, previous_status: before.status, next_status: after.status, reason: 'Admin property status update', actor_user_id: user.id } });
       }
-      await this.audit.record({ ...context, action: before.status !== after.status ? 'property.change_status' : 'property.update', before_data: before, after_data: after }, tx);
-      await this.events.publish(after.status === 'HELD' ? 'PROPERTY.HELD' : after.status === 'RESERVED' ? 'PROPERTY.RESERVED' : 'PROPERTY.UPDATED', after, context, tx);
+      await this.audit.record({ ...context, action: statusChanged ? 'property.change_status' : 'property.update', before_data: before, after_data: after }, tx);
+      await this.events.publish(statusChanged && after.status === 'HELD' ? 'PROPERTY.HELD' : statusChanged && after.status === 'RESERVED' ? 'PROPERTY.RESERVED' : 'PROPERTY.UPDATED', after, context, tx);
       return after;
     });
   }
 
   @Get('customer-properties') @RequirePermission('customer_property.view', { list: 'customer_property' }) @RequireFeature('ENABLE_PROPERTIES')
-  customerProperties(@Authorized() access: Authorization, @Query() query: unknown) {
+  async customerProperties(@Authorized() access: Authorization, @Query() query: unknown) {
     const q = listQuery.parse(query);
-    return this.prisma.customerProperty.findMany({ where: { AND: [this.rbac.customerPropertyWhere(access.grants), { property: { project: this.projectFilter(q) } }] }, select: { id: true, customer_id: true, property_id: true, relationship_type: true, status: true, effective_from: true, effective_to: true, created_at: true, updated_at: true }, take: q.take, skip: q.skip, orderBy: { id: 'asc' } });
+    const rows = await this.prisma.customerProperty.findMany({
+      where: { AND: [this.rbac.customerPropertyWhere(access.grants), { property: { project: this.projectFilter(q) } }] },
+      select: { id: true, customer_id: true, property_id: true, relationship_type: true, status: true, effective_from: true, effective_to: true, created_at: true, updated_at: true },
+      take: q.take,
+      skip: q.skip,
+      orderBy: { id: 'asc' },
+    });
+    const propertyIds = rows.map((row) => row.property_id);
+    const properties = propertyIds.length
+      ? await this.prisma.property.findMany({
+        where: { id: { in: propertyIds } },
+        select: { id: true, property_code: true, project_id: true, project: { select: { company_id: true } } },
+      })
+      : [];
+    const propertyById = new Map(properties.map((property) => [property.id, property]));
+    return rows.map((row) => {
+      const property = propertyById.get(row.property_id);
+      return {
+        ...row,
+        ...(property ? {
+          property_code: property.property_code,
+          property_project_id: property.project_id,
+          property_company_id: property.project.company_id,
+        } : {}),
+      };
+    });
   }
 
   @Post('customer-properties') @RequirePermission('customer_property.manage', { target: 'body-property' }) @RequireFeature('ENABLE_PROPERTIES')
