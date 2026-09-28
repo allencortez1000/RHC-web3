@@ -86,9 +86,13 @@ export async function bootstrapAdmin(prisma: PrismaClient, options: BootstrapOpt
         const roles = await tx.role.findMany({ where: { code: 'SUPER_ADMIN', company_id: null, is_system: true }, include: { role_permissions: { include: { permission: true } } } });
         if (roles.length !== 1 || !['role.manage', 'user.manage', 'integration.manage', 'feature_flag.manage'].every((code) => roles[0].role_permissions.some((grant) => grant.permission.code === code))) throw new Error('Exactly one preconfigured SUPER_ADMIN role with required permissions is required');
         const role = roles[0];
-        const existing = user ? await tx.userRole.findMany({ where: { user_id: user.id, role_id: role.id, company_id: null, project_id: null } }) : [];
-        if (existing.length > 1) throw new Error('Duplicate grants require manual review');
-        if (existing.length && existing[0].expires_at !== null) throw new Error('An expiring grant requires manual review');
+        // Inspect every holder under the lock; scoped or historical grants must not hide conflicts.
+        const existing = await tx.userRole.findMany({ where: { role_id: role.id } });
+        if (existing.some((grant) => grant.company_id !== null || grant.project_id !== null)) throw new Error('Scoped SUPER_ADMIN grants require manual review');
+        if (new Set(existing.map((grant) => grant.user_id)).size !== existing.length) throw new Error('Duplicate grants require manual review');
+        if (existing.length > 1) throw new Error('Multiple global SUPER_ADMIN users require manual review');
+        if (existing.some((grant) => grant.expires_at !== null)) throw new Error('An expiring grant requires manual review');
+        if (existing.length && existing[0].user_id !== user?.id) throw new Error('Another user already holds the global SUPER_ADMIN grant; manual review is required');
         const operation = !user ? 'create_user' : !user.supabase_user_id ? 'link_user' : 'existing_user';
         if (!options.apply) return { status: 'dry_run', operation, would_grant: existing.length ? null : 'SUPER_ADMIN', ...(user ? { user_id: user.id } : {}) };
 
