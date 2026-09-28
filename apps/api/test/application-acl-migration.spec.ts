@@ -7,6 +7,7 @@ import {
   collectReachableTablePrivileges,
   collectRoleMemberships,
   helpText,
+  readOnlyUrl,
 } from '../../../packages/database/prisma/application-acl-preflight';
 
 const migrationPath = resolve(__dirname, '../../../packages/database/prisma/migrations/202609210001_application_acl_hardening/migration.sql');
@@ -98,6 +99,48 @@ function membershipEdge(member_role: string, reachable_role: string, options: Re
 }
 
 describe('application ACL correction contract', () => {
+  const safeStartupOptions = '-c default_transaction_read_only=on -c statement_timeout=10000 -c lock_timeout=2000 -c idle_in_transaction_session_timeout=15000';
+
+  it.each([
+    { name: 'absent options', options: [] },
+    { name: 'empty options', options: [''] },
+    { name: 'existing safety timeouts', options: [safeStartupOptions] },
+    { name: 'unsafe inherited options', options: ['-c default_transaction_read_only=off -c statement_timeout=0 -c lock_timeout=0 -c idle_in_transaction_session_timeout=0'] },
+    { name: 'duplicate options', options: [safeStartupOptions, '-c default_transaction_read_only=off -c statement_timeout=0'] },
+  ])('enforces the complete read-only startup contract with $name', ({ options }) => {
+    const original = new URL('postgresql://inspection:synthetic%40password@db.example.test:5432/postgres');
+    for (const value of options) original.searchParams.append('options', value);
+
+    const transformed = new URL(readOnlyUrl(original.toString()));
+
+    expect(transformed.searchParams.getAll('options')).toEqual([safeStartupOptions]);
+    expect(readOnlyUrl(transformed.toString())).toBe(transformed.toString());
+  });
+
+  it('preserves target, credentials, strict TLS trust, and client bounds outside startup options', () => {
+    const original = new URL('postgresql://inspection:synthetic%40password@db.example.test:5432/postgres');
+    const parameters = {
+      schema: 'public',
+      sslmode: 'require',
+      sslaccept: 'strict',
+      sslcert: 'C:/local trust/test-ca.crt',
+      connection_limit: '1',
+      connect_timeout: '8',
+      pool_timeout: '8',
+      socket_timeout: '10',
+      application_name: 'bounded-acl-inspection',
+    };
+    for (const [key, value] of Object.entries(parameters)) original.searchParams.set(key, value);
+    const rawUrl = original.toString();
+
+    const transformed = new URL(readOnlyUrl(rawUrl));
+
+    expect(transformed.searchParams.get('options')).toBe(safeStartupOptions);
+    transformed.searchParams.delete('options');
+    expect(transformed.toString()).toBe(rawUrl);
+    expect(original.toString()).toBe(rawUrl);
+  });
+
   it.each([
     { name: 'direct ADMIN with SET and INHERIT disabled', executable: true, edges: [
       membershipEdge('authenticated', 'dangerous_helper', { admin_option: true }),

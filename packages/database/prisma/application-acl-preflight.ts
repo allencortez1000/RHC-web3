@@ -337,12 +337,17 @@ function parseDirectUrl(rawUrl: string, options: Options): string {
   return rawUrl;
 }
 
-function readOnlyUrl(rawUrl: string): string {
+export function readOnlyUrl(rawUrl: string): string {
   const url = new URL(rawUrl);
-  // Explicitly replace, rather than inherit, connection options from an
-  // ancestor environment. The command is read-only unless --apply-defaults
-  // is supplied with both explicit confirmations.
-  url.searchParams.set('options', '-c default_transaction_read_only=on');
+  // Replace inherited options with the complete read-only safety contract so
+  // an ancestor environment cannot disable read-only mode or its timeouts.
+  // The apply-defaults path deliberately does not use this transformation.
+  url.searchParams.set('options', [
+    '-c default_transaction_read_only=on',
+    '-c statement_timeout=10000',
+    '-c lock_timeout=2000',
+    '-c idle_in_transaction_session_timeout=15000',
+  ].join(' '));
   return url.toString();
 }
 
@@ -664,6 +669,10 @@ async function collect(transaction: Transaction, options: Options, mode: Preflig
            inet_server_addr()::text AS server_address,
            inet_server_port() AS server_port,
            current_setting('transaction_read_only') AS transaction_read_only,
+           current_setting('default_transaction_read_only') AS default_transaction_read_only,
+           current_setting('statement_timeout') AS statement_timeout,
+           current_setting('lock_timeout') AS lock_timeout,
+           current_setting('idle_in_transaction_session_timeout') AS idle_in_transaction_session_timeout,
            current_setting('is_superuser') AS is_superuser,
            current_setting('server_version_num') AS server_version_num
   `);
