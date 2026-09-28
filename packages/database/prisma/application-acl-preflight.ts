@@ -355,6 +355,27 @@ async function query<T extends Row>(transaction: Transaction, sql: Prisma.Sql): 
   return transaction.$queryRaw<T[]>(sql);
 }
 
+async function enforceReadOnlyTransaction(transaction: Transaction): Promise<void> {
+  // Poolers may ignore startup options. Enforce and verify transaction-local
+  // controls before collect() can inspect any catalog objects.
+  await transaction.$executeRaw`SET TRANSACTION READ ONLY`;
+  await transaction.$executeRaw`SET LOCAL statement_timeout = '10s'`;
+  await transaction.$executeRaw`SET LOCAL lock_timeout = '2s'`;
+  await transaction.$executeRaw`SET LOCAL idle_in_transaction_session_timeout = '15s'`;
+  const [settings] = await query<Row>(transaction, Prisma.sql`
+    SELECT current_setting('transaction_read_only') AS transaction_read_only,
+           current_setting('statement_timeout') AS statement_timeout,
+           current_setting('lock_timeout') AS lock_timeout,
+           current_setting('idle_in_transaction_session_timeout') AS idle_in_transaction_session_timeout
+  `);
+  if (!settings || settings.transaction_read_only !== 'on'
+    || settings.statement_timeout !== '10s'
+    || settings.lock_timeout !== '2s'
+    || settings.idle_in_transaction_session_timeout !== '15s') {
+    throw new Error('Read-only preflight transaction safety verification failed');
+  }
+}
+
 function roleMembershipEdges(): Prisma.Sql {
   // pg_database_owner implicitly grants SET/INHERIT to the current database
   // owner, without an ADMIN option or a grantor in pg_auth_members.
@@ -1079,7 +1100,7 @@ async function applyCreatorDefaults(transaction: Transaction, creatorRoles: read
   }
 }
 
-function parseArgs(argv: readonly string[]): Options | { help: true } {
+export function parseArgs(argv: readonly string[]): Options | { help: true } {
   const creatorRoles: string[] = [];
   const runtimeRoles: string[] = [];
   let targetHost = '';
@@ -1148,7 +1169,7 @@ export function helpText(): string {
   ].join('\n');
 }
 
-async function run(options: Options): Promise<PreflightReport | { before: PreflightReport; after: PreflightReport }> {
+export async function run(options: Options): Promise<PreflightReport | { before: PreflightReport; after: PreflightReport }> {
   const directUrl = process.env.DIRECT_URL;
   if (!directUrl) throw new Error('DIRECT_URL is required; DATABASE_URL and project .env files are not used');
   const checkedUrl = parseDirectUrl(directUrl, options);
@@ -1157,7 +1178,10 @@ async function run(options: Options): Promise<PreflightReport | { before: Prefli
   });
   try {
     if (!options.applyDefaults) {
-      return await client.$transaction((transaction) => collect(transaction, options, 'read-only'));
+      return await client.$transaction(async (transaction) => {
+        await enforceReadOnlyTransaction(transaction);
+        return collect(transaction, options, 'read-only');
+      });
     }
     return await client.$transaction(async (transaction) => {
       const before = await collect(transaction, options, 'apply-defaults');

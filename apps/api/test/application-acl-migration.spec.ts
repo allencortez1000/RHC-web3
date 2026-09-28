@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { PrismaClient } from '@prisma/client';
 import {
   APPLICATION_ACL_TABLES,
   assessReachableAuthority,
@@ -7,8 +8,15 @@ import {
   collectReachableTablePrivileges,
   collectRoleMemberships,
   helpText,
+  parseArgs,
   readOnlyUrl,
+  run,
 } from '../../../packages/database/prisma/application-acl-preflight';
+
+jest.mock('@prisma/client', () => ({
+  ...jest.requireActual('@prisma/client'),
+  PrismaClient: jest.fn(),
+}));
 
 const migrationPath = resolve(__dirname, '../../../packages/database/prisma/migrations/202609210001_application_acl_hardening/migration.sql');
 const schemaPath = resolve(__dirname, '../../../packages/database/prisma/schema.prisma');
@@ -97,6 +105,128 @@ function membershipEdge(member_role: string, reachable_role: string, options: Re
     ...options,
   };
 }
+
+describe('preflight transaction safety', () => {
+  const directUrl = 'postgresql://inspection:synthetic@db.example.test:5432/postgres?schema=public';
+  const requiredArgs = ['--target-host', 'db.example.test', '--target-database', 'postgres', '--creator-role', 'postgres'];
+  const safeSettings = {
+    transaction_read_only: 'on',
+    statement_timeout: '10s',
+    lock_timeout: '2s',
+    idle_in_transaction_session_timeout: '15s',
+  };
+  let originalDirectUrl: string | undefined;
+
+  beforeEach(() => {
+    originalDirectUrl = process.env.DIRECT_URL;
+    process.env.DIRECT_URL = directUrl;
+  });
+
+  afterEach(() => {
+    if (originalDirectUrl === undefined) delete process.env.DIRECT_URL;
+    else process.env.DIRECT_URL = originalDirectUrl;
+    jest.mocked(PrismaClient).mockReset();
+  });
+
+  function options(extraArgs: string[] = []) {
+    const parsed = parseArgs([...requiredArgs, ...extraArgs]);
+    if ('help' in parsed) throw new Error('Unexpected help result');
+    return parsed;
+  }
+
+  function fixture(settings: Record<string, unknown>[] = [safeSettings]) {
+    const commands: string[] = [];
+    const catalogReached = jest.fn(() => { throw new Error('catalog collection reached'); });
+    const sqlText = (statement: unknown) => {
+      const strings = Array.isArray(statement) ? statement : (statement as CapturedQuery).strings;
+      return strings.join(' ').trim().replace(/\s+/g, ' ');
+    };
+    const transaction = {
+      $executeRaw: jest.fn(async (statement: unknown) => { commands.push(sqlText(statement)); return 0; }),
+      $queryRaw: jest.fn(async (statement: unknown) => {
+        const sql = sqlText(statement);
+        commands.push(sql);
+        if (sql.includes('current_database()')) return catalogReached();
+        return settings;
+      }),
+    };
+    const client = {
+      $transaction: jest.fn(async (callback: (tx: unknown) => Promise<unknown>) => callback(transaction)),
+      $disconnect: jest.fn(async () => undefined),
+    };
+    jest.mocked(PrismaClient).mockImplementation(() => client as unknown as PrismaClient);
+    return { commands, catalogReached, transaction, client };
+  }
+
+  it('enforces and verifies all transaction-local controls before collect()', async () => {
+    const f = fixture();
+
+    await expect(run(options())).rejects.toThrow('catalog collection reached');
+
+    expect(f.commands.slice(0, 4)).toEqual([
+      'SET TRANSACTION READ ONLY',
+      "SET LOCAL statement_timeout = '10s'",
+      "SET LOCAL lock_timeout = '2s'",
+      "SET LOCAL idle_in_transaction_session_timeout = '15s'",
+    ]);
+    expect(f.commands[4]).toMatch(/^SELECT current_setting\('transaction_read_only'\)/);
+    for (const key of Object.keys(safeSettings)) expect(f.commands[4]).toContain(`current_setting('${key}')`);
+    expect(f.commands[5]).toMatch(/^SELECT current_database\(\)/);
+    expect(f.commands).toHaveLength(6);
+    expect(f.catalogReached).toHaveBeenCalledTimes(1);
+    expect(f.client.$transaction).toHaveBeenCalledTimes(1);
+    expect(f.client.$disconnect).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    ['missing verification row', []],
+    ['read-write transaction', [{ ...safeSettings, transaction_read_only: 'off' }]],
+    ['disabled statement timeout', [{ ...safeSettings, statement_timeout: '0' }]],
+    ['wrong lock timeout', [{ ...safeSettings, lock_timeout: '10s' }]],
+    ['disabled idle timeout', [{ ...safeSettings, idle_in_transaction_session_timeout: '0' }]],
+    ['missing timeout field', [{ transaction_read_only: 'on', statement_timeout: '10s', lock_timeout: '2s' }]],
+  ] as Array<[string, Record<string, unknown>[]]>)('stops before collect() with %s', async (_name, settings) => {
+    const f = fixture(settings);
+
+    await expect(run(options())).rejects.toThrow('Read-only preflight transaction safety verification failed');
+
+    expect(f.transaction.$executeRaw).toHaveBeenCalledTimes(4);
+    expect(f.transaction.$queryRaw).toHaveBeenCalledTimes(1);
+    expect(f.catalogReached).not.toHaveBeenCalled();
+    expect(f.client.$disconnect).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not query safety state or catalogs after an enforcement command fails', async () => {
+    const f = fixture();
+    f.transaction.$executeRaw.mockRejectedValueOnce(new Error('transaction enforcement rejected'));
+
+    await expect(run(options())).rejects.toThrow('transaction enforcement rejected');
+
+    expect(f.transaction.$queryRaw).not.toHaveBeenCalled();
+    expect(f.catalogReached).not.toHaveBeenCalled();
+    expect(f.client.$disconnect).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps explicitly confirmed apply mode separate from read-only enforcement and URL rewriting', async () => {
+    const f = fixture();
+
+    await expect(run(options(['--apply-defaults', '--approve-global-defaults']))).rejects.toThrow('catalog collection reached');
+
+    expect(f.transaction.$executeRaw).not.toHaveBeenCalled();
+    expect(f.commands).toHaveLength(1);
+    expect(f.commands[0]).toMatch(/^SELECT current_database\(\)/);
+    expect(PrismaClient).toHaveBeenCalledWith({ datasources: { db: { url: directUrl } } });
+    expect(f.client.$disconnect).toHaveBeenCalledTimes(1);
+  });
+
+  it('retains both explicit mutation confirmations and defaults to read-only', () => {
+    expect(options()).toMatchObject({ applyDefaults: false, approveGlobalDefaults: false });
+    expect(() => options(['--apply-defaults'])).toThrow('--apply-defaults requires --approve-global-defaults');
+    expect(() => options(['--approve-global-defaults'])).toThrow('--approve-global-defaults requires --apply-defaults');
+    expect(options(['--apply-defaults', '--approve-global-defaults'])).toMatchObject({ applyDefaults: true, approveGlobalDefaults: true });
+    expect(PrismaClient).not.toHaveBeenCalled();
+  });
+});
 
 describe('application ACL correction contract', () => {
   const safeStartupOptions = '-c default_transaction_read_only=on -c statement_timeout=10000 -c lock_timeout=2000 -c idle_in_transaction_session_timeout=15000';
