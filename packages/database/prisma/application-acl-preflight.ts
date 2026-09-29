@@ -1181,7 +1181,7 @@ export async function run(options: Options): Promise<PreflightReport | { before:
       return await client.$transaction(async (transaction) => {
         await enforceReadOnlyTransaction(transaction);
         return collect(transaction, options, 'read-only');
-      });
+      }, { maxWait: 8000, timeout: 30000 });
     }
     return await client.$transaction(async (transaction) => {
       const before = await collect(transaction, options, 'apply-defaults');

@@ -158,6 +158,17 @@ describe('preflight transaction safety', () => {
     return { commands, catalogReached, transaction, client };
   }
 
+  it('bounds the read-only transaction acquisition and lifetime explicitly', async () => {
+    const f = fixture();
+
+    await expect(run(options())).rejects.toThrow('catalog collection reached');
+
+    expect(f.client.$transaction).toHaveBeenCalledTimes(1);
+    expect(f.client.$transaction).toHaveBeenCalledWith(expect.any(Function), { maxWait: 8000, timeout: 30000 });
+    expect(PrismaClient).toHaveBeenCalledWith({ datasources: { db: { url: readOnlyUrl(directUrl) } } });
+    expect(f.client.$disconnect).toHaveBeenCalledTimes(1);
+  });
+
   it('enforces and verifies all transaction-local controls before collect()', async () => {
     const f = fixture();
 
@@ -207,7 +218,7 @@ describe('preflight transaction safety', () => {
     expect(f.client.$disconnect).toHaveBeenCalledTimes(1);
   });
 
-  it('keeps explicitly confirmed apply mode separate from read-only enforcement and URL rewriting', async () => {
+  it('keeps explicitly confirmed apply mode separate from the read-only budget, enforcement and URL rewriting', async () => {
     const f = fixture();
 
     await expect(run(options(['--apply-defaults', '--approve-global-defaults']))).rejects.toThrow('catalog collection reached');
@@ -215,6 +226,8 @@ describe('preflight transaction safety', () => {
     expect(f.transaction.$executeRaw).not.toHaveBeenCalled();
     expect(f.commands).toHaveLength(1);
     expect(f.commands[0]).toMatch(/^SELECT current_database\(\)/);
+    expect(f.client.$transaction).toHaveBeenCalledTimes(1);
+    expect(f.client.$transaction).toHaveBeenCalledWith(expect.any(Function));
     expect(PrismaClient).toHaveBeenCalledWith({ datasources: { db: { url: directUrl } } });
     expect(f.client.$disconnect).toHaveBeenCalledTimes(1);
   });
