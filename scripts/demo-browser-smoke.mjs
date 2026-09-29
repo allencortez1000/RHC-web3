@@ -224,7 +224,6 @@ try {
   await matrix(publicPage, customer, [
     ['/', /A place to belong/i],
     ['/marketplace', 'Useful connections, clearly staged.'],
-    ['/rhc-verify', /Verify the record/i],
   ], 'public', true);
   await matrix(publicPage, customer, [['/login', 'Choose your workspace']], 'auth');
 
@@ -262,10 +261,17 @@ try {
     await publicHeader(publicPage);
   });
 
-  for (const state of ['Valid', 'Pending', 'Expired', 'Revoked', 'Superseded', 'Not found']) {
-    await step(`Anonymous verification: ${state}`, async () => {
-      await visit(publicPage, customer, '/rhc-verify', /Verify the record/i);
-      await publicPage.getByRole('link', { name: new RegExp(`^${state}\\s`) }).click();
+  const verificationExamples = new Map([
+    ['Valid', 'demo-passport-maya-7d2f0f9a'],
+    ['Pending', 'demo-passport-pending-176ab901'],
+    ['Expired', 'demo-passport-expired-09a42cb1'],
+    ['Revoked', 'demo-passport-revoked-449ad0cb'],
+    ['Superseded', 'demo-passport-property-a81d44ce'],
+    ['Not found', 'demo-passport-not-found'],
+  ]);
+  for (const [state, reference] of verificationExamples) {
+    await step(`Anonymous verification result: ${state}`, async () => {
+      await visit(publicPage, customer, `/verify/rhc-id/${reference}`, 'Public Verification Result');
       await expect(publicPage.getByRole('heading', { name: 'Public Verification Result' })).toBeVisible();
       if (state === 'Not found') {
         await expect(publicPage.getByRole('heading', { name: 'Verification reference not found' })).toBeVisible();
@@ -282,17 +288,8 @@ try {
     });
   }
 
-  await step('Verification input rejects personal identifiers without navigation', async () => {
-    await visit(publicPage, customer, '/rhc-verify', /Verify the record/i);
-    await publicPage.waitForLoadState('networkidle');
-    await publicPage.getByLabel('Opaque reference or verification URL').fill('maya.santos@example.test');
-    await publicPage.getByRole('button', { name: 'Check credential', exact: true }).click();
-    await expect(publicPage.locator('[role="alert"]:not(#__next-route-announcer__)')).toContainText('Customer names and email addresses cannot be searched');
-    await expect(publicPage).toHaveURL(`${customer}/rhc-verify`);
-  });
-
   await step('Anonymous customer and admin deep links require demo sign-in', async () => {
-    for (const [page, origin, route, loginOrigin] of [[maya, customer, '/documents', customer], [staff, admin, '/reports', customer]]) {
+    for (const [page, origin, route, loginOrigin] of [[publicPage, customer, '/rhc-verify', customer], [maya, customer, '/documents', customer], [staff, admin, '/reports', customer]]) {
       await page.goto(`${origin}${route}`, { waitUntil: 'domcontentloaded' });
       await expect(page).toHaveURL(`${loginOrigin}/login`);
       await expect(page.getByRole('button', { name: 'Enter selected workspace' })).toHaveAttribute('data-demo-ready', 'true');

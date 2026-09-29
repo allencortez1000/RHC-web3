@@ -5,6 +5,11 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = {
   title: { default: 'RHC Command Center', template: '%s | RHC Admin' },
   description: 'Evidence-led operations for the RHC digital ecosystem.',
+  icons: {
+    icon: '/images/rhc-token-front.png',
+    shortcut: '/images/rhc-token-front.png',
+    apple: '/images/rhc-token-front.png',
+  },
 };
 
 const themeBootScript = `

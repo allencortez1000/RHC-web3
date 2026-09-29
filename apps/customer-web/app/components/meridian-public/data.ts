@@ -19,7 +19,7 @@ export type MeridianIconName =
   | 'spark'
   | 'store';
 
-export type PublicNavKey = 'home' | 'discover' | 'marketplace' | 'verification';
+export type PublicNavKey = 'home' | 'discover' | 'marketplace';
 
 export const PUBLIC_NAV_ITEMS: ReadonlyArray<{
   key: PublicNavKey;
@@ -29,7 +29,6 @@ export const PUBLIC_NAV_ITEMS: ReadonlyArray<{
   { key: 'home', label: 'Home', href: '/' },
   { key: 'discover', label: 'Discover', href: '/#discover' },
   { key: 'marketplace', label: 'Marketplace', href: '/marketplace' },
-  { key: 'verification', label: 'Verify', href: '/rhc-verify' },
 ];
 
 export const HOME_PRINCIPLES: ReadonlyArray<{
@@ -410,7 +409,7 @@ export const MARKETPLACE_SERVICES: ReadonlyArray<MarketplaceService> = [
     connection: 'Identity → property profile → authorized records',
     access: 'Customer portal sign-in required',
     href: '/login',
-    actionLabel: 'Access property demo',
+    actionLabel: 'View property demo',
   },
   {
     id: 'rhc-verification',
@@ -440,7 +439,7 @@ export const MARKETPLACE_SERVICES: ReadonlyArray<MarketplaceService> = [
     connection: 'Source record → version history → verification state',
     access: 'Customer portal sign-in required',
     href: '/login',
-    actionLabel: 'Access records demo',
+    actionLabel: 'View records demo',
   },
   {
     id: 'construction-updates',
@@ -635,8 +634,8 @@ export const HELP_DESTINATIONS: ReadonlyArray<{
     icon: 'shield',
     title: 'Understand verification',
     description: 'See how an RHC-issued reference is checked and what the result does not prove.',
-    href: '/rhc-verify',
-    action: 'Open RHC Verify',
+    href: '/login',
+    action: 'Sign in for RHC Verify',
   },
 ];
 

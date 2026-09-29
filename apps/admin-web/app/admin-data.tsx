@@ -18,6 +18,7 @@ import {
   EmptyState,
   MetricCard,
   ResourceStatus,
+  RHCLogoMark,
   SignOutButton,
   ThemeToggle,
   UnavailableFeature,
@@ -1138,9 +1139,7 @@ function AdminSidebar({ activeHref }: { activeHref: string }) {
         aria-label="RHC command center"
         className="flex items-center gap-3 rounded-2xl p-2 transition hover:bg-[var(--rhc-accent-soft)]"
       >
-        <div className="grid h-12 w-12 place-items-center rounded-2xl border border-[rgba(212,175,55,.35)] bg-[var(--rhc-accent-soft)] font-black text-[var(--rhc-primary)]">
-          RHC
-        </div>
+        <RHCLogoMark size="lg" />
         <div>
           <p className="text-base font-black text-[var(--rhc-heading)]">RHC</p>
           <p className="text-xs text-[var(--rhc-muted)]">Admin operations · RBAC · Audit</p>

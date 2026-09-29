@@ -38,7 +38,7 @@ export default function Page() {
   }
 
   return (
-    <PublicShell current="verification">
+    <PublicShell>
       <section className="px-5 py-16 md:px-8 md:py-24">
         <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[1fr_440px] lg:items-start">
           <div>

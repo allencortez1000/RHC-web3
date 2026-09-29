@@ -54,7 +54,7 @@ export default function VerifyRhcIdPage() {
   }, [token]);
 
   return (
-    <PublicShell current="verification">
+    <PublicShell>
       <section className="mx-auto max-w-3xl px-5 py-16 md:px-8 md:py-24">
         <Card title="Public Verification Result">
           <ResourceStatus loading={loading} error={error} reload={() => window.location.reload()} />

@@ -27,7 +27,7 @@ export function MeridianNotFoundPage() {
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
               <Web3Button href="/">Return home</Web3Button>
               <Web3Button href="/marketplace" variant="secondary">Explore services</Web3Button>
-              <Web3Button href="/login" variant="tertiary">Access portal</Web3Button>
+              <Web3Button href="/login" variant="tertiary">Get account help</Web3Button>
             </div>
           </Card>
         </div>

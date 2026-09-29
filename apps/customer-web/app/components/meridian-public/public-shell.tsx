@@ -1,15 +1,13 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import { Badge, ThemeToggle, Web3Button, Web3Shell } from '@rhc/ui';
+import { Badge, RHCLogoMark, ThemeToggle, Web3Button, Web3Shell } from '@rhc/ui';
 import { PUBLIC_NAV_ITEMS, type PublicNavKey } from './data';
 import { MeridianIcon } from './meridian-icon';
 
 export function MeridianMark({ compact = false }: { compact?: boolean }) {
   return (
     <span className="inline-flex items-center gap-3">
-      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[rgba(212,175,55,.55)] bg-[var(--rhc-accent-soft)] text-[var(--rhc-primary)] shadow-sm">
-        <MeridianIcon name="compass" className="h-5 w-5" />
-      </span>
+      <RHCLogoMark size="md" />
       <span className={compact ? 'sr-only' : 'block'}>
         <span className="block text-sm font-black uppercase leading-none tracking-[0.16em] text-[var(--rhc-heading)]">
           RHC
@@ -66,7 +64,7 @@ export function PublicShell({
             <ThemeToggle />
             <span className="hidden sm:inline-flex">
               <Web3Button href="/login" className="whitespace-nowrap">
-                Access portal
+                Sign in
                 <MeridianIcon name="arrow" className="h-4 w-4" />
               </Web3Button>
             </span>
@@ -95,7 +93,7 @@ export function PublicShell({
                 ))}
                 <div className="mt-2 border-t border-[var(--rhc-border)] pt-2 sm:hidden">
                   <Web3Button href="/login" className="w-full">
-                    Access portal
+                    Sign in to RHC
                   </Web3Button>
                 </div>
               </nav>
@@ -149,7 +147,7 @@ export function PublicShell({
               </p>
               <div className="mt-5">
                 <Web3Button href="/login" variant="secondary">
-                  Sign in securely
+                  Continue to sign in
                 </Web3Button>
               </div>
             </div>

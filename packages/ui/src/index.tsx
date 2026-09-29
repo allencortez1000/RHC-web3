@@ -9,6 +9,7 @@ type Theme = 'dark' | 'light';
 type ThemePreference = Theme | 'system';
 type NavItem = { section?: string; label: string; href: string; icon: string; active?: boolean };
 type RHCToken3DSize = 'small' | 'medium' | 'large';
+type RHCLogoMarkSize = 'sm' | 'md' | 'lg';
 type RHCToken3DProps = {
   frontImage: string;
   backImage: string;
@@ -29,6 +30,25 @@ function applyTheme(preference: ThemePreference) {
   document.documentElement.dataset.theme = theme;
   document.documentElement.dataset.themePreference = preference;
   document.documentElement.style.colorScheme = theme;
+}
+
+export function RHCLogoMark({
+  size = 'md',
+  className = '',
+}: {
+  size?: RHCLogoMarkSize;
+  className?: string;
+}) {
+  const sizes: Record<RHCLogoMarkSize, string> = {
+    sm: 'h-8 w-8',
+    md: 'h-11 w-11',
+    lg: 'h-14 w-14',
+  };
+  return (
+    <span className={`rhc-logo-mark inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full ${sizes[size]} ${className}`}>
+      <img src="/images/rhc-token-front.png" alt="Rabino Holdings Corporation" className="h-full w-full object-cover" draggable={false} />
+    </span>
+  );
 }
 
 export function Card({
@@ -158,9 +178,7 @@ export function AuthPage({
 export function EmptyState({ title, description }: { title: string; description: string }) {
   return (
     <div className="rhc-empty rounded-2xl border border-dashed p-8 text-center">
-      <div className="rhc-token-mini mx-auto mb-4 grid h-10 w-10 place-items-center rounded-lg text-sm font-bold">
-        RHC
-      </div>
+      <RHCLogoMark size="md" className="mx-auto mb-4" />
       <h3 className="text-base font-bold text-[var(--rhc-heading)]">{title}</h3>
       <p className="mt-2 text-sm leading-6 text-[var(--rhc-muted)]">{description}</p>
     </div>
@@ -187,9 +205,13 @@ export function MetricCard({
           <p className="rhc-metric-label text-xs font-bold uppercase tracking-[0.14em]">{label}</p>
           <p className="rhc-value mt-3 text-2xl">{value}</p>
         </div>
-        <div className="rhc-token-mini grid h-9 w-9 place-items-center rounded-md text-[11px] font-bold">
-          {icon}
-        </div>
+        {icon === 'RHC' ? (
+          <RHCLogoMark size="sm" />
+        ) : (
+          <div className="rhc-token-mini grid h-9 w-9 place-items-center rounded-md text-[11px] font-bold">
+            {icon}
+          </div>
+        )}
       </div>
       <div className="mt-2 flex flex-wrap items-center gap-2">
         {trend ? <Badge tone="success">{trend}</Badge> : null}
@@ -551,9 +573,7 @@ export function TokenCard() {
   return (
     <Card className="rhc-card-token">
       <div className="flex items-center gap-5">
-        <div className="rhc-token-orb grid h-16 w-16 shrink-0 place-items-center rounded-full text-base font-extrabold">
-          RHC
-        </div>
+        <RHCLogoMark size="lg" />
         <div>
           <Badge tone="gold">RHC Token Inspired</Badge>
           <h3 className="mt-3 text-xl font-bold text-[var(--rhc-heading)]">
@@ -618,9 +638,7 @@ export function DigitalIDCard({
               {rhcId || 'Not issued'}
             </p>
           </div>
-          <div className="grid h-16 w-16 place-items-center rounded-lg border border-[var(--rhc-border)] bg-[var(--rhc-surface-secondary)] text-xs font-bold text-[var(--rhc-primary)]">
-            RHC ID
-          </div>
+          <RHCLogoMark size="lg" />
         </div>
         <div className="mt-8 grid gap-3 sm:grid-cols-2">
           <Badge tone="warning">{verification}</Badge>
@@ -799,9 +817,7 @@ export function AppShell({
         <aside className="rhc-sidebar sticky top-4 hidden h-[calc(100vh-2rem)] w-56 shrink-0 rounded-xl border p-3 xl:w-60 xl:p-4 lg:block">
           <div className="flex h-full flex-col">
             <a href={admin ? '/' : '/dashboard'} className="flex items-center gap-3">
-              <div className="rhc-token-mini grid h-11 w-11 place-items-center rounded-full text-xs font-extrabold">
-                RHC
-              </div>
+              <RHCLogoMark size="md" />
               <div>
                 <p className="text-sm font-extrabold uppercase tracking-[0.14em] text-white">
                   RHC DIGITAL
@@ -878,9 +894,7 @@ export function AppShell({
                 )}
 
                 <ThemeToggle />
-                <div className="grid h-10 w-10 place-items-center rounded-lg border border-[var(--rhc-border)] bg-[var(--rhc-surface-secondary)] font-bold text-[var(--rhc-primary)]">
-                  RHC
-                </div>
+                <RHCLogoMark size="sm" />
                 <div className="lg:hidden">
                   <SignOutButton />
                 </div>

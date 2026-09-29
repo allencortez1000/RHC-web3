@@ -40,7 +40,7 @@ export function MeridianHomePage() {
                 <MeridianIcon name="arrow" className="h-4 w-4" />
               </Web3Button>
               <Web3Button href="/login" variant="secondary" className="sm:min-w-40">
-                Access Portal
+                Get started
               </Web3Button>
             </div>
             <p className="mt-5 flex max-w-xl items-start gap-2 text-sm leading-6 text-[var(--rhc-muted)]">
@@ -223,7 +223,7 @@ export function MeridianHomePage() {
 
             <p className="mt-5 text-xs leading-5 text-[var(--rhc-muted)]">No reservation, purchase, or payment is performed on this public page.</p>
             <div className="mt-6 flex flex-wrap gap-3">
-              <Web3Button href="/login">Access property portal</Web3Button>
+              <Web3Button href="/login">View property records</Web3Button>
               <Web3Button href="/marketplace" variant="secondary">Discover services</Web3Button>
             </div>
           </Card>
@@ -270,7 +270,7 @@ export function MeridianHomePage() {
                 Open demo verifier
                 <MeridianIcon name="arrow" className="h-4 w-4" />
               </Web3Button>
-              <Web3Button href="/login" variant="secondary">View records in portal</Web3Button>
+              <Web3Button href="/login" variant="secondary">Review my records</Web3Button>
             </div>
           </div>
 
@@ -315,7 +315,7 @@ export function MeridianHomePage() {
             </div>
             <div className="flex flex-col gap-3 sm:flex-row lg:flex-col xl:flex-row">
               <Web3Button href="/marketplace">Explore RHC services</Web3Button>
-              <Web3Button href="/login" variant="secondary">Access Portal</Web3Button>
+              <Web3Button href="/login" variant="secondary">Ask RHC for help</Web3Button>
             </div>
           </div>
         </div>

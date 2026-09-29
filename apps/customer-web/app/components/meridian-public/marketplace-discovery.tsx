@@ -179,7 +179,7 @@ export function MarketplaceDiscovery() {
           <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--rhc-secondary-text)]">Sign in to view only the demonstration records and services authorized for your account.</p>
           <div className="mt-7">
             <Web3Button href="/login">
-              Access Portal
+              Request service guidance
               <MeridianIcon name="arrow" className="h-4 w-4" />
             </Web3Button>
           </div>

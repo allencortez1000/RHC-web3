@@ -14,7 +14,7 @@
 
 ## Customer routes — 40/40
 
-Public customer paths configured in `apps/customer-web/app/providers.tsx` are `/`, `/login`, `/signin`, `/register`, `/forgot-password`, `/reset-password`, `/verification`, `/auth/confirm`, `/marketplace`, `/rhc-verify`, and `/verify/rhc-id/*`.
+Public customer paths configured in `apps/customer-web/app/providers.tsx` are `/`, `/login`, `/signin`, `/register`, `/forgot-password`, `/reset-password`, `/verification`, `/auth/confirm`, `/marketplace`, and `/verify/rhc-id/*`. The `/rhc-verify` entry form is now part of the authenticated customer portal.
 
 |   # | Route                    | Access / class             | Current intent and boundary                                                                             |
 | --: | ------------------------ | -------------------------- | ------------------------------------------------------------------------------------------------------- |
@@ -48,7 +48,7 @@ Public customer paths configured in `apps/customer-web/app/providers.tsx` are `/
 |  28 | `/reset-password`        | Public · Auth support      | Same-browser Supabase recovery completion in connected mode.                                            |
 |  29 | `/rhc-id`                | Redirect                   | Redirects to `/digital-id`.                                                                             |
 |  30 | `/rhc-points`            | Protected · Demo workflow  | Ledger-derived fictional balance and idempotent benefit redemption.                                     |
-|  31 | `/rhc-verify`            | **Public**                 | Verification entry: opaque references in demo; connected API uses reversible encoded RHC IDs (see D1). |
+|  31 | `/rhc-verify`            | Protected · Demo workflow  | Customer portal verification entry for opaque references; public result URLs remain under `/verify/rhc-id/*`. |
 |  32 | `/security`              | Protected · Adapter-backed | Security boundaries, sign-out, and consent history/decisions; MFA/device inventory remains unconnected. |
 |  33 | `/settings`              | Protected · Presentation   | Appearance/status/navigation settings; no future capability activation.                                 |
 |  34 | `/signin`                | Redirect · Public          | Redirects to `/login`.                                                                                  |

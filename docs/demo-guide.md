@@ -142,8 +142,8 @@ The explicit reset command restores the deterministic baseline and preserves any
 
 ## Suggested tour
 
-1. Run a reset and open public `/`, `/marketplace`, and **public** `/rhc-verify`.
-2. Select **Maya Santos**. Show `/dashboard`, `/properties`, save/unsave, reserve/cancel, `/profile`, `/documents`, `/payment-records`, `/rhc-points`, `/certificates`, and `/security`.
+1. Run a reset and open public `/`, `/marketplace`, and a public verification result such as `/verify/rhc-id/demo-passport-maya-7d2f0f9a`.
+2. Select **Maya Santos**. Show `/dashboard`, `/properties`, save/unsave, reserve/cancel, `/profile`, `/documents`, `/payment-records`, `/rhc-points`, `/certificates`, `/rhc-verify`, and `/security`.
 3. Select **Noah Reyes** and submit identity review from `/digital-id`.
 4. Select **Marco Villanueva** to approve the review, then return to Noah to issue the synthetic RHC Digital ID.
 5. Use **Lina Cruz** for scoped reservation/service work and **Elena Garcia** for payment verification or an idempotent points credit.
