@@ -1,0 +1,69 @@
+
+> @rhc/web3@0.1.0 test
+> npm run build && node --test test/*.test.cjs
+
+
+> @rhc/web3@0.1.0 build
+> tsc -p tsconfig.json
+
+✔ default disabled startup and diagnostics need no credentials or provider fetch (3.5339ms)
+✔ approved network list ships empty; configuration cannot invent approval (1.0242ms)
+✔ fixture is synthetic without address, explorer, or a claimed successful chain read (3.0464ms)
+✔ connected fixture is denied and never acts as live fallback (0.2435ms)
+✔ demo marker RHC_APP_PROFILE blocks thirdweb under conflicting config (0.2343ms)
+✔ demo marker RHC_DEMO_MODE blocks thirdweb under conflicting config (0.2349ms)
+✔ demo marker NEXT_PUBLIC_RHC_DATA_MODE blocks thirdweb under conflicting config (0.2776ms)
+✔ invalid config: INVALID_PROVIDER RHC_WEB3_PROVIDER (0.3917ms)
+✔ invalid config: INVALID_BOOLEAN ENABLE_WEB3_READ_PREVIEW (0.3102ms)
+✔ invalid config: NETWORK_READS_NOT_AUTHORIZED RHC_WEB3_ALLOW_NETWORK_READS (0.2413ms)
+✔ invalid config: TESTNET_ONLY RHC_WEB3_NETWORK_MODE (0.1534ms)
+✔ invalid config: CHAIN_NOT_CONFIGURED RHC_WEB3_CHAIN_ID (0.2274ms)
+✔ invalid config: CHAIN_NOT_APPROVED RHC_WEB3_CHAIN_ID (0.2188ms)
+✔ invalid config: CONTRACT_NOT_CONFIGURED RHC_WEB3_TOKEN_CONTRACT_ADDRESS (0.1609ms)
+✔ invalid config: CONTRACT_NOT_APPROVED RHC_WEB3_TOKEN_CONTRACT_ADDRESS (0.2431ms)
+✔ invalid config: SECRET_NOT_CONFIGURED THIRDWEB_SECRET_KEY (0.2016ms)
+✔ invalid config: INVALID_TIMING RHC_WEB3_READ_TIMEOUT_MS (0.2579ms)
+✔ invalid config: INVALID_TIMING RHC_WEB3_CACHE_TTL_SECONDS (0.185ms)
+✔ approved explorer is constructed only from reviewed origin and exact address (0.3376ms)
+✔ exact large supplies and decimals 0, 6, 18, 255; zero differs from unknown (0.7039ms)
+✔ metadata text is bounded, strips control/bidi characters, not fetched/interpreted (0.2229ms)
+✔ status never probes, inflight requests deduplicate, and fresh cache does not reread (2.0499ms)
+✔ one transient retry maximum; both attempts share one deadline (0.8776ms)
+✔ PROVIDER_AUTH is not retried (0.5568ms)
+✔ WRONG_CHAIN is not retried (0.3534ms)
+✔ NO_CONTRACT is not retried (0.4938ms)
+✔ RATE_LIMITED is not retried (0.515ms)
+✔ rate backoff suppresses calls beyond TTL without making health claims (0.7003ms)
+✔ stale data retains success timestamp, expires, and never becomes current health (0.9982ms)
+✔ configuration/source changes invalidate cached provider without leaking credentials (0.4808ms)
+✔ providers never merge metadata from separate chains or contracts (0.8238ms)
+✔ timeout aborts stalled body, deduplicates callers, and leaves no active requests (41.5557ms)
+✔ transport rejects write RPC methods before fetch (1.2225ms)
+✔ transport refuses redirects, hides provider errors, checks response ID and bounds body size (4.7723ms)
+▶ offline readSdkSnapshot with installed thirdweb SDK
+  ✔ decodes strings and huge non-18 supply exactly; pinned observed block; no writes (15.0858ms)
+  ✔ formats supply at 0 decimals without Number coercion (3.8105ms)
+  ✔ formats supply at 18 decimals without Number coercion (2.5067ms)
+  ✔ formats supply at 255 decimals without Number coercion (2.7576ms)
+  ✔ observed zero is not unknown supply (6.9502ms)
+  ✔ unknown or out-of-range decimals preserve raw supply without inventing units (6.1436ms)
+  ✔ approved cap and paused=true are observed, not restriction assessments (2.4314ms)
+  ✔ approved cap and paused=false are observed, not restriction assessments (1.9765ms)
+  ✔ approved optional reads that revert or return empty remain unavailable, never false/zero/unsupported (2.46ms)
+  ✔ text is UTF-8 decoded, control/bidi stripped, bounded, and never fetched (2.9301ms)
+  ✔ one malformed ABI field yields a partial snapshot without losing valid fields (2.4636ms)
+  ✔ no observed metadata fails instead of reporting a successful empty snapshot (3.5076ms)
+  ✔ wrong chain stops before code or token calls (0.8273ms)
+  ✔ absent contract code 0x stops before token calls (2.037ms)
+  ✔ absent contract code 0x00 stops before token calls (0.9356ms)
+  ✔ changed block hash discards the entire snapshot (2.0447ms)
+  ✔ genesis height zero stays pinned for token calls and confirmation (1.6732ms)
+✔ offline readSdkSnapshot with installed thirdweb SDK (2717.344ms)
+ℹ tests 52
+ℹ suites 0
+ℹ pass 52
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2952.1083
