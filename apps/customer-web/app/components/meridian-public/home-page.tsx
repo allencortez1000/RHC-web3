@@ -9,6 +9,7 @@ import {
   VERIFICATION_STEPS,
 } from './data';
 import { MeridianIcon } from './meridian-icon';
+import { EcosystemOrbit } from './ecosystem-orbit';
 import { DemoNotice, PublicShell, SectionHeading } from './public-shell';
 
 export function MeridianHomePage() {
@@ -26,21 +27,21 @@ export function MeridianHomePage() {
 
         <div className="relative mx-auto grid min-h-[calc(100vh-7rem)] max-w-7xl items-center gap-12 px-5 py-16 md:px-8 md:py-24 lg:grid-cols-[1.08fr_.92fr] lg:py-28">
           <div>
-            <Badge tone="gold">RHC · Public preview</Badge>
-            <h1 className="mt-7 max-w-4xl text-[clamp(2.75rem,7vw,6.4rem)] font-extrabold leading-[.94] tracking-[-0.065em] text-[var(--rhc-heading)]">
-              A place to belong.{' '}
-              <span className="text-[var(--rhc-primary)]">An ecosystem to grow with.</span>
+            <Badge tone="gold">RHC Digital Ecosystem · Public preview</Badge>
+            <h1 className="rhc-reveal mt-7 max-w-4xl font-black text-[clamp(3.4rem,8vw,7.6rem)] leading-[.88] tracking-[-0.075em] text-[var(--rhc-heading)]">
+              One identity.{' '}
+              <span className="text-[var(--rhc-primary)]">One ecosystem.</span>
             </h1>
             <p className="mt-7 max-w-2xl text-lg leading-8 text-[var(--rhc-secondary-text)] md:text-xl">
-              RHC brings places, customer records, and participating services into one understandable journey—connected by identity and designed around trust.
+              Properties, services, rewards, and verified records connected through RHC Digital—built for real relationships, real utility, and trusted progress.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Web3Button href="#discover" className="sm:min-w-40">
-                Explore RHC
+              <Web3Button href="/properties" className="sm:min-w-40">
+                Explore properties
                 <MeridianIcon name="arrow" className="h-4 w-4" />
               </Web3Button>
               <Web3Button href="/login" variant="secondary" className="sm:min-w-40">
-                Get started
+                Access my RHC
               </Web3Button>
             </div>
             <p className="mt-5 flex max-w-xl items-start gap-2 text-sm leading-6 text-[var(--rhc-muted)]">
@@ -49,50 +50,7 @@ export function MeridianHomePage() {
             </p>
           </div>
 
-          <Card className="rhc-card-token relative p-6 md:p-7">
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-[var(--rhc-accent-soft)] blur-3xl"
-            />
-            <div className="relative">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="rhc-eyebrow">The RHC map</p>
-                  <h2 className="mt-2 text-2xl font-extrabold text-[var(--rhc-heading)]">One thread. Useful context.</h2>
-                </div>
-                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-[rgba(212,175,55,.42)] bg-[var(--rhc-accent-soft)] text-[var(--rhc-primary)]">
-                  <MeridianIcon name="compass" className="h-6 w-6" />
-                </span>
-              </div>
-
-              <div className="relative mt-7 grid gap-3" aria-label="Identity, property, and receipt connection preview">
-                <div aria-hidden="true" className="absolute bottom-6 left-6 top-6 w-px bg-[linear-gradient(var(--rhc-primary),var(--rhc-border),var(--rhc-primary))]" />
-                {GOLDEN_THREAD.map((item) => (
-                  <div
-                    key={`hero-${item.id}`}
-                    className="relative flex items-center gap-4 rounded-xl border border-[var(--rhc-border)] bg-[var(--rhc-surface)] p-4"
-                  >
-                    <span className="z-10 grid h-12 w-12 shrink-0 place-items-center rounded-full border border-[rgba(212,175,55,.38)] bg-[var(--rhc-bg-secondary)] text-[var(--rhc-primary)]">
-                      <MeridianIcon name={item.icon} className="h-5 w-5" />
-                    </span>
-                    <span>
-                      <span className="block text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--rhc-muted)]">{item.step}</span>
-                      <span className="mt-1 block font-bold text-[var(--rhc-heading)]">{item.title}</span>
-                    </span>
-                    <span className="ml-auto hidden font-mono text-[11px] text-[var(--rhc-muted)] sm:block">{item.sample}</span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-4 flex items-center justify-between gap-4 rounded-xl border border-dashed border-[rgba(212,175,55,.38)] bg-[var(--rhc-accent-soft)] p-4">
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--rhc-primary)]">Result</p>
-                  <p className="mt-1 text-sm font-semibold text-[var(--rhc-heading)]">Relevant services, grounded in a real relationship</p>
-                </div>
-                <MeridianIcon name="spark" className="h-6 w-6 shrink-0 text-[var(--rhc-primary)]" />
-              </div>
-            </div>
-          </Card>
+          <EcosystemOrbit />
         </div>
       </section>
 
@@ -115,7 +73,7 @@ export function MeridianHomePage() {
       <section id="discover" className="scroll-mt-28 px-5 py-20 md:px-8 md:py-28">
         <div className="mx-auto max-w-7xl">
           <SectionHeading
-            eyebrow="Discover RHC"
+            eyebrow="Explore the RHC ecosystem"
             title="A connected view of life across RHC"
             description="Start with what matters to you. RHC makes the relationship between a place, a record, and a service visible before asking you to enter the portal."
           />

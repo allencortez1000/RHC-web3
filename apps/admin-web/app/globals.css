@@ -117,9 +117,11 @@ pre,
 }
 .rhc-admin-hero {
   background:
+    radial-gradient(circle at 100% 0%, var(--rhc-gold-glow), transparent 30%),
     linear-gradient(120deg, rgba(212, 175, 55, 0.1), transparent 34%),
     radial-gradient(circle at 90% 12%, rgba(212, 175, 55, 0.12), transparent 28%),
     var(--rhc-surface);
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.18);
 }
 :root[data-theme='light'] .rhc-admin-sidebar {
   background:
@@ -128,8 +130,10 @@ pre,
 }
 :root[data-theme='light'] .rhc-admin-hero {
   background:
+    radial-gradient(circle at 100% 0%, var(--rhc-gold-glow), transparent 30%),
     linear-gradient(120deg, rgba(212, 175, 55, 0.11), transparent 34%),
     var(--rhc-surface);
+  box-shadow: 0 24px 70px rgba(16, 24, 40, 0.08);
 }
 .rhc-card {
   min-width: 0;

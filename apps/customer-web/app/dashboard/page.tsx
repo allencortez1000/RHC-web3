@@ -36,7 +36,7 @@ export default function Page() {
   return (
     <AppShell title="My RHC Dashboard" navItems={navFor('Dashboard')}>
       <section className="grid gap-5 xl:grid-cols-[1.2fr_.8fr]">
-        <Card className="rhc-card-token p-6 md:p-8">
+        <Card className="rhc-card-token rhc-dashboard-hero p-6 md:p-8">
           <Badge tone="gold">My RHC</Badge>
           <h2 className="rhc-page-title mt-5 max-w-4xl">Welcome back, {customerName}</h2>
           <p className="rhc-body-copy mt-4 max-w-3xl">

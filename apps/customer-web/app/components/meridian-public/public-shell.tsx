@@ -33,7 +33,7 @@ export function PublicShell({
         Skip to main content
       </a>
 
-      <header className="sticky top-0 z-40 border-b border-[var(--rhc-border)] bg-[var(--rhc-bg)] shadow-sm">
+      <header className="rhc-public-header sticky top-0 z-40 border-b border-[var(--rhc-border)] bg-[var(--rhc-bg)] shadow-sm">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-3 md:px-8">
           <Link
             href="/"

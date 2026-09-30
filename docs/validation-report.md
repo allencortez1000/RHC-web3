@@ -135,6 +135,28 @@ None known for Month 1 local MVP after this pass.
 - Formal accessibility audit and cross-browser sign-off.
 - Any token, wallet, exchange, staking, blockchain, custody, or regulated financial approval.
 
+## Redesign closure pass
+
+The Kaia-inspired but original RHC presentation refinement was validated without changing backend contracts or security boundaries:
+
+- Public landing hero now communicates `One identity. One ecosystem.` with an accessible RHC ecosystem orbit.
+- Shared token system includes premium dark/light surfaces, glass/glow semantics, display typography, and reduced-motion-safe reveal behavior.
+- Customer dashboard and admin command-center hero surfaces received visual hierarchy refinements.
+- Public header uses the refined blurred surface while preserving navigation, skip links, and focus behavior.
+- Public/customer/admin route matrices, demo workflows, console gates, keyboard checks, and responsive browser coverage remain passing.
+
+Validation evidence after the redesign pass:
+
+```sh
+npm run build -w @rhc/customer-web
+npm run build -w @rhc/admin-web
+npm run test:demo:store
+npm run test:demo
+npm run test:demo:browser
+```
+
+All listed commands passed during this pass.
+
 ## Result
 
 **READY FOR INTERNAL UAT** for the Month 1 Local MVP / Product Prototype.

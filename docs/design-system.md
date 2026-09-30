@@ -108,6 +108,18 @@ RHC Points are centrally managed fictional reward points in demo mode—not cash
 - Disabled controls must explain why through nearby copy or useful labels, not opacity alone.
 - Final browser smoke covers public, customer, and admin journeys across representative mobile, tablet, desktop, and large-desktop widths, plus focused keyboard/focus checks. A full screen-reader session, formal contrast/zoom/reduced-motion audit, and broad cross-browser certification remain pending for later acceptance.
 
+## Month 1 redesign additions
+
+The presentation layer now includes an original RHC ecosystem treatment inspired by premium Web3 information hierarchy without copying another brand:
+
+- `apps/customer-web/app/components/meridian-public/ecosystem-orbit.tsx` provides an accessible, keyboard-friendly ecosystem orbit for the public hero.
+- The orbit uses semantic nodes for Digital ID, Properties, RHC Rewards, RHC Verify, Amica, and RHC Services with explicit `Core`, `Pilot`, and `Planned` statuses.
+- `packages/ui/styles/meridian-tokens.css` now includes display typography, glass surfaces, glow, hero gradients, section spacing, and slower reveal timing tokens.
+- Public presentation styles add reduced-motion-safe reveal animation, selective glass surfaces, responsive orbit behavior, and a blurred sticky public header.
+- Customer dashboard and admin command-center hero surfaces use the same premium hierarchy while retaining operational clarity and demo provenance.
+
+The redesign remains presentation-only. It does not change routes, API contracts, auth, RBAC, demo sessions, database models, feature flags, or inactive Web3 boundaries.
+
 ## Current caveats
 
 1. Demo persona scope and control visibility demonstrate UX behavior; they are not production authorization acceptance.

@@ -222,14 +222,14 @@ try {
   const staff = await newPage();
 
   await matrix(publicPage, customer, [
-    ['/', /A place to belong/i],
+    ['/', /One identity.*One ecosystem/i],
     ['/marketplace', 'Useful connections, clearly staged.'],
   ], 'public', true);
   await matrix(publicPage, customer, [['/login', 'Choose your workspace']], 'auth');
 
   await step('Public keyboard navigation, skip link, and marketplace filters', async () => {
     await publicPage.setViewportSize({ width: 390, height: 900 });
-    await visit(publicPage, customer, '/', /A place to belong/i);
+    await visit(publicPage, customer, '/', /One identity.*One ecosystem/i);
     const skip = publicPage.getByRole('link', { name: 'Skip to main content' });
     await skip.focus();
     await publicPage.keyboard.press('Enter');
@@ -360,7 +360,10 @@ try {
 
   await step('Help search and keyboard accordion', async () => {
     await visit(maya, customer, '/help', 'Help');
-    await maya.getByLabel('What do you need help with?').fill('no-such-help-month1');
+    await maya.waitForLoadState('networkidle');
+    const helpSearch = maya.getByLabel('What do you need help with?');
+    await helpSearch.fill('no-such-help-month1');
+    await expect(helpSearch).toHaveValue('no-such-help-month1');
     await expect(maya.getByRole('heading', { name: 'No help article found' })).toBeVisible();
     await maya.getByRole('button', { name: 'Clear filters', exact: true }).click();
     const summary = maya.locator('main details summary').first();
@@ -371,11 +374,13 @@ try {
 
   await step('Inactive token alias and accessible roadmap keyboard controls', async () => {
     await visit(maya, customer, '/token', 'Future Technology');
+    await maya.waitForLoadState('networkidle');
     await expect(maya).toHaveURL(`${customer}/future-technology#future-token`);
     await expect(maya.getByText(/token issuance.*not active or authorized/i)).toBeVisible();
     await expect(maya.getByRole('button', { name: /^(send|buy|swap|stake|mint|connect wallet|activate token)$/i })).toHaveCount(0);
     const tabs = maya.getByRole('tablist', { name: 'Technology roadmap phases' }).getByRole('tab');
     await tabs.first().focus();
+    await expect(tabs.first()).toBeFocused();
     await maya.keyboard.press('ArrowDown');
     await expect(tabs.nth(1)).toBeFocused();
     await expect(tabs.nth(1)).toHaveAttribute('aria-selected', 'true');
