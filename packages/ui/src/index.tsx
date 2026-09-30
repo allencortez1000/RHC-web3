@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState, type MouseEvent, type ReactNode } from 'react';
 import { AuthForm, SignOutButton, type AuthMode } from './runtime';
 export * from './runtime';
+export { Web3ReadPanel } from './web3-read-panel';
 
 type BadgeTone = 'neutral' | 'success' | 'warning' | 'danger' | 'info' | 'gold';
 type Theme = 'dark' | 'light';

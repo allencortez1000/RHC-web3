@@ -1217,14 +1217,17 @@ export function AdminModule({
   title,
   resource,
   amicaOnly,
+  children,
 }: {
   title: string;
   resource: string;
   amicaOnly?: boolean;
+  children?: ReactNode;
 }) {
   const activeHref = routeFor.get(title) || `/${resource}`;
   return (
     <AdminShell title={title} activeHref={activeHref}>
+      {children}
       <Card className="rhc-card-token" title={`${title} Workspace`}>
         <p className="mb-5 text-sm leading-6 text-[var(--rhc-muted)]">
           Search, filter, review, and manage records according to your server-enforced permissions.

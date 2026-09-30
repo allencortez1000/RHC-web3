@@ -100,6 +100,7 @@ type Runtime = {
   dataMode: 'api' | 'demo';
   demoRevision?: number;
   user: Account | null;
+  hasSession: boolean;
   dataRevision: number;
   request: <T>(path: string, init?: RequestInit) => Promise<T>;
   logout: () => Promise<void>;
@@ -433,6 +434,7 @@ export function PortalProvider({
     dataMode: auth.mode,
     demoRevision,
     user,
+    hasSession: Boolean(session),
     request,
     logout,
     navigate,

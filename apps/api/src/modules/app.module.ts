@@ -28,9 +28,12 @@ import { SupabaseJwtService } from './security/supabase-jwt.service';
 import { ApplicationUserService } from './security/application-user.service';
 import { AuthGuard } from './security/auth.guard';
 import { PermissionGuard } from './security/permission.guard';
+import { Web3Module } from './web3/web3.module';
+import { Web3Controller, ThirdwebIntegrationController } from './web3/web3.controller';
 
 @Module({
-  controllers: [AuthController, MeController, CustomerReservationsController, ConsentController, DirectoryController, AdminController, AdminReservationsController, HealthController, ApiClientsController, CompanyApiController, InternalIntegrationController, ManagementController],
+  imports: [Web3Module],
+  controllers: [Web3Controller, ThirdwebIntegrationController, AuthController, MeController, CustomerReservationsController, ConsentController, DirectoryController, AdminController, AdminReservationsController, HealthController, ApiClientsController, CompanyApiController, InternalIntegrationController, ManagementController],
   providers: [PrismaService, RbacService, AuditService, EventsService, RhcIdService, ReservationsService, SupabaseJwtService, ApplicationUserService, AuthGuard, PermissionGuard, FeatureService, RateLimitStore, CompanyApiKeyService, CompanyApiGuard, InternalIntegrationService,
     { provide: APP_GUARD, useClass: RateLimitGuard },
     { provide: APP_GUARD, useClass: FeatureGuard },

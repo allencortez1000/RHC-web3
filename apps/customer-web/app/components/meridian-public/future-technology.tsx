@@ -11,6 +11,7 @@ import {
   type TechnologyPhase,
 } from './data';
 import { MeridianIcon } from './meridian-icon';
+import { CustomerWeb3Preview } from '../web3-preview';
 
 export function MeridianFutureTechnology() {
   const [activePhaseId, setActivePhaseId] = useState<TechnologyPhase['id']>('foundation');
@@ -47,6 +48,8 @@ export function MeridianFutureTechnology() {
           </div>
         </div>
       </section>
+
+      <CustomerWeb3Preview />
 
       <section aria-labelledby="technology-state-title" className="mt-5">
         <div className="mb-4 flex flex-wrap items-end justify-between gap-3">

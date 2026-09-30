@@ -16,6 +16,9 @@
         "packages/ui/src"
       ]
     },
+    "typeRoots": [
+      "../../node_modules/@types"
+    ],
     "noEmit": true,
     "allowJs": true,
     "incremental": true,

@@ -20,6 +20,7 @@ import {
   demoRequestContext,
   withDemoRequestContext,
 } from './store';
+import { createSyntheticWeb3ReadResult } from './web3-fixture';
 
 type DispatchInput = {
   segments: string[];
@@ -897,6 +898,18 @@ async function dispatchRequest(input: DispatchInput): Promise<DispatchResult> {
   await applyDemoRequestControls();
   const refreshed = await authenticateDemoSession(input.token);
   const world = refreshed.world;
+
+  if (route === '/web3/token' || route === '/admin/integrations/thirdweb') {
+    if (route === '/web3/token') assertCustomer(persona);
+    else {
+      assertAdmin(persona, 'integration.view');
+      if (!isGlobal(persona)) throw new DemoStoreError(403, 'SCOPE_DENIED', 'Server-wide Web3 configuration requires global integration.view access.');
+    }
+    if (method !== 'GET') {
+      throw new DemoStoreError(405, 'WEB3_READ_ONLY', 'The Web3 preview supports read-only GET requests. No capability was activated.');
+    }
+    return { data: createSyntheticWeb3ReadResult(world.controls.clock), world };
+  }
 
   if (route === '/me' && method === 'GET') {
     assertCustomer(persona);

@@ -26,16 +26,17 @@ describe('self-service consent and public registration config', () => {
   const post = (body: unknown = grant) => request(h.app.getHttpServer()).post('/api/v1/me/consents').set('Authorization', `Bearer ${h.token}`).send(body as object);
   const get = (query = '') => request(h.app.getHttpServer()).get(`/api/v1/me/consents${query}`).set('Authorization', `Bearer ${h.token}`);
 
-  it('returns only registration availability anonymously, uncached and fail-closed for a missing flag', async () => {
+  it('returns registration and preview availability anonymously, uncached and fail-closed for a missing registration flag', async () => {
+    const web3_read_preview_enabled = process.env.ENABLE_WEB3_READ_PREVIEW === 'true';
     const config = () => request(h.app.getHttpServer()).get('/api/v1/auth/config');
     const enabled = await config().expect(200);
-    expect(enabled.body.data).toEqual({ registration_enabled: true });
+    expect(enabled.body.data).toEqual({ registration_enabled: true, web3_read_preview_enabled });
     expect(enabled.headers['cache-control']).toBe('no-store');
     expect(enabled.headers['x-ratelimit-limit']).toBe('120');
     h.flags.get('ENABLE_REGISTRATION')!.enabled = false;
-    expect((await config().expect(200)).body.data).toEqual({ registration_enabled: false });
+    expect((await config().expect(200)).body.data).toEqual({ registration_enabled: false, web3_read_preview_enabled });
     h.flags.delete('ENABLE_REGISTRATION');
-    expect((await config().expect(200)).body.data).toEqual({ registration_enabled: false });
+    expect((await config().expect(200)).body.data).toEqual({ registration_enabled: false, web3_read_preview_enabled });
     expect(h.prisma.user.findUnique).not.toHaveBeenCalled();
     expect(h.identityRequests).toHaveLength(0);
   });

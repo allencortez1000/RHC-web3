@@ -14,6 +14,7 @@ const sourceFiles = {
   seed: path.join(root, 'apps/customer-web/app/lib/demo/seed.ts'),
   store: path.join(root, 'apps/customer-web/app/lib/demo/store.ts'),
   router: path.join(root, 'apps/customer-web/app/lib/demo/router.ts'),
+  web3: path.join(root, 'apps/customer-web/app/lib/demo/web3-fixture.ts'),
   route: path.join(root, 'apps/customer-web/app/api/demo/[...segments]/route.ts'),
 };
 const compiled = new Map();
@@ -36,6 +37,7 @@ function evaluate(name, dependencies = {}) {
   const localRequire = (specifier) => {
     if (Object.hasOwn(dependencies, specifier)) return dependencies[specifier];
     if (specifier === './seed') return evaluate('seed').exports;
+    if (specifier === './web3-fixture') return evaluate('web3').exports;
     if (specifier === '@rhc/types') return evaluate('types').exports;
     return require(specifier);
   };
@@ -219,6 +221,79 @@ async function withRouter(callback) {
     await callback({ ...files, store, router, call, tokens });
   });
 }
+
+test('Web3 fixture is locally constructed, import-free at runtime, and returns independent observations', () => {
+  assert.doesNotMatch(compiled.get('web3'), /require\s*\(/);
+  const { createSyntheticWeb3ReadResult } = evaluate('web3').exports;
+  const timestamp = '2026-09-21T10:00:00.000Z';
+  const first = createSyntheticWeb3ReadResult(timestamp);
+  const second = createSyntheticWeb3ReadResult(timestamp);
+  assert.deepEqual(first, second);
+  assert.equal(first.source, 'synthetic');
+  assert.equal(first.observedAt, timestamp);
+  assert.equal(first.lastAttemptAt, timestamp);
+  assert.equal(first.chain, null);
+  assert.equal(first.contractAddress, null);
+  assert.equal(first.explorerUrl, null);
+  assert.equal(first.block, null);
+  assert.equal(first.data.cap.status, 'unsupported');
+  assert.equal(first.data.paused.status, 'unavailable');
+  assert.deepEqual(first.inactiveCapabilities, ['customer_wallets', 'transfers', 'rewards', 'sponsorship', 'public_release']);
+  first.data.name.value = 'Changed local test value';
+  first.inactiveCapabilities.pop();
+  assert.equal(second.data.name.value, 'Synthetic Demo Token');
+  assert.equal(second.inactiveCapabilities.length, 5);
+});
+
+test('Web3 demo reads require a customer or global integration.view and never change the world', async () => {
+  await withRouter(async ({ call, store, storeFile }) => {
+    const before = await fs.readFile(storeFile, 'utf8');
+    const customer = await call('/web3/token');
+    const staff = await call('/admin/integrations/thirdweb', 'system-admin');
+    const auditor = await call('/admin/integrations/thirdweb', 'auditor');
+    assert.equal(customer.data.source, 'synthetic');
+    assert.equal(customer.data.capability, 'read_only');
+    assert.equal(customer.data.restrictionAssessment, 'not_assessed');
+    assert.deepEqual(staff.data, customer.data);
+    assert.deepEqual(auditor.data, customer.data);
+    assert.equal(await fs.readFile(storeFile, 'utf8'), before);
+    for (const route of ['/web3/token', '/admin/integrations/thirdweb']) {
+      await assert.rejects(call(route, 'anonymous'), (error) => error.status === 401);
+      await assert.rejects(call(route, 'anonymous', 'POST'), (error) => error.status === 401);
+    }
+    await assert.rejects(call('/web3/token', 'system-admin'), (error) => error.code === 'CUSTOMER_REQUIRED');
+    await assert.rejects(call('/admin/integrations/thirdweb'), (error) => error.code === 'ADMIN_REQUIRED');
+    for (const scoped of ['operator-amica', 'compliance-admin']) {
+      await assert.rejects(call('/admin/integrations/thirdweb', scoped), (error) => error.code === 'SCOPE_DENIED');
+    }
+    for (const method of ['POST', 'PATCH', 'PUT', 'DELETE']) {
+      await assert.rejects(call('/web3/token', 'customer-maya', method), (error) => error.status === 405);
+      await assert.rejects(call('/admin/integrations/thirdweb', 'system-admin', method), (error) => error.status === 405);
+    }
+    assert.equal(await fs.readFile(storeFile, 'utf8'), before);
+    await store.mutateDemoWorld((world) => {
+      world.users.find((user) => user.id === 'usr-customer-001').account_status = 'DISABLED';
+    });
+    await assert.rejects(call('/web3/token'), (error) => error.code === 'ACCOUNT_INACTIVE');
+  });
+});
+
+test('Web3 demo admin endpoint checks integration.view, not merely staff status', async () => {
+  await withStore(async () => {
+    const types = evaluate('types').exports;
+    const personas = types.DEMO_PERSONAS.map((persona) => persona.id === 'operator-amica'
+      ? { ...persona, permissions: persona.permissions.filter((permission) => permission !== 'integration.view') }
+      : persona);
+    const restrictedTypes = { ...types, DEMO_PERSONAS: personas };
+    const store = evaluate('store', { '@rhc/types': restrictedTypes }).exports;
+    const router = evaluate('router', { './store': store, '@rhc/types': restrictedTypes }).exports;
+    const { token } = await store.createDemoSession('operator-amica');
+    await assert.rejects(router.dispatchDemoRequest({
+      segments: ['admin', 'integrations', 'thirdweb'], method: 'GET', token, body: {},
+      url: new URL('http://127.0.0.1:3002/admin/integrations/thirdweb'),
+    }), (error) => error.code === 'PERMISSION_DENIED');
+  });
+});
 
 const rejectsCode = (promise, code) => assert.rejects(promise, (error) => error?.code === code);
 const credit = (key, points = 400, customer_id = 'usr-customer-001') => ({ customer_id, points,
