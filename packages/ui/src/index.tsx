@@ -815,46 +815,46 @@ export function AppShell({
       <a href="#main-content" className="rhc-skip-link">Skip to main content</a>
       <div className="mx-auto flex min-h-screen w-full max-w-[1720px] gap-3 px-3 py-3 md:px-4 lg:gap-4 lg:py-4">
         {!hideSidebar && (
-        <aside className="rhc-sidebar sticky top-4 hidden h-[calc(100vh-2rem)] w-56 shrink-0 rounded-xl border p-3 xl:w-60 xl:p-4 lg:block">
-          <div className="flex h-full flex-col">
-            <a href={admin ? '/' : '/dashboard'} className="flex items-center gap-3">
-              <RHCLogoMark size="md" />
-              <div>
-                <p className="text-sm font-extrabold uppercase tracking-[0.14em] text-white">
-                  RHC DIGITAL
+        <aside className="rhc-sidebar sticky top-4 hidden h-[calc(100vh-2rem)] w-52 shrink-0 rounded-xl border p-2.5 xl:w-56 lg:block">
+          <div className="flex h-full min-h-0 flex-col">
+            <a href={admin ? '/' : '/dashboard'} className="rhc-sidebar-brand flex items-center gap-2.5 rounded-xl px-2 py-2">
+              <RHCLogoMark size="sm" />
+              <div className="min-w-0">
+                <p className="truncate text-[13px] font-extrabold uppercase tracking-[0.16em] text-white">
+                  RHC Digital
                 </p>
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--rhc-primary)]">
+                <p className="truncate text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--rhc-primary)]">
                   Customer Portal
                 </p>
               </div>
             </a>
-            <nav aria-label="Portal navigation" className="mt-6 space-y-3 overflow-y-auto pr-1">
+            <nav aria-label="Portal navigation" className="rhc-sidebar-nav mt-3 min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">
               {groups.map((group) => (
-                <div key={group.section}>
-                  <p className="rhc-nav-section mb-2 px-3">{group.section}</p>
-                  <div className="space-y-1">
+                <section key={group.section} className="rhc-nav-group" aria-labelledby={`nav-${group.section.replace(/\W+/g, '-').toLowerCase()}`}>
+                  <p id={`nav-${group.section.replace(/\W+/g, '-').toLowerCase()}`} className="rhc-nav-section mb-1.5 px-2">
+                    {group.section}
+                  </p>
+                  <div className="space-y-0.5">
                     {group.items.map((item) => (
                       <a
                         key={`${group.section}-${item.label}`}
                         href={item.href}
                         aria-current={item.active ? 'page' : undefined}
-                        className={`rhc-sidebar-link group flex items-center gap-2 rounded-lg px-2.5 py-2 text-[12px] font-semibold xl:text-[13px] ${item.active ? 'rhc-nav-active' : ''}`}
+                        title={item.label}
+                        className={`rhc-sidebar-link group flex min-h-9 items-center gap-2 rounded-lg px-2 py-1.5 text-[12px] font-semibold ${item.active ? 'rhc-nav-active' : ''}`}
                       >
-                        <span className="grid h-5 w-5 place-items-center rounded text-[10px] text-[var(--rhc-primary)]">
+                        <span className="rhc-nav-icon grid h-6 w-6 shrink-0 place-items-center rounded-md text-[10px] font-extrabold">
                           {item.icon}
                         </span>
-                        <span>{item.label}</span>
+                        <span className="min-w-0 truncate">{item.label}</span>
                       </a>
                     ))}
                   </div>
-                </div>
+                </section>
               ))}
             </nav>
-            <div className="mt-auto border-t border-[rgba(212,175,55,.18)] pt-4">
-              <SignOutButton className="rhc-sign-out flex w-full items-center justify-between rounded-lg border px-3 py-2.5 text-sm font-bold" />
-              <p className="rhc-sidebar-note mt-3 text-xs leading-5">
-                End your session on this browser.
-              </p>
+            <div className="rhc-sidebar-footer mt-3 border-t border-[rgba(212,175,55,.18)] pt-3">
+              <SignOutButton className="rhc-sign-out flex w-full items-center justify-center rounded-lg border px-3 py-2 text-[13px] font-bold" />
             </div>
           </div>
         </aside>
