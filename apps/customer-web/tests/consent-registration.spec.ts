@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page } from './offline-test';
 import { apiUrl, installFixtures, token } from './fixtures';
 
 async function fillRegistration(page: Page) {
@@ -23,7 +23,7 @@ test('registration config failure is fail-closed and can be retried', async ({ p
   const fixture = await installFixtures(page, { failOnce: ['/auth/config'] });
   await fillRegistration(page);
   await page.getByRole('button', { name: 'Create account' }).click();
-  await expect(page.getByRole('alert').filter({ hasText: 'Registration availability could not be checked' })).toBeVisible();
+  await expect(page.getByRole('alert').filter({ hasText: 'Service temporarily unavailable' })).toBeVisible();
   expect(fixture.authRequests.some((item) => item.path === '/signup')).toBe(false);
   await page.getByRole('button', { name: 'Create account' }).click();
   await expect(page.getByRole('status')).toContainText('Check your email');

@@ -1,6 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import { useAdminCapabilities } from './admin-capabilities';
+export { useAdminCapabilities } from './admin-capabilities';
 import { approvalBlockReason, VerificationReview } from './verification-review';
 import {
   ManagementEditor,
@@ -10,18 +12,22 @@ import {
   protectedRole,
   type ManagementAction,
 } from './management-controls';
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { useState, type FormEvent, type ReactNode } from 'react';
 import {
   Badge,
   Card,
+  CommandMenu,
   EmptyState,
   MetricCard,
   ResourceStatus,
+  RHCLogoMark,
   SignOutButton,
   ThemeToggle,
+  UnavailableFeature,
   Web3Button,
   Web3Shell,
   errorMessage,
+  getRequestAvailability,
   usePagedResource,
   useResource,
   useRuntime,
@@ -39,7 +45,7 @@ import {
   type AdminCapabilities,
   type ScopeTarget,
 } from './capability-scopes';
-import { CapabilityRequestCoordinator, useMutationIntent } from './capability-request-coordinator';
+import { useMutationIntent } from './capability-request-coordinator';
 
 export type AdminModuleDefinition = { label: string; path: string; permission: string; globalOnly?: boolean };
 export const moduleDefinitions: readonly AdminModuleDefinition[] = [
@@ -75,59 +81,6 @@ export function visibleModules(capabilities?: AdminCapabilities) {
     (!module.globalOnly || hasEffectiveGrant(capabilities, module.permission, globalScope(), false)),
   );
 }
-export function useAdminCapabilities() {
-  const { request, dataRevision } = useRuntime();
-  const [state, setState] = useState<{ data?: AdminCapabilities; error?: string; loading: boolean }>({ loading: true });
-  const [revision, setRevision] = useState(0);
-  const coordinator = useRef(new CapabilityRequestCoordinator<AdminCapabilities>());
-  useLayoutEffect(() => {
-    const instance = coordinator.current;
-    return () => instance.invalidate();
-  }, []);
-  const load = useCallback((signal?: AbortSignal) => request<AdminCapabilities>('/admin/capabilities', { signal }), [request]);
-  useEffect(() => {
-    const instance = coordinator.current;
-    const controller = new AbortController();
-    const requestId = instance.begin();
-    setState((current) => ({ ...current, loading: true, error: undefined }));
-    load(controller.signal)
-      .then((data) => {
-        if (!controller.signal.aborted && instance.commitSuccess(requestId, data)) {
-          setState({ data, loading: false });
-        }
-      })
-      .catch((cause) => {
-        const message = errorMessage(cause);
-        if (!controller.signal.aborted && instance.commitError(requestId, message)) {
-          setState((current) => ({ ...current, error: message, loading: false }));
-        }
-      });
-    return () => {
-      instance.invalidate();
-      controller.abort();
-    };
-  }, [dataRevision, load, revision]);
-  const revalidate = useCallback(async () => {
-    const requestId = coordinator.current.begin();
-    setState((current) => ({ ...current, loading: true, error: undefined }));
-    try {
-      const data = await load();
-      if (!coordinator.current.commitSuccess(requestId, data)) return null;
-      setState({ data, loading: false });
-      return data;
-    } catch (cause) {
-      const message = errorMessage(cause);
-      if (!coordinator.current.commitError(requestId, message)) return null;
-      setState((current) => ({ ...current, error: message, loading: false }));
-      return null;
-    }
-  }, [load]);
-  const reload = () => {
-    coordinator.current.invalidate();
-    setRevision((value) => value + 1);
-  };
-  return { ...state, reload, revalidate };
-}
 export function AdminNavigation({ capabilities, ariaLabel = 'Admin modules', className = 'mt-5 flex gap-4 overflow-x-auto', linkClassName = 'whitespace-nowrap text-sm' }: { capabilities?: AdminCapabilities; ariaLabel?: string; className?: string; linkClassName?: string }) {
   const visible = visibleModules(capabilities);
   return <nav aria-label={ariaLabel} className={className}>{visible.map((module) => <Link key={module.path} className={linkClassName} href={module.path}>{module.label}</Link>)}</nav>;
@@ -142,16 +95,95 @@ export function AdminPermissionBoundary({ permission, children }: { permission: 
   return <>{children}</>;
 }
 
-type AdminNavItem = readonly [string, string];
+type AdminNavItem = readonly [label: string, href: string];
 export const adminNavGroups: Array<{ section: string; items: AdminNavItem[] }> = [
-  { section: 'Overview', items: [['Command Center', '/']] },
-  { section: 'Customers', items: [['Customers', '/customers'], ['Digital IDs', '/rhc-digital-ids'], ['Verification Reviews', '/verification']] },
-  { section: 'Property Operations', items: [['Companies', '/companies'], ['Projects', '/projects'], ['Inventory', '/properties'], ['Amica Tower Inventory', '/amica-tower-inventory'], ['Reservations', '/reservations'], ['Customer Properties', '/customer-properties']] },
-  { section: 'Records & Services', items: [['Business Services', '/business-services'], ['Integrations', '/integrations'], ['Feature Flags', '/feature-flags']] },
-  { section: 'Governance', items: [['Users', '/users'], ['Roles', '/roles'], ['User Roles', '/user-roles'], ['Permissions', '/permissions'], ['Audit Logs', '/audit-logs'], ['System Settings', '/system-settings']] },
+  {
+    section: 'Operations',
+    items: [
+      ['Command Center', '/'],
+      ['Reservations', '/reservations'],
+      ['Properties', '/properties'],
+      ['Amica Tower Inventory', '/amica-tower-inventory'],
+      ['Customer Properties', '/customer-properties'],
+      ['Service Requests', '/service-requests'],
+      ['Operational Reports', '/reports'],
+    ],
+  },
+  {
+    section: 'Verification & Records',
+    items: [
+      ['Verification Reviews', '/verification'],
+      ['Customers', '/customers'],
+      ['Digital IDs', '/rhc-digital-ids'],
+      ['Payments', '/payments'],
+      ['Documents', '/documents'],
+      ['Certificates', '/certificates'],
+      ['Rewards Ledger', '/rewards-ledger'],
+      ['Audit Logs', '/audit-logs'],
+    ],
+  },
+  {
+    section: 'Ecosystem',
+    items: [
+      ['Companies', '/companies'],
+      ['Projects', '/projects'],
+      ['Business Services', '/business-services'],
+      ['Integrations', '/integrations'],
+    ],
+  },
+  {
+    section: 'Administration',
+    items: [
+      ['Users', '/users'],
+      ['Roles', '/roles'],
+      ['User Roles', '/user-roles'],
+      ['Permissions', '/permissions'],
+      ['Feature Flags', '/feature-flags'],
+      ['System Settings', '/system-settings'],
+    ],
+  },
 ];
 export const adminNavItems: AdminNavItem[] = adminNavGroups.flatMap((group) => group.items);
 const routeFor = new Map<string, string>(adminNavItems.map(([label, href]) => [label, href]));
+const routePermissions: Record<string, string | string[] | undefined> = {
+  '/reservations': 'reservation.view',
+  '/properties': 'property.view',
+  '/amica-tower-inventory': 'property.view',
+  '/customer-properties': 'customer_property.view',
+  '/service-requests': 'integration.view',
+  '/reports': ['reservation.view', 'customer.view', 'integration.view', 'audit.view'],
+  '/verification': 'customer.view',
+  '/customers': 'customer.view',
+  '/rhc-digital-ids': 'customer.view',
+  '/payments': 'customer.view',
+  '/documents': 'customer.view',
+  '/certificates': 'customer.view',
+  '/rewards-ledger': 'customer.view',
+  '/audit-logs': 'audit.view',
+  '/companies': 'company.view',
+  '/projects': 'project.view',
+  '/business-services': 'integration.view',
+  '/integrations': 'integration.view',
+  '/users': 'user.view',
+  '/roles': 'role.view',
+  '/user-roles': 'role.view',
+  '/permissions': 'permission.view',
+  '/feature-flags': 'feature_flag.view',
+  '/system-settings': 'system_settings.view',
+};
+export function canAccessAdminRoute(capabilities: AdminCapabilities | undefined, href: string) {
+  if (!capabilities) return false;
+  const canonical = href === '/verification' ? '/customers' : href;
+  if (moduleDefinitions.some((module) => module.path === canonical)) {
+    return visibleModules(capabilities).some((module) => module.path === canonical);
+  }
+  const permission = routePermissions[href];
+  if (Array.isArray(permission)) return permission.some((code) =>
+    visibleModules(capabilities).some((module) => module.permission === code));
+  // Additional demo workspaces must be explicitly advertised by the capability endpoint.
+  return Boolean(permission && capabilities.modules?.some((module) => module.path === href && module.usable));
+}
+
 type Row = { id: string; [key: string]: unknown };
 type Column = [string, string];
 const columns: Record<string, Column[]> = {
@@ -263,6 +295,48 @@ const columns: Record<string, Column[]> = {
     ['key', 'Key'],
     ['description', 'Description'],
     ['updated_at', 'Updated'],
+  ],
+  payments: [
+    ['reference', 'Reference'],
+    ['customer_id', 'Customer'],
+    ['property_id', 'Property'],
+    ['amount_minor', 'Amount (centavos)'],
+    ['currency', 'Currency'],
+    ['status', 'Status'],
+    ['submitted_at', 'Submitted'],
+  ],
+  documents: [
+    ['title', 'Document'],
+    ['customer_id', 'Customer'],
+    ['category', 'Category'],
+    ['version', 'Version'],
+    ['status', 'Status'],
+    ['issued_at', 'Submitted'],
+  ],
+  certificates: [
+    ['reference', 'Reference'],
+    ['customer_id', 'Customer'],
+    ['type', 'Credential'],
+    ['linked_record', 'Linked record'],
+    ['status', 'Status'],
+    ['blockchain_status', 'Blockchain'],
+  ],
+  'service-requests': [
+    ['reference', 'Reference'],
+    ['customer_id', 'Customer'],
+    ['company_id', 'Company'],
+    ['title', 'Request'],
+    ['status', 'Status'],
+    ['updated_at', 'Updated'],
+  ],
+  'rewards-ledger': [
+    ['date', 'Date'],
+    ['customer_id', 'Customer'],
+    ['source', 'Source'],
+    ['points', 'Points'],
+    ['reason', 'Reason'],
+    ['rule_version', 'Rule'],
+    ['status', 'Status'],
   ],
 };
 function valueAt(row: Row, path: string): unknown {
@@ -577,7 +651,7 @@ export function AdminTable({
     `/admin/${resource}`,
     !['roles', 'permissions', 'feature-flags', 'system-settings'].includes(resource),
   );
-  const { request, user } = useRuntime();
+  const { request, user, dataMode } = useRuntime();
   const capabilities = useAdminCapabilities();
   const capabilitiesReady = Boolean(capabilities.data) && !capabilities.loading && !capabilities.error;
   const hasMutation = (permission: string) => hasEffectiveGrant(capabilities.data, permission);
@@ -590,7 +664,11 @@ export function AdminTable({
   const [editing, setEditing] = useState<Row | 'new' | null>(null);
   const [flag, setFlag] = useState<Row | null>(null);
   const [reservationAction, setReservationAction] = useState<{ row: Row; action: 'confirm' | 'cancel' | 'expire' | 'convert' } | null>(null);
-  const mutation = useMutationIntent(reservationAction ?? flag ?? resource);
+  const [workflowAction, setWorkflowAction] = useState<{
+    row: Row;
+    action: 'approve' | 'reject' | 'verify' | 'reverse' | 'revoke' | 'supersede' | 'progress';
+  } | null>(null);
+  const mutation = useMutationIntent(workflowAction ?? reservationAction ?? flag ?? resource);
   const busy = mutation.busy;
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
@@ -632,7 +710,8 @@ export function AdminTable({
   const canReservationManage = (row: Row) => resource === 'reservations' && resourceMutationAllowed(capabilities.data, resource, 'manage', row);
   const canReservationCancel = (row: Row) => resource === 'reservations' && resourceMutationAllowed(capabilities.data, resource, 'cancel', row);
   const hasRowActions = filtered.some((row) => canEditRow(row) || canManageRow(row) || canReservationManage(row) || canReservationCancel(row));
-  const actionOpen = Boolean(management || review || editing || flag || reservationAction);
+  const workflowResource = capabilitiesReady && hasAnyMutation(resource === 'service-requests' ? 'integration.manage' : resource === 'payments' ? 'customer.edit' : 'user.manage') && dataMode === 'demo' && ['payments', 'documents', 'certificates', 'service-requests'].includes(resource);
+  const actionOpen = Boolean(management || review || editing || flag || reservationAction || workflowAction);
   const manage = (mode: ManagementAction['mode'], row?: Row) => {
     setManagement({ resource, mode, row });
     setMessage('');
@@ -646,7 +725,8 @@ export function AdminTable({
     setManagement(null);
     setFlag(null);
     setReservationAction(null);
-    setMessage('Changes saved.');
+    setWorkflowAction(null);
+    setMessage(dataMode === 'demo' ? 'Changes saved and recorded in demo history.' : 'Changes saved.');
     data.refresh();
   };
   async function submitReservationAction() {
@@ -683,6 +763,45 @@ export function AdminTable({
       mutation.finish(intent);
     }
   }
+  async function submitWorkflowAction(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!workflowAction || busy || dataMode !== 'demo' || !capabilitiesReady) return;
+    const form = new FormData(event.currentTarget);
+    const reason = String(form.get('reason') || '').trim();
+    const statusValue = String(form.get('status') || '').trim();
+    if (reason.length < 3) {
+      setError('A review reason or progress note is required.');
+      return;
+    }
+    const intent = mutation.begin();
+    if (intent === null) return;
+    setError('');
+    try {
+      const latest = await capabilities.revalidate();
+      if (!mutation.isCurrent(intent)) return;
+      const permission = resource === 'service-requests' ? 'integration.manage' : resource === 'payments' ? 'customer.edit' : 'user.manage';
+      if (!latest || !hasAnyEffectiveGrant(latest, permission)) {
+        setError('Your workflow permission changed or could not be refreshed. No action was submitted.');
+        return;
+      }
+      if (!mutation.markSubmitted(intent)) return;
+      const action = workflowAction.action;
+      await request(`/admin/${resource}/${encodeURIComponent(workflowAction.row.id)}/${action}`, {
+        method: 'POST',
+        body: JSON.stringify(
+          action === 'progress'
+            ? { status: statusValue, note: reason }
+            : { reason },
+        ),
+      });
+      if (mutation.isCurrent(intent)) complete();
+    } catch (cause) {
+      if (mutation.isCurrent(intent)) setError(errorMessage(cause));
+    } finally {
+      mutation.finish(intent);
+    }
+  }
+
   async function toggleFlag() {
     if (!flag || busy) return;
     if (!capabilitiesReady) {
@@ -712,6 +831,7 @@ export function AdminTable({
       mutation.finish(intent);
     }
   }
+  if (data.unavailable) return <UnavailableFeature unavailable={data.unavailable} />;
   return (
     <>
       {management && (
@@ -768,6 +888,34 @@ export function AdminTable({
               setReservationAction(null);
             }}>Cancel</Web3Button>
           </div>
+        </Card>
+      )}
+      {workflowAction && (
+        <Card title="Review workflow action" className="mb-5">
+          <form onSubmit={submitWorkflowAction}>
+            <p className="text-sm text-[var(--rhc-muted)]">
+              {workflowAction.action.toUpperCase()} {resource} record {String(workflowAction.row.reference || workflowAction.row.title || workflowAction.row.id)}. A reason is required and the result is appended to audit and customer history.
+            </p>
+            {workflowAction.action === 'progress' ? (
+              <label className="mt-4 block text-sm font-semibold">
+                Next status
+                <select name="status" required className="mt-2 w-full rounded-xl border p-3">
+                  <option value="ACKNOWLEDGED">Acknowledged</option>
+                  <option value="IN_PROGRESS">In progress</option>
+                  <option value="COMPLETED">Completed</option>
+                  <option value="CANCELLED">Cancelled</option>
+                </select>
+              </label>
+            ) : null}
+            <label className="mt-4 block text-sm font-semibold">
+              Reason or operator note
+              <textarea name="reason" required minLength={3} maxLength={500} className="mt-2 min-h-24 w-full rounded-xl border p-3" />
+            </label>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <Web3Button type="submit" disabled={busy || !capabilitiesReady}>{busy ? 'Applying…' : 'Confirm action'}</Web3Button>
+              <Web3Button variant="secondary" disabled={busy} onClick={() => setWorkflowAction(null)}>Cancel</Web3Button>
+            </div>
+          </form>
         </Card>
       )}
       {flag && (
@@ -889,18 +1037,20 @@ export function AdminTable({
           <>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
+                <caption className="sr-only">{resource.replaceAll('-', ' ')} records available within the current operator scope</caption>
                 <thead>
                   <tr>
                     {cols.map(([key, label]) => (
                       <th
                         key={key}
+                        scope="col"
                         className="whitespace-nowrap p-3 text-xs uppercase text-[var(--rhc-muted)]"
                       >
                         {label}
                       </th>
                     ))}
-                    {(canReview || canFeatureManage || hasRowActions) && (
-                      <th className="p-3">Actions</th>
+                    {(canReview || canFeatureManage || hasRowActions || workflowResource) && (
+                      <th scope="col" className="p-3">Actions</th>
                     )}
                   </tr>
                 </thead>
@@ -1037,6 +1187,40 @@ export function AdminTable({
                           </div>
                         </td>
                       )}
+                      {workflowResource && (
+                        <td className="p-3">
+                          <div className="flex flex-wrap gap-2">
+                            {resource === 'documents' && ['SUBMITTED', 'UNDER_REVIEW', 'REJECTED'].includes(String(row.status)) ? (
+                              <>
+                                <Web3Button variant="secondary" disabled={actionOpen || data.loading} onClick={() => setWorkflowAction({ row, action: 'approve' })}>Approve</Web3Button>
+                                <Web3Button variant="secondary" disabled={actionOpen || data.loading} onClick={() => setWorkflowAction({ row, action: 'reject' })}>Reject</Web3Button>
+                              </>
+                            ) : null}
+                            {resource === 'payments' && ['SUBMITTED', 'PENDING'].includes(String(row.status)) ? (
+                              <Web3Button variant="secondary" disabled={actionOpen || data.loading} onClick={() => setWorkflowAction({ row, action: 'verify' })}>Verify record</Web3Button>
+                            ) : null}
+                            {resource === 'payments' && row.status === 'POSTED' ? (
+                              <Web3Button variant="secondary" disabled={actionOpen || data.loading} onClick={() => setWorkflowAction({ row, action: 'reverse' })}>Record reversal</Web3Button>
+                            ) : null}
+                            {resource === 'certificates' && row.status === 'ACTIVE' ? (
+                              <>
+                                <Web3Button variant="secondary" disabled={actionOpen || data.loading} onClick={() => setWorkflowAction({ row, action: 'supersede' })}>Supersede</Web3Button>
+                                <Web3Button variant="secondary" disabled={actionOpen || data.loading} onClick={() => setWorkflowAction({ row, action: 'revoke' })}>Revoke</Web3Button>
+                              </>
+                            ) : null}
+                            {resource === 'service-requests' && !['COMPLETED', 'CANCELLED'].includes(String(row.status)) ? (
+                              <Web3Button variant="secondary" disabled={actionOpen || data.loading} onClick={() => setWorkflowAction({ row, action: 'progress' })}>Progress request</Web3Button>
+                            ) : null}
+                            {!['documents', 'payments', 'certificates', 'service-requests'].some((name) => name === resource) ? null :
+                              !(
+                                (resource === 'documents' && ['SUBMITTED', 'UNDER_REVIEW', 'REJECTED'].includes(String(row.status))) ||
+                                (resource === 'payments' && ['SUBMITTED', 'PENDING', 'POSTED'].includes(String(row.status))) ||
+                                (resource === 'certificates' && row.status === 'ACTIVE') ||
+                                (resource === 'service-requests' && !['COMPLETED', 'CANCELLED'].includes(String(row.status)))
+                              ) ? <span className="text-xs text-[var(--rhc-muted)]">No action for current state</span> : null}
+                          </div>
+                        </td>
+                      )}
                       {canFeatureManage && resource === 'feature-flags' && (
                         <td className="p-3">
                           <Web3Button
@@ -1092,62 +1276,174 @@ export function AdminTable({
     </>
   );
 }
-const resourcePermissions: Record<string, string> = {
-  users: 'user.view',
-  customers: 'customer.view',
-  companies: 'company.view',
-  projects: 'project.view',
-  properties: 'property.view',
-  reservations: 'reservation.view',
-  'customer-properties': 'customer_property.view',
-  roles: 'role.view',
-  'user-roles': 'role.view',
-  permissions: 'permission.view',
-  integrations: 'integration.view',
-  'business-services': 'integration.view',
-  'feature-flags': 'feature_flag.view',
-  'audit-logs': 'audit.view',
-  'system-settings': 'system_settings.view',
-};
+function GroupedAdminNavigation({
+  activeHref,
+  mobile = false,
+  capabilities,
+}: {
+  activeHref: string;
+  mobile?: boolean;
+  capabilities?: AdminCapabilities;
+}) {
+  const visibleGroups = adminNavGroups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter(([, href]) => canAccessAdminRoute(capabilities, href)),
+    }))
+    .filter((group) => group.items.length > 0);
+  return (
+    <nav
+      aria-label={mobile ? 'Mobile admin navigation' : 'Admin navigation'}
+      className={mobile ? 'flex gap-5 overflow-x-auto pb-1' : 'mt-6 space-y-6'}
+    >
+      {visibleGroups.map((group) => (
+        <div
+          key={group.section}
+          className={mobile ? 'flex shrink-0 items-center gap-2' : undefined}
+        >
+          <p
+            className={
+              mobile
+                ? 'whitespace-nowrap text-[0.65rem] font-black uppercase tracking-[0.14em] text-[var(--rhc-primary)]'
+                : 'px-2 text-[0.68rem] font-black uppercase tracking-[0.18em] text-[var(--rhc-primary)]'
+            }
+          >
+            {group.section}
+          </p>
+          <div className={mobile ? 'flex gap-2' : 'mt-2 space-y-1'}>
+            {group.items.map(([label, href]) => {
+              const current = href === activeHref;
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  aria-current={current ? 'page' : undefined}
+                  className={
+                    mobile
+                      ? `whitespace-nowrap rounded-full border px-3 py-2 text-xs font-bold ${
+                          current
+                            ? 'border-[var(--rhc-primary)] bg-[var(--rhc-accent-soft)] text-[var(--rhc-heading)]'
+                            : 'border-[var(--rhc-border)] bg-[var(--rhc-surface-secondary)] text-[var(--rhc-secondary-text)]'
+                        }`
+                      : `flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
+                          current
+                            ? 'bg-[var(--rhc-accent-soft)] text-[var(--rhc-heading)] ring-1 ring-[rgba(212,175,55,.28)]'
+                            : 'text-[var(--rhc-secondary-text)] hover:bg-[var(--rhc-surface-secondary)] hover:text-[var(--rhc-heading)]'
+                        }`
+                  }
+                >
+                  <span>{label}</span>
+                  {!mobile && (
+                    <span
+                      aria-hidden="true"
+                      className={`h-1.5 w-1.5 rounded-full ${
+                        current ? 'bg-[var(--rhc-primary)]' : 'bg-transparent'
+                      }`}
+                    />
+                  )}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </nav>
+  );
+}
 
-function AdminSidebar({ active, modules = [] }: { active?: string; modules?: AdminModuleDefinition[] }) {
-  const allowed = new Set(modules.map((module) => module.path));
+function AdminSidebar({ activeHref, capabilities }: { activeHref: string; capabilities?: AdminCapabilities }) {
+  const { dataMode } = useRuntime();
   return (
     <aside className="rhc-admin-sidebar fixed hidden h-full w-80 overflow-y-auto border-r border-[var(--rhc-border)] p-6 lg:block">
-      <Link href="/" className="flex items-center gap-3 rounded-2xl p-2 transition hover:bg-[var(--rhc-accent-soft)]">
-        <div className="grid h-12 w-12 place-items-center rounded-2xl border border-[rgba(212,175,55,.35)] bg-[var(--rhc-accent-soft)] font-black text-[var(--rhc-primary)]">RHC</div>
+      <Link
+        href="/"
+        aria-label="RHC command center"
+        className="flex items-center gap-3 rounded-2xl p-2 transition hover:bg-[var(--rhc-accent-soft)]"
+      >
+        <RHCLogoMark size="lg" />
         <div>
-          <h1 className="text-base font-black text-[var(--rhc-heading)]">Admin Command Center</h1>
-          <p className="text-xs text-[var(--rhc-muted)]">Operations · RBAC · Audit</p>
+          <p className="text-base font-black text-[var(--rhc-heading)]">RHC</p>
+          <p className="text-xs text-[var(--rhc-muted)]">Admin operations · RBAC · Audit</p>
         </div>
       </Link>
       <div className="mt-5 rounded-2xl border border-[var(--rhc-border)] bg-[var(--rhc-surface-secondary)] p-4">
-        <Badge tone="gold">Authenticated access</Badge>
-        <p className="mt-3 text-xs leading-5 text-[var(--rhc-muted)]">Actions are permission-guarded and should create audit records through the API.</p>
+        <Badge tone="gold">{dataMode === 'demo' ? 'Synthetic demo access' : 'Authenticated access'}</Badge>
+        <p className="mt-3 text-xs leading-5 text-[var(--rhc-muted)]">
+          Administrative records and actions remain subject to server-enforced permissions.
+        </p>
       </div>
-      <nav aria-label="Admin navigation" className="mt-6 space-y-6">
-        {adminNavGroups.map((group) => {
-          const items = group.items.filter(([, href]) => allowed.has(href));
-          if (!items.length) return null;
-          return (
-            <div key={group.section}>
-              <p className="px-2 text-[0.68rem] font-black uppercase tracking-[0.18em] text-[var(--rhc-primary)]">{group.section}</p>
-              <div className="mt-2 space-y-1">
-                {items.map(([label, href]) => {
-                  const current = label === active || href === routeFor.get(active || '');
-                  return (
-                    <Link key={label} href={href} className={`flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-semibold transition ${current ? 'bg-[var(--rhc-accent-soft)] text-[var(--rhc-heading)] ring-1 ring-[rgba(212,175,55,.28)]' : 'text-[var(--rhc-secondary-text)] hover:bg-[var(--rhc-surface-secondary)] hover:text-[var(--rhc-heading)]'}`}>
-                      <span>{label}</span>
-                      <span className={`h-1.5 w-1.5 rounded-full ${current ? 'bg-[var(--rhc-primary)]' : 'bg-transparent'}`} />
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
-      </nav>
+      <GroupedAdminNavigation activeHref={activeHref} capabilities={capabilities} />
     </aside>
+  );
+}
+
+export function AdminShell({
+  title,
+  activeHref,
+  children,
+}: {
+  title: string;
+  activeHref: string;
+  children: ReactNode;
+}) {
+  const { dataMode } = useRuntime();
+  const capabilityResource = useAdminCapabilities();
+  const capabilities = !capabilityResource.loading && !capabilityResource.error ? capabilityResource.data : undefined;
+  const authorized = canAccessAdminRoute(capabilities, activeHref);
+  // A successful write triggers background capability refresh before its caller resumes.
+  // Keep the workspace instance alive but hidden/inert until fresh authority is confirmed.
+  const retainWorkspace = !capabilityResource.error && canAccessAdminRoute(capabilityResource.data, activeHref);
+  const availabilityPath = activeHref === '/' ? '/admin/dashboard'
+    : ['/verification', '/rhc-digital-ids'].includes(activeHref) ? '/admin/customers'
+    : activeHref === '/amica-tower-inventory' ? '/admin/properties'
+    : activeHref === '/reports' ? '/admin/audit-logs'
+    : '/admin' + activeHref;
+  const availability = getRequestAvailability(dataMode, availabilityPath);
+  const commandItems = adminNavGroups.flatMap((group) =>
+    group.items
+      .filter(([, href]) => canAccessAdminRoute(capabilities, href))
+      .map(([label, href]) => ({ label, href, group: group.section })),
+  );
+  return (
+    <Web3Shell variant="admin">
+      <a className="rhc-skip-link" href="#admin-main-content">
+        Skip to main content
+      </a>
+      <AdminSidebar activeHref={activeHref} capabilities={capabilities} />
+      <div className="min-h-screen lg:pl-80">
+        <header className="sticky top-0 z-20 border-b border-[var(--rhc-border)] bg-[var(--rhc-bg)] px-5 py-4 backdrop-blur-xl md:px-8">
+          <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4">
+            <div>
+              <nav aria-label="Breadcrumb" className="rhc-eyebrow flex items-center gap-2">
+                <Link href="/" className="hover:text-[var(--rhc-heading)]">RHC Admin</Link>
+                <span aria-hidden="true">/</span>
+                <span aria-current="page">{title}</span>
+              </nav>
+              <h1 className="mt-1 text-2xl font-black text-[var(--rhc-heading)] md:text-3xl">
+                {title}
+              </h1>
+            </div>
+            <div className="flex items-center gap-3">
+              <CommandMenu label="Navigate" items={commandItems} />
+              <ThemeToggle />
+              <SignOutButton />
+            </div>
+          </div>
+          <div className="mx-auto mt-4 max-w-7xl lg:hidden">
+            <GroupedAdminNavigation activeHref={activeHref} capabilities={capabilities} mobile />
+          </div>
+        </header>
+        <div
+          id="admin-main-content"
+          tabIndex={-1}
+          className="mx-auto max-w-7xl px-5 py-6 md:px-8 md:py-8"
+        >
+          <ResourceStatus {...capabilityResource} />
+          {capabilities && !authorized ? <EmptyState title="No administrative access" description="Your account has no permission for this module. The API remains authoritative for every resource request." /> : null}
+          {retainWorkspace ? <div hidden={capabilityResource.loading} inert={capabilityResource.loading}>{availability.available ? children : <UnavailableFeature unavailable={availability} title={title} />}</div> : null}
+        </div>
+      </div>
+    </Web3Shell>
   );
 }
 
@@ -1155,46 +1451,24 @@ export function AdminModule({
   title,
   resource,
   amicaOnly,
+  children,
 }: {
   title: string;
   resource: string;
   amicaOnly?: boolean;
+  children?: ReactNode;
 }) {
-  const capabilities = useAdminCapabilities();
-  const requiredPermission = resourcePermissions[resource];
-  const route = routeFor.get(title);
-  const visible = visibleModules(capabilities.data);
-  const authorized = Boolean((route && visible.some((module) => module.path === route)) || (!route && requiredPermission && capabilities.data?.permissions.includes(requiredPermission)));
+  const activeHref = routeFor.get(title) || `/${resource}`;
   return (
-    <Web3Shell variant="admin">
-      <AdminSidebar active={title} modules={visible} />
-      <section className="min-h-screen lg:pl-80">
-        <header className="sticky top-0 z-20 border-b border-[var(--rhc-border)] bg-[var(--rhc-bg)] px-5 py-4 backdrop-blur-xl md:px-8">
-          <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4">
-            <div>
-              <p className="rhc-eyebrow">RHC Digital Admin</p>
-              <h1 className="mt-1 text-2xl font-black text-[var(--rhc-heading)] md:text-3xl">{title}</h1>
-            </div>
-            <div className="flex items-center gap-3">
-              <Link href="/" className="rounded-xl border border-[var(--rhc-border)] px-3 py-2 text-sm font-semibold text-[var(--rhc-secondary-text)] hover:bg-[var(--rhc-surface-secondary)] hover:text-[var(--rhc-heading)]">Command Center</Link>
-              <ThemeToggle />
-              <SignOutButton />
-            </div>
-          </div>
-          <nav aria-label="Mobile admin modules" className="mx-auto mt-4 flex max-w-7xl gap-2 overflow-x-auto pb-1 lg:hidden">
-            <AdminNavigation capabilities={capabilities.data} className="flex gap-2" linkClassName="whitespace-nowrap rounded-full border border-[var(--rhc-border)] bg-[var(--rhc-surface-secondary)] px-3 py-2 text-xs font-bold text-[var(--rhc-secondary-text)]" />
-          </nav>
-        </header>
-        <main className="mx-auto max-w-7xl px-5 py-6 md:px-8 md:py-8">
-          <ResourceStatus {...capabilities} />
-          {capabilities.data && !authorized ? <EmptyState title="No administrative access" description="Your account has no permission for this module. The API remains authoritative for every resource request." /> : null}
-          {capabilities.data && authorized ? <Card className="rhc-card-token" title={`${title} Workspace`}>
-            <p className="mb-5 text-sm leading-6 text-[var(--rhc-muted)]">Search, filter, review, and manage records according to your server-enforced permissions. Actions remain permission-aware and server-authorized.</p>
-            <AdminTable resource={resource} amicaOnly={amicaOnly} />
-          </Card> : null}
-        </main>
-      </section>
-    </Web3Shell>
+    <AdminShell title={title} activeHref={activeHref}>
+      {children}
+      <Card className="rhc-card-token" title={`${title} Workspace`}>
+        <p className="mb-5 text-sm leading-6 text-[var(--rhc-muted)]">
+          Search, filter, review, and manage records according to your server-enforced permissions.
+        </p>
+        <AdminTable resource={resource} amicaOnly={amicaOnly} />
+      </Card>
+    </AdminShell>
   );
 }
 const metrics = [
@@ -1208,6 +1482,7 @@ const metrics = [
   ['auditCount', 'Security/audit'],
 ] as const;
 export function AdminMetrics() {
+  const { dataMode } = useRuntime();
   const resource = useResource<Record<string, number>>('/admin/dashboard');
   return (
     <>
@@ -1223,7 +1498,7 @@ export function AdminMetrics() {
                   ? String(resource.data[key])
                   : 'Not available'
               }
-              detail="Current API records"
+              detail={dataMode === 'demo' ? 'Synthetic demo records' : 'Current API records'}
             />
           ))}
         </div>

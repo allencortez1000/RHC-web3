@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "paths": {
+      "@rhc/types": ["packages/types/dist"],
+      "@rhc/types/*": ["packages/types/dist/*"]
+    }
+  },
+  "include": ["src/**/*.ts"]
+}

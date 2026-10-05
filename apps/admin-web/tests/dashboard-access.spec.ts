@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './offline-test';
 import { apiUrl, installFixtures } from '../../customer-web/tests/fixtures';
 
 for (const path of ['/', '/dashboard'] as const) {

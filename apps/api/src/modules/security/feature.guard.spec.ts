@@ -29,6 +29,7 @@ describe('Month 1 feature policy', () => {
     const findUnique = jest.fn().mockResolvedValue({ enabled: true, scope: 'GLOBAL' });
     const service = new FeatureService({ featureFlag: { findUnique } } as any);
 
+    await expect(service.isEnabled(key)).resolves.toBe(false);
     await expect(service.require(key)).rejects.toBeInstanceOf(ForbiddenException);
     expect(findUnique).toHaveBeenCalledWith({ where: { key }, select: { enabled: true, scope: true } });
   });

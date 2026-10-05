@@ -29,11 +29,15 @@ import { SupabaseJwtService } from './security/supabase-jwt.service';
 import { ApplicationUserService } from './security/application-user.service';
 import { AuthGuard } from './security/auth.guard';
 import { PermissionGuard } from './security/permission.guard';
+import { Web3Module } from './web3/web3.module';
+import { Web3Controller, ThirdwebIntegrationController } from './web3/web3.controller';
+
 import { StructuredLogger } from '../platform/structured-logger';
 import { CONSENT_POLICY_CONFIG, ConsentPolicyService } from './security/consent-policy.service';
 
 @Module({
-  controllers: [AuthController, MeController, CustomerReservationsController, ConsentController, DirectoryController, AdminController, AdminReservationsController, CapabilitiesController, HealthController, ApiClientsController, CompanyApiController, InternalIntegrationController, ManagementController],
+  imports: [Web3Module],
+  controllers: [Web3Controller, ThirdwebIntegrationController, AuthController, MeController, CustomerReservationsController, ConsentController, DirectoryController, AdminController, AdminReservationsController, CapabilitiesController, HealthController, ApiClientsController, CompanyApiController, InternalIntegrationController, ManagementController],
   providers: [PrismaService, RbacService, AuditService, EventsService, RhcIdService, ReservationsService, SupabaseJwtService, ApplicationUserService, AuthGuard, PermissionGuard, FeatureService, RateLimitStore, CompanyApiKeyService, CompanyApiGuard, InternalIntegrationService, ConsentPolicyService,
     { provide: CONSENT_POLICY_CONFIG, useValue: [] },
     { provide: APP_GUARD, useClass: RateLimitGuard },

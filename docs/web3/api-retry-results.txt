@@ -1,0 +1,25 @@
+
+> @rhc/api@0.1.0 test
+> jest --runInBand
+
+PASS test/web3-boundary.spec.ts (5.273 s)
+PASS test/proxy-rate-limit.spec.ts
+PASS test/web3-feature.spec.ts
+PASS src/modules/security/supabase-jwt.service.spec.ts
+PASS src/modules/identity/rhc-id.service.spec.ts
+PASS test/env-startup.spec.ts
+PASS test/authenticated-rate-limit.spec.ts
+PASS test/management-security.spec.ts
+PASS test/bootstrap-admin.spec.ts
+PASS test/platform-security.spec.ts
+PASS test/env-config.spec.ts
+PASS src/modules/reservations/reservations.service.spec.ts
+PASS src/modules/security/application-user.service.spec.ts
+PASS src/modules/security/rbac.service.spec.ts
+PASS src/modules/security/redaction.spec.ts
+
+Test Suites: 15 passed, 15 total
+Tests:       252 passed, 252 total
+Snapshots:   0 total
+Time:        11.366 s, estimated 13 s
+Ran all test suites.

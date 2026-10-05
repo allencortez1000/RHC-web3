@@ -1,5 +1,5 @@
-import { DigitalIdPage } from '../components/digital-id-page';
+import { redirect } from 'next/navigation';
 
 export default function Page() {
-  return <DigitalIdPage />;
+  redirect('/digital-id');
 }

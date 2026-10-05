@@ -16,9 +16,12 @@ jobs:
       CI: 'true'
       NEXT_TELEMETRY_DISABLED: '1'
       # Public, synthetic fixtures only; browser tests intercept the provider/API.
-      NEXT_PUBLIC_API_URL: http://127.0.0.1:3001/api/v1
+      NEXT_PUBLIC_RHC_DATA_MODE: api
+      NEXT_PUBLIC_API_URL: http://127.0.0.1:43101/api/v1
+      NEXT_PUBLIC_CUSTOMER_WEB_URL: http://127.0.0.1:43102
+      NEXT_PUBLIC_ADMIN_WEB_URL: http://127.0.0.1:43103
       NEXT_PUBLIC_SUPABASE_URL: https://rhc-e2e.supabase.co
-      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_fixture
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: synthetic-public-e2e-key
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

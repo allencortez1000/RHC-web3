@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { expect, type Page } from '@playwright/test';
 
 // Only synthetic identities and browser-intercepted endpoints are used by these journeys.
-export const apiUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api/v1').replace(
+export const apiUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:43101/api/v1').replace(
   /\/$/,
   '',
 );
@@ -61,7 +61,7 @@ export async function installFixtures(
 ) {
   await page.route('**/*', (route) => {
     const origin = new URL(route.request().url()).origin;
-    return ['http://127.0.0.1:3000', 'http://127.0.0.1:3002', 'http://127.0.0.1:3003'].includes(origin)
+    return ['http://127.0.0.1:43102', 'http://127.0.0.1:43103'].includes(origin)
       ? route.continue()
       : route.abort('blockedbyclient');
   });
@@ -317,7 +317,21 @@ export async function installFixtures(
         status: 401,
         json: { success: false, error: { code: 'UNAUTHORIZED', message: 'Authentication required' } },
       });
-    if (path === '/auth/session') return ok({ authenticated: true, user: account });
+    if (path === '/auth/session') {
+      const adminApp = new URL(page.url()).origin === 'http://127.0.0.1:43103';
+      return ok({
+        authenticated: true,
+        user: adminApp
+          ? {
+              ...account,
+              is_admin: true,
+              role: 'SYSTEM_ADMIN',
+              roles: ['SYSTEM_ADMIN'],
+              permissions: ['company.view', 'company.manage', 'user.view', 'user.manage'],
+            }
+          : account,
+      });
+    }
     if (path === '/me') {
       if (method === 'PATCH') {
         const identityLocked =
@@ -496,10 +510,11 @@ export async function installFixtures(
     options,
   };
 }
-export async function signIn(page: Page, destination: RegExp = /\/dashboard$/) {
+export async function signIn(page: Page, destination?: RegExp) {
   await page.goto('/login');
+  const adminApp = new URL(page.url()).origin === 'http://127.0.0.1:43103';
   await page.getByLabel('Email address').fill(user.email);
   await page.getByLabel('Password', { exact: true }).fill('Synthetic-password-42!');
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
-  await expect(page).toHaveURL(destination);
+  await expect(page).toHaveURL(destination ?? (adminApp ? /:43103[/]$/ : /[/]dashboard$/));
 }

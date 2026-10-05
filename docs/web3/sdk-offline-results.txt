@@ -1,0 +1,9 @@
+﹣ offline readSdkSnapshot with installed thirdweb SDK (4.9993ms) # BLOCKED: thirdweb 5.121.6 dependency unavailable/incomplete (MODULE_NOT_FOUND: Cannot find module 'thirdweb'). Actual installed SDK validation pending; no SDK assertions ran.
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 1
+ℹ todo 0
+ℹ duration_ms 166.275

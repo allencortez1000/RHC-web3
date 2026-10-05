@@ -1,4 +1,4 @@
-import { test, expect, type Locator, type Page, type Request } from '@playwright/test';
+import { test, expect, type Locator, type Page, type Request } from './offline-test';
 import { approvalBlockReason } from '../app/verification-review';
 import { apiUrl, installFixtures, signIn, token } from '../../customer-web/tests/fixtures';
 

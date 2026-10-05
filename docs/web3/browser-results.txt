@@ -1,0 +1,50 @@
+▶ isolated read-only Web3 browser coverage
+  ✔ public roadmap neither reads nor renders the preview (426.5343ms)
+  ✔ authenticated direct customer visit reads synthetic data and clears on logout (352.9683ms)
+  ✔ customer preview excludes staff (354.6677ms)
+  ✔ customer preview excludes inactive accounts (346.7609ms)
+  ✔ permission denial never mounts the admin reader (356.0153ms)
+  ✔ admin scopes fail closed: {"company_ids":["company-a"]} (248.1182ms)
+  ✔ admin scopes fail closed: {"project_ids":["project-a"]} (247.9995ms)
+  ✔ admin scopes fail closed: {} (254.6333ms)
+  ✔ admin scopes fail closed: {} (327.1964ms)
+  ✔ admin read errors support Tab/Enter retry without inferring health (416.3432ms)
+  ✔ customer reader announces loading until its intercepted resource is released (434.736ms)
+  ✔ admin reader announces loading until its intercepted resource is released (340.6689ms)
+  ✔ explorer is keyboard reachable and activation is prevented without navigation (397.9728ms)
+  ✔ untrusted token metadata renders as inert text, never markup or executable code (324.9012ms)
+  ✔ customer dark preview lays out with compiled app CSS at 390px and 768px (389.1845ms)
+  ✔ customer light preview lays out with compiled app CSS at 390px and 768px (396.5449ms)
+  ✔ admin dark preview lays out with compiled app CSS at 390px and 768px (336.1728ms)
+  ✔ admin light preview lays out with compiled app CSS at 390px and 768px (318.635ms)
+  ✔ partial fields preserve exact supply and never invent cap or paused values (368.1454ms)
+  ✔ absent disabled/disabled outcome is not healthy from configuration (333.5171ms)
+  ✔ absent thirdweb_testnet/disabled outcome is not healthy from configuration (275.4619ms)
+  ✔ absent thirdweb_testnet/not_configured outcome is not healthy from configuration (292.0851ms)
+  ✔ absent thirdweb_testnet/unavailable outcome is not healthy from configuration (253.0386ms)
+  ✔ testnet fresh/null observation shows timestamps, false/zero, and observed-only finality (298.9122ms)
+  ✔ testnet stale/READ_TIMEOUT observation shows timestamps, false/zero, and observed-only finality (289.2952ms)
+  ✔ testnet stale/REFRESH_REQUIRED observation shows timestamps, false/zero, and observed-only finality (304.0295ms)
+  ✔ explorer is not linked for synthetic: https://sepolia.etherscan.io/address/fixture (265.6715ms)
+  ✔ explorer is not linked for disabled: https://sepolia.etherscan.io/address/fixture (244.1518ms)
+  ✔ explorer is not linked for thirdweb_testnet: null (257.5994ms)
+  ✔ explorer is not linked for thirdweb_testnet: not a URL (255.6928ms)
+  ✔ explorer is not linked for thirdweb_testnet: //sepolia.etherscan.io/address/fixture (260.712ms)
+  ✔ explorer is not linked for thirdweb_testnet: http://sepolia.etherscan.io/address/fixture (253.2609ms)
+  ✔ explorer is not linked for thirdweb_testnet: javascript:alert(1) (244.6722ms)
+  ✔ explorer is not linked for thirdweb_testnet: data:text/html,fixture (251.7595ms)
+  ✔ explorer is not linked for thirdweb_testnet: https://user:password@sepolia.etherscan.io/address/fixture (256.1636ms)
+  ✔ explorer is not linked for thirdweb_testnet: https://user@sepolia.etherscan.io/address/fixture (253.2699ms)
+  ✔ explorer is not linked for thirdweb_testnet: https://:password@sepolia.etherscan.io/address/fixture (244.8058ms)
+  ✔ explorer origin comes from the server result, not a client chain allowlist (274.4734ms)
+  ✔ server denial remains an error, never a fixture fallback (229.7135ms)
+  ✔ changing session removes previously visible customer data (238.3016ms)
+✔ isolated read-only Web3 browser coverage (12646.7908ms)
+ℹ tests 41
+ℹ suites 0
+ℹ pass 41
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 12650.9938

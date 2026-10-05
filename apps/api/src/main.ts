@@ -20,7 +20,16 @@ export async function bootstrap() {
   configureTrustedProxy(app, env);
   app.use(helmet());
   const configuredOrigins = env.CORS_ORIGINS.split(',').map((origin) => origin.trim()).filter(Boolean);
-  const localOrigins = env.NODE_ENV === 'development' ? ['http://localhost:3000', 'http://localhost:3002', 'http://localhost:3003'] : [];
+  const localOrigins =
+    env.NODE_ENV === 'development'
+      ? [
+          'http://localhost:3000',
+          'http://localhost:3002',
+          'http://localhost:3003',
+          'http://127.0.0.1:3002',
+          'http://127.0.0.1:3003',
+        ]
+      : [];
   const allowedOrigins = [...new Set([...configuredOrigins, ...localOrigins])];
   app.enableCors({ origin: allowedOrigins, credentials: true });
   app.setGlobalPrefix('api/v1');

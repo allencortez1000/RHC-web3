@@ -1,0 +1,40 @@
+
+> rhc-digital@0.1.0 test:demo:store
+> node scripts/demo-store-test.mjs
+
+✔ initializes a missing store once and persists mutations across module evaluation (54.0851ms)
+✔ preserves malformed and unsupported bytes until an explicit confirmed reset (30.7636ms)
+✔ does not commit a failed mutation or silently reseed a missing initialized store (14.0445ms)
+✔ serializes one-shot failures so exactly one concurrent request consumes the control (33.1336ms)
+✔ returns fresh seeded worlds instead of sharing nested fixture arrays (3.7465ms)
+✔ Web3 fixture is locally constructed, import-free at runtime, and returns independent observations (1.0956ms)
+✔ Web3 demo reads require a customer or global integration.view and never change the world (174.3553ms)
+✔ Web3 demo admin endpoint checks integration.view, not merely staff status (32.5146ms)
+✔ reward commands isolate customers/actions, reject changed retries, and preserve one debit (214.6704ms)
+✔ confirmed customer cancellation releases inventory and records the actual previous state (113.9797ms)
+✔ a posted payment can have only one append-only reversal (104.9017ms)
+✔ credential shortcuts reject non-string credentials without creating sessions (78.9472ms)
+✔ disabled accounts cannot reuse or create a persona session (91.102ms)
+✔ public verification derives expiry without leaking private customer fields (97.8832ms)
+✔ scoped staff cannot bypass catalog scope through customer catalog routes (127.9962ms)
+✔ posted ledger totals ignore pending/reversed/expired entries and concurrent redemption cannot overspend (134.8929ms)
+✔ repeated concurrent credits append once and response objects cannot mutate persisted ledger state (120.5323ms)
+✔ sessions use wall-clock expiry, revoke on logout/reset, and revalidate queued mutations (134.7036ms)
+✔ customer IDs and nested resource IDs cannot cross customer ownership (140.5302ms)
+✔ auditor denies writes across workflow families without changing durable records (102.0122ms)
+✔ identity audit is RHC scoped; deleted catalog records retain scope and request correlation (132.1962ms)
+✔ service requests reject disabled services and expired resident links (99.5366ms)
+✔ document versions cannot branch from a stale version with a fresh command key (113.009ms)
+✔ consent decisions require an explicit boolean (100.3525ms)
+✔ a scoped auditor sees only company/project evidence and still cannot mutate it (106.4657ms)
+✔ HTTP route boundary enforces hosts/origins, opaque disabled profiles, headers, and audit correlation offline (293.5987ms)
+✔ identity issuance is unique and retry-stable after separate review; admin cannot bypass eligibility (141.8815ms)
+✔ profile changes validate types and persist only redacted audit values (94.9769ms)
+ℹ tests 28
+ℹ suites 0
+ℹ pass 28
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2897.7838

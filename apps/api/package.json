@@ -13,6 +13,7 @@
     "@rhc/config": "0.1.0",
     "@rhc/shared": "0.1.0",
     "@rhc/types": "0.1.0",
+        "@rhc/web3": "0.1.0",
     "@rhc/validation": "0.1.0",
     "@upstash/redis": "^1.34.3",
     "helmet": "^7.1.0",

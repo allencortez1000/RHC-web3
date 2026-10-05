@@ -28,6 +28,62 @@ export class RbacService {
     });
   }
 
+  async capabilities(userId: string) {
+    const assignments = await this.prisma.userRole.findMany({
+      where: {
+        user_id: userId,
+        user: { account_status: 'ACTIVE' },
+        OR: [{ expires_at: null }, { expires_at: { gt: new Date() } }],
+        role: { code: { not: 'CUSTOMER' } },
+      },
+      select: {
+        company_id: true,
+        project_id: true,
+        expires_at: true,
+        role: {
+          select: {
+            code: true,
+            company_id: true,
+            role_permissions: { select: { permission: { select: { code: true } } } },
+          },
+        },
+        project: { select: { company_id: true } },
+      },
+    });
+    const valid = assignments.filter((assignment) => {
+      if (assignment.role.code === 'CUSTOMER') return false;
+      const company = assignment.company_id ?? assignment.role.company_id ?? assignment.project?.company_id ?? null;
+      if (assignment.expires_at && assignment.expires_at <= new Date()) return false;
+      if (assignment.role.company_id && assignment.role.company_id !== company) return false;
+      if (assignment.project_id && (!assignment.project || assignment.project.company_id !== company)) return false;
+      return true;
+    });
+    return {
+      is_admin: valid.length > 0,
+      roles: [...new Set(valid.map((assignment) => assignment.role.code))].sort(),
+      permissions: [
+        ...new Set(
+          valid.flatMap((assignment) =>
+            assignment.role.role_permissions.map((grant) => grant.permission.code),
+          ),
+        ),
+      ].sort(),
+      company_ids: [
+        ...new Set(
+          valid
+            .map(
+              (assignment) =>
+                assignment.company_id ?? assignment.role.company_id ?? assignment.project?.company_id,
+            )
+            .filter((value): value is string => Boolean(value)),
+        ),
+      ].sort(),
+      project_ids: [
+        ...new Set(valid.map((assignment) => assignment.project_id).filter((value): value is string => Boolean(value))),
+      ].sort(),
+    };
+  }
+
   async hasPermission(userId: string, permission: string, companyId?: string, projectId?: string, dbClient: RbacDbClient = this.prisma): Promise<boolean> {
     return (await this.grants(userId, permission, dbClient)).some((g) => (!g.company_id || g.company_id === companyId) && (!g.project_id || g.project_id === projectId));
   }

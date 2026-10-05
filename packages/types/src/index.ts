@@ -1,3 +1,5 @@
+export type { Web3Field, Web3TokenData, Web3ReadResult } from './web3';
+
 export const COMPANY_CODES = [
   'RHC',
   'AMICA_CONDO',
@@ -109,7 +111,10 @@ export type DomainEventType =
   | 'ROLE.ASSIGNED'
   | 'INTEGRATION.UPDATED';
 
+export * from './demo';
+
 export type FeatureFlagKey =
+  | 'ENABLE_WEB3_READ_PREVIEW'
   | 'ENABLE_REGISTRATION'
   | 'ENABLE_RHC_ID'
   | 'ENABLE_PROPERTIES'

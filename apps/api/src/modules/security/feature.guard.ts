@@ -25,10 +25,15 @@ export function assertFeatureMutationAllowed(key: string, enabled: boolean): voi
 @Injectable()
 export class FeatureService {
   constructor(private readonly prisma: PrismaService) {}
+  async isEnabled(key: string): Promise<boolean> {
+    // Read-preview is deployment configuration, not a DB grant or token activation.
+    if (key === 'ENABLE_WEB3_READ_PREVIEW') return process.env.ENABLE_WEB3_READ_PREVIEW === 'true';
+    const flag = await this.prisma.featureFlag.findUnique({ where: { key }, select: { enabled: true, scope: true } });
+    return !MONTH_1_LOCKED_FEATURES.has(key) && flag?.enabled === true && flag.scope === 'GLOBAL';
+  }
 
   async require(key: string) {
-    const flag = await this.prisma.featureFlag.findUnique({ where: { key }, select: { enabled: true, scope: true } });
-    if (MONTH_1_LOCKED_FEATURES.has(key) || !flag?.enabled || flag.scope !== 'GLOBAL') throw new ForbiddenException('Feature is disabled');
+    if (!await this.isEnabled(key)) throw new ForbiddenException('Feature is disabled');
   }
 }
 

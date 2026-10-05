@@ -46,7 +46,7 @@ export default function Page() {
           <Card title="Profile Information">
             <ProfileEditor
               me={resource.data}
-              saved={() => {
+              savedAction={() => {
                 setSaved(true);
                 resource.reload();
               }}

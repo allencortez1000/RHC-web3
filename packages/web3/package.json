@@ -1,0 +1,17 @@
+{
+  "name": "@rhc/web3",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": { ".": { "types": "./dist/index.d.ts", "node": "./dist/index.js" } },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint src --ext .ts",
+    "test": "npm run build && node --test test/*.test.cjs",
+        "test:offline": "tsc -p tsconfig.offline.json && node --test test/readonly.test.cjs",
+    "test:network": "npm run build && node scripts/testnet-read.cjs"
+  },
+  "dependencies": { "@rhc/types": "0.1.0", "thirdweb": "5.121.6" }
+}

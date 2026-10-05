@@ -51,6 +51,7 @@ export type Notification = {
   channel: string;
   status: string;
   created_at: string;
+  href?: string;
 };
 export function fullName(me?: Me) {
   return (
@@ -215,13 +216,42 @@ export function LinkedProperties({ compact = false }: { compact?: boolean }) {
 }
 export function Notifications() {
   const resource = useResource<Notification[]>('/me/notifications');
+  const { request } = useRuntime();
+  const [busy, setBusy] = useState('');
+  const [error, setError] = useState('');
+  const unread = resource.data?.filter((item) => item.status === 'Unread').length || 0;
+
+  async function markRead(id?: string) {
+    if (busy) return;
+    setBusy(id || 'all');
+    setError('');
+    try {
+      await request(id ? `/me/notifications/${encodeURIComponent(id)}/read` : '/me/notifications/read-all', {
+        method: 'POST',
+        body: JSON.stringify({}),
+      });
+      resource.reload();
+    } catch (cause) {
+      setError(errorMessage(cause));
+    } finally {
+      setBusy('');
+    }
+  }
+
   return (
     <div className="space-y-3">
       <ResourceStatus {...resource} />
+      {unread > 0 ? (
+        <div className="flex items-center justify-between gap-3 rounded-xl border border-[var(--rhc-border)] bg-[var(--rhc-surface-secondary)] p-3">
+          <p className="text-sm font-semibold text-[var(--rhc-heading)]">{unread} unread {unread === 1 ? 'notification' : 'notifications'}</p>
+          <Web3Button variant="secondary" disabled={Boolean(busy)} onClick={() => void markRead()}>{busy === 'all' ? 'Updating…' : 'Mark all read'}</Web3Button>
+        </div>
+      ) : null}
+      {error ? <p role="alert" className="text-sm text-[var(--rhc-danger)]">{error}</p> : null}
       {resource.data &&
         (resource.data.length ? (
           resource.data.map((item) => (
-            <div
+            <article
               key={item.id}
               className="rounded-lg border border-[var(--rhc-border)] bg-[var(--rhc-surface-secondary)] p-4"
             >
@@ -232,12 +262,16 @@ export function Notifications() {
                     {item.body}
                   </p>
                   <time className="mt-2 block text-xs" dateTime={item.created_at}>
-                    {new Date(item.created_at).toLocaleString()}
+                    {new Date(item.created_at).toLocaleString('en-PH', { timeZone: 'Asia/Manila' })}
                   </time>
                 </div>
-                <Badge tone="info">{item.status}</Badge>
+                <Badge tone={item.status === 'Unread' ? 'info' : 'neutral'}>{item.status}</Badge>
               </div>
-            </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {item.href ? <Web3Button href={item.href} variant="secondary">Open record</Web3Button> : null}
+                {item.status === 'Unread' ? <Web3Button variant="tertiary" disabled={Boolean(busy)} onClick={() => void markRead(item.id)}>{busy === item.id ? 'Updating…' : 'Mark read'}</Web3Button> : null}
+              </div>
+            </article>
           ))
         ) : (
           <EmptyState
@@ -262,7 +296,7 @@ const fields = [
   ['postal_code', 'Postal code', 32],
   ['country', 'Country', 80],
 ] as const;
-export function ProfileEditor({ me, saved }: { me: Me; saved: () => void }) {
+export function ProfileEditor({ me, savedAction }: { me: Me; savedAction: () => void }) {
   const { request } = useRuntime();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -294,7 +328,7 @@ export function ProfileEditor({ me, saved }: { me: Me; saved: () => void }) {
     setError('');
     try {
       await request('/me', { method: 'PATCH', body: JSON.stringify(body) });
-      saved();
+      savedAction();
     } catch (cause) {
       setError(errorMessage(cause));
     } finally {
@@ -402,7 +436,7 @@ export function DirectoryCards({ path }: { path: string }) {
                     {item.description || 'No description provided.'}
                   </p>
                   <div className="mt-5">
-                    <Web3Button variant="secondary">Transactions coming soon</Web3Button>
+                    <Web3Button variant="secondary">Future transaction features unavailable</Web3Button>
                   </div>
                 </div>
               </Card>

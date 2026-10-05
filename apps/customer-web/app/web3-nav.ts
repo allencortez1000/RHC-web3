@@ -29,7 +29,7 @@ export const customerNavItems = [
 
 const activeAliases: Record<string, string[]> = {
   Dashboard: ['Dashboard'],
-  'My RHC Account': ['My RHC Account', 'RHC Digital ID'],
+  'My RHC Account': ['My RHC Account'],
   'Explore Properties': ['Properties', 'Property Details'],
   'My Properties': ['My Properties'],
   Reservations: ['Reservations'],
@@ -47,7 +47,7 @@ const activeAliases: Record<string, string[]> = {
   Security: ['Security'],
   Settings: ['Settings'],
   Help: ['Help'],
-  'Blockchain & Token': ['Blockchain', 'RHC Wallet', 'RHC Token', 'Transactions', 'Future Technology'],
+  'Blockchain & Token': ['Blockchain', 'RHC Wallet', 'RHC Token', 'Transactions', 'Future Technology', 'Digital Assets', 'Digital Assets & Blockchain Activity'],
   'White Paper': ['White Paper'],
 };
 

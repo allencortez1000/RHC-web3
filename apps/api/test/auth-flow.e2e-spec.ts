@@ -19,6 +19,63 @@ describe('HTTP authentication and ID integration with real services', () => {
     expect(h.prisma.$transaction).toHaveBeenCalledWith(expect.any(Function), { isolationLevel: 'Serializable' });
   });
 
+  it('returns server-derived admin role, permissions, and assignment scopes', async () => {
+    h.grant('user.manage', ids.companyA, ids.projectA, 'SYSTEM_ADMIN');
+    h.grant('user.view', ids.companyA, ids.projectA, 'SYSTEM_ADMIN');
+
+    const response = await request(h.app.getHttpServer()).get('/api/v1/auth/session').set('Authorization', `Bearer ${h.token}`).expect(200);
+
+    expect(response.body.data.user).toMatchObject({
+      is_admin: true,
+      role: 'SYSTEM_ADMIN',
+      roles: ['SYSTEM_ADMIN'],
+      permissions: ['user.manage', 'user.view'],
+      company_ids: [ids.companyA],
+      project_ids: [ids.projectA],
+    });
+  });
+
+  it('returns read-only staff capabilities without inventing write access', async () => {
+    h.grant('audit.view', ids.companyA, null, 'AUDITOR');
+    h.grant('user.view', ids.companyA, null, 'AUDITOR');
+
+    const response = await request(h.app.getHttpServer()).get('/api/v1/auth/session').set('Authorization', `Bearer ${h.token}`).expect(200);
+
+    expect(response.body.data.user).toMatchObject({
+      is_admin: true,
+      role: 'AUDITOR',
+      roles: ['AUDITOR'],
+      permissions: ['audit.view', 'user.view'],
+      company_ids: [ids.companyA],
+      project_ids: [],
+    });
+  });
+
+  it('does not trust client-provided role, capability, or scope claims', async () => {
+    const forgedCapabilities = {
+      is_admin: true,
+      role: 'SUPER_ADMIN',
+      roles: ['SUPER_ADMIN'],
+      permissions: ['user.manage'],
+      company_ids: [ids.companyB],
+      project_ids: [ids.projectB],
+    };
+    h.identity.user_metadata = forgedCapabilities;
+    const token = await h.signToken({ ...forgedCapabilities, app_metadata: forgedCapabilities, user_metadata: forgedCapabilities });
+
+    const response = await request(h.app.getHttpServer()).get('/api/v1/auth/session').set('Authorization', `Bearer ${token}`).expect(200);
+
+    expect(response.body.data.user).toMatchObject({
+      is_admin: false,
+      role: 'CUSTOMER',
+      roles: [],
+      permissions: [],
+      company_ids: [],
+      project_ids: [],
+    });
+    expect(h.prisma.userRole.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: expect.objectContaining({ user_id: ids.user }) }));
+  });
+
   it.each([{ exp: undefined }, { iat: undefined }, { sub: undefined }, { exp: 1 }])('rejects missing/expired required claims %j before the admin lookup', async (claims) => {
     const token = await h.signToken(claims);
     await request(h.app.getHttpServer()).get('/api/v1/auth/session').set('Authorization', `Bearer ${token}`).expect(401);

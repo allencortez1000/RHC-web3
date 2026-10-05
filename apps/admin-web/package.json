@@ -20,6 +20,7 @@
   },
   "scripts": {
     "dev": "next dev -p 3003",
+    "dev:demo": "next dev -p 3003 -H 127.0.0.1",
     "build": "next build",
     "start": "next start -p 3003",
     "typecheck": "tsc -p tsconfig.json --noEmit",
