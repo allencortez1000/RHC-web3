@@ -76,7 +76,7 @@ const explorerFixture = {
 // Every browser request is fulfilled or blocked in-memory, including the document.
 // No listener, Next build, demo store, Supabase, API, or provider is contacted.
 test('isolated read-only Web3 browser coverage', { timeout: 60000 }, async (t) => {
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({ headless: true, args: ['--host-resolver-rules=MAP * ~NOTFOUND'] });
   try {
     const visit = async (options = {}) => {
       const page = await browser.newPage({ serviceWorkers: 'block', viewport: options.viewport });
@@ -84,7 +84,7 @@ test('isolated read-only Web3 browser coverage', { timeout: 60000 }, async (t) =
       const unexpected = [];
       const errors = [];
       const consoleOutput = [];
-      page.on('pageerror', (error) => errors.push(error.message));
+      page.on('pageerror', (error) => { errors.push(error.message); console.error('Harness page error:', error.message); });
       page.on('console', (message) => consoleOutput.push(message.text()));
       let releaseResource = () => undefined;
       const resourceGate = options.delayResource ? new Promise((resolve) => { releaseResource = resolve; }) : Promise.resolve();
@@ -97,7 +97,7 @@ test('isolated read-only Web3 browser coverage', { timeout: 60000 }, async (t) =
         company_ids: [], project_ids: [],
         ...options.account,
       };
-      await page.route('**/*', async (route) => {
+      await page.context().route('**/*', async (route) => {
         const request = route.request();
         const url = new URL(request.url());
         if (url.origin !== 'http://web3-fixture.test') {
@@ -109,6 +109,24 @@ test('isolated read-only Web3 browser coverage', { timeout: 60000 }, async (t) =
         if (url.pathname === '/harness.js') return route.fulfill({ contentType: 'text/javascript', body: bundle.outputFiles[0].text });
         requests.push({ path: url.pathname, method: request.method(), authorization: request.headers().authorization });
         if (url.pathname === '/api/auth/session') return route.fulfill({ json: { authenticated: true, user: account } });
+        if (url.pathname === '/api/admin/capabilities') {
+          const permissions = account.permissions || [];
+          // Aggregate scope arrays are legacy fixture inputs, not production authority.
+          // Explicit grants let the harness exercise valid mixed-global/scoped accounts.
+          const effectiveGrants = options.grants ?? (
+            !Array.isArray(account.company_ids) || !Array.isArray(account.project_ids) ? []
+            : account.project_ids.length ? account.project_ids.map(project_id => ({ company_id: account.company_ids[0] ?? null, project_id }))
+            : account.company_ids.length ? account.company_ids.map(company_id => ({ company_id, project_id: null }))
+            : [{ company_id: null, project_id: null }]
+          );
+          return route.fulfill({ json: { success: true, data: {
+            permissions,
+            grants: { 'integration.view': permissions.includes('integration.view') ? effectiveGrants : [] },
+            mutation_permissions: [], mutation_grants: {},
+            modules: [{ path: '/integrations', permission: 'integration.view', usable: permissions.includes('integration.view') }],
+          } } });
+        }
+
         if (['/api/web3/token', '/api/admin/integrations/thirdweb'].includes(url.pathname)) {
           await resourceGate;
           if (options.status) return route.fulfill({ status: options.status, json: { message: 'Global read access denied by server.' } });
@@ -119,7 +137,13 @@ test('isolated read-only Web3 browser coverage', { timeout: 60000 }, async (t) =
         return route.abort('blockedbyclient');
       });
       await page.goto(`http://web3-fixture.test/?view=${options.admin ? 'admin' : 'customer'}${options.authenticated ? '&authenticated=1' : ''}`);
-      await expect(page.getByRole('heading', { name: options.admin ? 'Integrations' : 'Public roadmap', exact: true })).toBeVisible();
+      try {
+        await expect(page.getByRole('heading', { name: options.admin ? 'Integrations' : 'Public roadmap', exact: true })).toBeVisible();
+      } catch (cause) {
+        console.error('Harness bootstrap diagnostics:', { errors, unexpected, consoleOutput });
+        await page.context().close();
+        throw cause;
+      }
       return {
         page, requests, releaseResource,
         setAccount: (value) => { account = value; },
@@ -138,6 +162,10 @@ test('isolated read-only Web3 browser coverage', { timeout: 60000 }, async (t) =
         },
       };
     };
+
+    // Fail at bootstrap instead of repeating every behavior check against a broken bundle.
+    const bootstrap = await visit();
+    await bootstrap.finish();
 
     await t.test('public roadmap neither reads nor renders the preview', async () => {
       const view = await visit();
@@ -189,6 +217,17 @@ test('isolated read-only Web3 browser coverage', { timeout: 60000 }, async (t) =
         await view.finish();
       });
     }
+
+    await t.test('mixed global and scoped grants retain authorized server-wide integration access', async () => {
+      const view = await visit({ authenticated: true, admin: true,
+        account: { company_ids: ['company-a'], project_ids: ['project-a'] },
+        grants: [{ company_id: 'company-a', project_id: 'project-a' }, { company_id: null, project_id: null }],
+      });
+      await expect(view.page.getByText(sourceLabels.synthetic, { exact: true })).toBeVisible();
+      assert.ok(view.requests.some(request => request.path === '/api/admin/capabilities' && request.authorization === 'Bearer synthetic-session'));
+      assert.ok(view.requests.some(request => request.path === '/api/admin/integrations/thirdweb' && request.authorization === 'Bearer synthetic-session'));
+      await view.finish();
+    });
 
     await t.test('admin read errors support Tab/Enter retry without inferring health', async () => {
       const view = await visit({ authenticated: true, admin: true, failOnce: true });

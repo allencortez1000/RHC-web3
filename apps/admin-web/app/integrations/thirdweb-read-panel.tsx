@@ -1,7 +1,9 @@
 'use client';
 
 import type { Web3ReadResult } from '@rhc/types';
-import { Card, ResourceStatus, Web3ReadPanel, useResource, useRuntime } from '@rhc/ui';
+import { Card, ResourceStatus, Web3ReadPanel, useResource } from '@rhc/ui';
+import { useAdminCapabilities } from '../admin-capabilities';
+import { globalScope, hasEffectiveGrant } from '../capability-scopes';
 
 function IntegrationReadResult() {
   const resource = useResource<Web3ReadResult>('/admin/integrations/thirdweb');
@@ -18,11 +20,10 @@ function IntegrationReadResult() {
 }
 
 export function ThirdwebReadPanel() {
-  const { user } = useRuntime();
-  if (!user?.permissions?.includes('integration.view')) return null;
-  // Session capabilities flatten grants; scoped or missing scope arrays cannot prove
-  // global integration access. The API remains authoritative for the actual grant.
-  if (user.company_ids?.length !== 0 || user.project_ids?.length !== 0) {
+  const capabilities = useAdminCapabilities();
+  if (capabilities.loading || capabilities.error) return <ResourceStatus {...capabilities} />;
+  if (!capabilities.data?.permissions.includes('integration.view')) return null;
+  if (!hasEffectiveGrant(capabilities.data, 'integration.view', globalScope(), false)) {
     return (
       <Card title="Web3 integration access" className="mb-5">
         <p>Global integration.view access is required for server-wide Web3 configuration. Scoped permissions do not grant access to this read.</p>

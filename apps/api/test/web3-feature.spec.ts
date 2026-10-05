@@ -30,7 +30,9 @@ describe('environment-backed Web3 read-preview flag (offline)', () => {
     await expect(features.isEnabled(key)).resolves.toBe(true);
     await expect(features.require(key)).resolves.toBeUndefined();
     expect(findUnique).not.toHaveBeenCalled();
+    findUnique.mockResolvedValue({ enabled: true, scope: 'GLOBAL' });
     for (const feature of ['ENABLE_TOKEN', 'ENABLE_BLOCKCHAIN', 'ENABLE_REWARDS']) {
+      await expect(features.isEnabled(feature)).resolves.toBe(false);
       await expect(features.require(feature)).rejects.toMatchObject({ status: 403 });
       expect(findUnique).toHaveBeenLastCalledWith({ where: { key: feature }, select: { enabled: true, scope: true } });
     }

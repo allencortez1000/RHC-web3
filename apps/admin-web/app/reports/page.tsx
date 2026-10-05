@@ -12,7 +12,7 @@ import {
   usePagedResource,
   useRuntime,
 } from '@rhc/ui';
-import { AdminShell } from '../admin-data';
+import { AdminShell, canAccessAdminRoute, useAdminCapabilities, type AdminCapabilities } from '../admin-data';
 
 type ReportRow = { id: string; [key: string]: unknown };
 type ReportColumn = {
@@ -175,9 +175,9 @@ const reports: ReportDefinition[] = [
   },
 ];
 
-function availableReports(permissions: string[] | undefined, dataMode: 'api' | 'demo') {
+function availableReports(capabilities: AdminCapabilities | undefined, dataMode: 'api' | 'demo') {
   return reports.filter((report) =>
-    permissions?.includes(report.permission) && getRequestAvailability(dataMode, report.path).available,
+    canAccessAdminRoute(capabilities, report.path.replace('/admin', '')) && getRequestAvailability(dataMode, report.path).available,
   );
 }
 
@@ -342,8 +342,9 @@ function ReportDataset({ definition }: { definition: ReportDefinition }) {
 }
 
 export default function ReportsPage() {
-  const { user, dataMode } = useRuntime();
-  const available = availableReports(user?.permissions, dataMode);
+  const { dataMode } = useRuntime();
+  const capabilities = useAdminCapabilities();
+  const available = availableReports(!capabilities.loading && !capabilities.error ? capabilities.data : undefined, dataMode);
   const [selected, setSelected] = useState('reservations');
   const definition = available.find((report) => report.key === selected) || available[0];
 

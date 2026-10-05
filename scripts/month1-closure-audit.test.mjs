@@ -47,10 +47,31 @@ const navPath = 'apps/customer-web/app/web3-nav.ts';
 const adminPath = 'apps/admin-web/app/admin-data.tsx';
 const reportPath = 'apps/admin-web/app/reports/page.tsx';
 const nav = declarations(navPath, ['customerNavItems', 'activeAliases', 'navFor']);
-const admin = declarations(adminPath, ['adminNavGroups', 'adminNavItems', 'routePermissions', 'canAccessAdminRoute']);
+const scopeHelpers = declarations('apps/admin-web/app/capability-scopes.ts', ['globalTarget', 'scopeValue', 'asScope', 'globalScope', 'grantCoversTarget', 'hasEffectiveGrant']);
+const admin = declarations(adminPath, ['adminNavGroups', 'adminNavItems', 'routePermissions', 'moduleDefinitions', 'visibleModules', 'canAccessAdminRoute'], scopeHelpers);
+const capabilityPath = 'apps/api/src/modules/admin/capabilities.controller.ts';
+const backendCapabilities = declarations(capabilityPath, ['ADMIN_CAPABILITY_PERMISSIONS', 'ADMIN_MUTATION_PERMISSIONS', 'ADMIN_CAPABILITY_MODULES', 'listGrantIsUsable']);
+const demoModules = declarations('apps/customer-web/app/lib/demo/router.ts', ['adminReadPermissions']);
+
+function capabilityFixture(permissions, mode = 'api', scope = { company_id: null, project_id: null }) {
+  const grants = Object.fromEntries(permissions.map((permission) => [permission, [{ ...scope }]]));
+  const modules = Array.from(backendCapabilities.ADMIN_CAPABILITY_MODULES, (module) => ({
+    path: module.path, permission: module.permission,
+    usable: (grants[module.permission] || []).some((grant) => backendCapabilities.listGrantIsUsable(grant, module.list, module.globalOnly)),
+  }));
+  if (mode === 'demo') {
+    // Synthetic-only destinations require explicit server advertisement, not just a flattened permission.
+    for (const [resource, permission] of Object.entries(demoModules.adminReadPermissions)) {
+      if (!modules.some((module) => module.path === '/' + resource)) modules.push({
+        path: '/' + resource, permission, usable: Boolean(grants[permission]?.length),
+      });
+    }
+  }
+  return { permissions: [...permissions], grants, mutation_permissions: [], mutation_grants: {}, modules };
+}
 const capabilities = declarations('packages/ui/src/api-capabilities.ts', ['demoCapabilities', 'unavailableRoutes', 'getCapabilityAvailability', 'getRequestAvailability']);
 const reportNames = ['manilaDateTime', 'valueAt', 'text', 'dateValue', 'pointsValue', 'phpMinorValue', 'reports', 'availableReports', 'displayValue', 'csvCell'];
-const report = declarations(reportPath, reportNames, capabilities);
+const report = declarations(reportPath, reportNames, { ...capabilities, canAccessAdminRoute: admin.canAccessAdminRoute });
 
 test('route document exactly inventories actual customer and admin page files', (t) => {
   const doc = read('docs/route-coverage.md');
@@ -108,18 +129,26 @@ test('each canonical customer navigation label activates only its own destinatio
   }
 });
 
-test('reports navigation accepts every report read permission, but no unrelated permission', () => {
-  for (const permission of new Set(report.reports.map((item) => item.permission))) assert.equal(admin.canAccessAdminRoute([permission], '/reports'), true);
-  for (const permissions of [undefined, [], ['property.view']]) assert.equal(admin.canAccessAdminRoute(permissions, '/reports'), false);
+test('reports navigation accepts every usable report read capability, but no unrelated capability', () => {
+  for (const permission of new Set(report.reports.map((item) => item.permission))) assert.equal(admin.canAccessAdminRoute(capabilityFixture([permission]), '/reports'), true);
+  for (const fixture of [undefined, capabilityFixture([]), capabilityFixture(['property.view'])]) assert.equal(admin.canAccessAdminRoute(fixture, '/reports'), false);
+  const unusable = capabilityFixture(['reservation.view']);
+  unusable.modules.forEach((module) => { module.usable = false; });
+  assert.equal(admin.canAccessAdminRoute(unusable, '/reports'), false, 'Permissions alone cannot override unusable server modules');
+  assert.equal(admin.canAccessAdminRoute(capabilityFixture(['integration.view'], 'api', { company_id: 'company-test', project_id: 'project-test' }), '/reports'), false, 'A project-scoped integration grant is not list access');
 });
 
-test('report families are both permission-filtered and transport-supported', () => {
+test('report families are both capability-filtered and transport-supported', () => {
   const permissions = ['reservation.view', 'customer.view', 'integration.view', 'audit.view'];
-  assert.deepEqual(Array.from(report.availableReports(permissions, 'api'), (item) => item.key), ['reservations', 'audit']);
-  assert.equal(report.availableReports(permissions, 'demo').length, 6);
-  assert.equal(report.availableReports(['customer.view'], 'api').length, 0);
-  assert.deepEqual(Array.from(report.availableReports(['audit.view'], 'demo'), (item) => item.key), ['audit']);
+  assert.deepEqual(Array.from(report.availableReports(capabilityFixture(permissions), 'api'), (item) => item.key), ['reservations', 'audit']);
+  assert.equal(report.availableReports(capabilityFixture(permissions, 'demo'), 'demo').length, 6);
+  assert.equal(report.availableReports(capabilityFixture(['customer.view']), 'api').length, 0);
+  assert.deepEqual(Array.from(report.availableReports(capabilityFixture(['audit.view'], 'demo'), 'demo'), (item) => item.key), ['audit']);
   assert.equal(report.availableReports(undefined, 'demo').length, 0);
+  assert.equal(report.availableReports(capabilityFixture([]), 'api').length, 0);
+  assert.equal(report.availableReports(capabilityFixture([]), 'demo').length, 0);
+  assert.equal(report.availableReports(capabilityFixture(['customer.view']), 'demo').length, 0, 'Demo-only modules must be explicitly advertised');
+  assert.deepEqual(Array.from(report.availableReports(capabilityFixture(permissions, 'demo'), 'api'), (item) => item.key), ['reservations', 'audit'], 'Demo advertisement cannot enable unsupported API transports');
 });
 
 test('CSV cells neutralize formulas, quote delimiters and retain multiline data', () => {
@@ -231,16 +260,64 @@ test('every Nest endpoint is explicitly public, JWT-owned, permission-guarded, o
   const publicEndpoints = ['auth/config', 'health', 'health/ready', 'companies', 'business-services', 'projects', 'properties', 'properties/:id', 'verify/rhc-id/:token'].map((path) => `GET /api/v1/${path}`).sort();
   const inventory = controllerInventory();
   const actualPublic = [];
+  const selfInspection = [];
   for (const endpoint of inventory) {
     const label = `${endpoint.method} ${endpoint.path}`;
-    if (endpoint.path.startsWith('/api/v1/admin/')) {
+    if (label === 'GET /api/v1/admin/capabilities') {
+      assert.equal(endpoint.file, capabilityPath);
+      assert.ok(endpoint.guards.includes('AuthGuard'), 'Self-capabilities must require a verified JWT');
+      selfInspection.push(label);
+    } else if (endpoint.path.startsWith('/api/v1/admin/')) {
       assert.ok(endpoint.guards.includes('AuthGuard') && endpoint.guards.includes('PermissionGuard') && endpoint.policy, `Missing admin policy: ${label}`);
     } else if (endpoint.guards.includes('CompanyApiGuard')) {
       assert.ok(endpoint.scope, `Missing machine scope: ${label}`);
     } else if (!endpoint.guards.includes('AuthGuard')) actualPublic.push(label);
   }
+  assert.deepEqual(selfInspection, ['GET /api/v1/admin/capabilities'], 'Only the exact GET self-inspection route has this exception');
   assert.deepEqual(actualPublic.sort(), publicEndpoints);
   const counts = { public: actualPublic.length, admin: inventory.filter((endpoint) => endpoint.path.startsWith('/api/v1/admin/')).length, machine: inventory.filter((endpoint) => endpoint.guards.includes('CompanyApiGuard')).length };
   t.diagnostic(`${inventory.length} Nest method/path pairs: ${counts.public} public, ${counts.admin} admin, ${counts.machine} machine, ${inventory.length - counts.public - counts.admin - counts.machine} JWT self-service/session`);
   assert.equal(new Set(inventory.map((endpoint) => `${endpoint.method} ${endpoint.path}`)).size, inventory.length);
+});
+
+
+test('admin capabilities inspects only the JWT principal and grants no access to an empty actor', async () => {
+  const source = parse(capabilityPath);
+  const controller = source.statements.find((node) => ts.isClassDeclaration(node) && node.name?.text === 'CapabilitiesController');
+  assert.ok(controller);
+  assert.ok(decorator(controller, 'UseGuards')?.arguments.some((arg) => arg.getText(source) === 'AuthGuard'));
+  const method = controller.members.find((node) => ts.isMethodDeclaration(node) && node.name.getText(source) === 'capabilities');
+  assert.ok(method);
+  assert.equal(decorator(method, 'Get')?.arguments[0]?.text, 'capabilities');
+  assert.equal(method.parameters.length, 1, 'No query/body/route parameter can select another account');
+  assert.ok(decorator(method.parameters[0], 'CurrentUser'), 'Actor is injected from JWT authentication');
+  assert.deepEqual(Array.from(decorator(method, 'Header')?.arguments || [], (arg) => arg.text), ['Cache-Control', 'no-store']);
+  // Evaluate the real method only, without Nest imports, server construction or database access.
+  const text = method.getText(source).replace('async capabilities(', 'async function capabilities(').replace('@CurrentUser() ', '');
+  const compiled = ts.transpileModule(text, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS } }).outputText;
+  const inspect = vm.runInNewContext(compiled + String.fromCharCode(10) + 'capabilities', backendCapabilities, { timeout: 2000 });
+  for (const actor of [
+    { id: 'jwt-customer', grants: {} },
+    { id: 'jwt-scoped', grants: { 'company.view': [{ company_id: 'company-test', project_id: 'project-test' }], 'reservation.view': [{ company_id: 'company-test', project_id: 'project-test' }] } },
+  ]) {
+    const calls = [];
+    const result = await inspect.call({ rbac: { grants: async (userId, permission) => {
+      calls.push([userId, permission]);
+      assert.equal(userId, actor.id, 'Every grant lookup must use this JWT principal');
+      return actor.grants[permission] || [];
+    } } }, { id: actor.id, email: 'private-sentinel@example.test' });
+    assert.deepEqual(calls.map(([, permission]) => permission), [...backendCapabilities.ADMIN_CAPABILITY_PERMISSIONS, ...backendCapabilities.ADMIN_MUTATION_PERMISSIONS]);
+    assert.deepEqual(Array.from(result.permissions), Object.keys(actor.grants));
+    assert.deepEqual(Array.from(result.mutation_permissions), []);
+    assert.equal(JSON.stringify(result).includes('private-sentinel'), false);
+    if (actor.id === 'jwt-customer') {
+      assert.equal(Object.keys(result.grants).length, 0);
+      assert.equal(Object.keys(result.mutation_grants).length, 0);
+      assert.ok(result.modules.every((module) => !module.usable));
+    } else {
+      assert.equal(result.modules.find((module) => module.path === '/').usable, false, 'Project-only company grant is not dashboard access');
+      assert.equal(result.modules.find((module) => module.path === '/reservations').usable, true);
+      assert.equal(result.grants['reservation.view'][0].project_id, 'project-test', 'Scoped grants are not promoted to global');
+    }
+  }
 });

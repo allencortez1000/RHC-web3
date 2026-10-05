@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Badge, EmptyState, Web3Button } from '@rhc/ui';
+import { Badge, Card, EmptyState, ResourceStatus, Web3Button, usePagedResource, useRuntime } from '@rhc/ui';
 import {
   MARKETPLACE_CATEGORIES,
   MARKETPLACE_SERVICES,
@@ -11,7 +11,32 @@ import {
 import { MeridianIcon } from './meridian-icon';
 import { DemoNotice, PublicShell, SectionHeading, StageBadge } from './public-shell';
 
+type DirectoryRecord = { id: string; service_name?: string; display_name?: string; project_name?: string; description?: string | null; status?: string };
+
+function ConnectedDirectory() {
+  const [directory, setDirectory] = useState('/business-services');
+  const resource = usePagedResource<DirectoryRecord>(directory, false);
+  return <section className="mx-auto max-w-7xl px-5 py-8 md:px-8">
+    <Card title="Connected API directory">
+      <p className="mb-4 text-sm text-[var(--rhc-muted)]">Returned business records are separate from the staged discovery concepts below. No purchase or settlement is enabled.</p>
+      <label className="block text-sm font-semibold">Directory
+        <select value={directory} onChange={(event) => setDirectory(event.target.value)} className="m-3 rounded-xl border p-3">
+          <option value="/business-services">Services</option><option value="/companies">RHC Businesses</option><option value="/projects">Projects</option>
+        </select>
+      </label>
+      <ResourceStatus {...resource} />
+      {resource.data && !resource.loading && !resource.error && (resource.data.length ? <div className="grid gap-3 md:grid-cols-3">
+        {resource.data.map((record) => <article key={record.id} className="rounded-xl border border-[var(--rhc-border)] p-4">
+          <h2 className="font-bold">{record.service_name || record.display_name || record.project_name}</h2>
+          <p className="mt-2 text-sm text-[var(--rhc-muted)]">{record.description || record.status || 'Returned API directory record'}</p>
+        </article>)}
+      </div> : <EmptyState title="No directory records" description="No records were returned for this directory. Staged concepts are not substituted for API results." />)}
+    </Card>
+  </section>;
+}
+
 export function MarketplaceDiscovery() {
+  const { user, dataMode } = useRuntime();
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<MarketplaceCategoryKey>('all');
   const [readiness, setReadiness] = useState<'all' | 'demo' | 'planned'>('all');
@@ -44,6 +69,7 @@ export function MarketplaceDiscovery() {
 
   return (
     <PublicShell current="marketplace">
+      {user && dataMode === 'api' ? <ConnectedDirectory /> : null}
       <section className="relative overflow-hidden border-b border-[var(--rhc-border)] px-5 py-16 md:px-8 md:py-24">
         <div aria-hidden="true" className="pointer-events-none absolute right-0 top-0 h-96 w-96 rounded-full bg-[var(--rhc-accent-soft)] blur-3xl" />
         <div className="relative mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1fr_360px] lg:items-end">

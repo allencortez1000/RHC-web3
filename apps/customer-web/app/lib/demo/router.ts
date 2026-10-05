@@ -76,6 +76,36 @@ const adminReadPermissions: Record<string, string> = {
   'rewards-ledger': 'customer.view',
 };
 
+function adminCapabilities(world: DemoWorld, persona: DemoPersona) {
+  assertAdmin(persona);
+  const scopes = isGlobal(persona)
+    ? [{ company_id: null, project_id: null }]
+    : persona.projectIds.length
+      ? world.projects.filter((project) => persona.projectIds.includes(project.id) && persona.companyIds.includes(project.company_id))
+        .map((project) => ({ company_id: project.company_id, project_id: project.id }))
+      : persona.companyIds.map((company_id) => ({ company_id, project_id: null }));
+  const permissions = persona.permissions.filter((permission) => permission.endsWith('.view'));
+  const mutation_permissions = persona.readOnly || persona.role === 'AUDITOR'
+    ? [] : persona.permissions.filter((permission) => !permission.endsWith('.view'));
+  const grants = Object.fromEntries(permissions.map((permission) => [permission, scopes]));
+  const mutation_grants = Object.fromEntries(mutation_permissions.map((permission) => [permission, scopes]));
+  const globalOnly = new Set(['user-roles', 'permissions', 'feature-flags', 'system-settings']);
+  const modules = Object.entries(adminReadPermissions).map(([resource, permission]) => ({
+    path: '/' + resource, permission,
+    usable: permissions.includes(permission) && scopes.length > 0 && (!globalOnly.has(resource) || isGlobal(persona)),
+  }));
+  modules.unshift({ path: '/', permission: 'company.view', usable: scopes.length > 0 &&
+    ['company.view', 'project.view', 'property.view', 'customer.view', 'reservation.view', 'integration.view', 'audit.view']
+      .every((permission) => permissions.includes(permission)) });
+  for (const [path, source] of [['/rhc-digital-ids', '/customers'], ['/amica-tower-inventory', '/properties']]) {
+    const definition = modules.find((item) => item.path === source)!;
+    modules.push({ ...definition, path });
+  }
+  modules.push({ path: '/reports', permission: 'reservation.view', usable: modules.some((module) =>
+    ['/reservations', '/payments', '/documents', '/rewards-ledger', '/service-requests', '/audit-logs'].includes(module.path) && module.usable) });
+  return { permissions, grants, mutation_permissions, mutation_grants, modules };
+}
+
 function adminMutationPermission(resource: string, method: string) {
   if (resource === 'companies') return 'company.manage';
   if (resource === 'projects') return method === 'POST' ? 'project.create' : 'project.edit';
@@ -579,9 +609,14 @@ function scopedAdminRows(world: DemoWorld, persona: DemoPersona, resource: strin
       if (resource === 'projects') return projectWithCompany(world, record.id as string);
       if (resource === 'properties') return propertyView(world, record as DemoProperty);
       if (resource === 'reservations') return reservationView(world, record as DemoWorld['reservations'][number], persona);
-      if (resource === 'customer-properties') return { ...record,
-        customer: customerSummary(world, persona, record.customer_id as string),
-        property: world.properties.find((property) => property.id === record.property_id) };
+      if (resource === 'customer-properties') {
+        const property = world.properties.find((item) => item.id === record.property_id);
+        const project = world.projects.find((item) => item.id === property?.project_id);
+        return { ...record,
+          customer: customerSummary(world, persona, record.customer_id as string),
+          property, property_code: property?.property_code,
+          property_project_id: project?.id, property_company_id: project?.company_id };
+      }
       if (resource === 'business-services' || resource === 'integrations') return companyView(world, record as Row & { company_id: string });
       if (resource === 'user-roles') {
         const role = world.roles.find((item) => item.id === record.role_id);
@@ -1412,6 +1447,7 @@ async function dispatchRequest(input: DispatchInput): Promise<DispatchResult> {
     return { data: propertyView(world, property), world };
   }
 
+  if (route === '/admin/capabilities' && method === 'GET') return { data: adminCapabilities(world, persona), world };
   if (route === '/admin/dashboard' && method === 'GET') return { data: adminDashboard(world, persona), world };
   if (input.segments[0] === 'admin' && input.segments[1] && method === 'GET' && input.segments.length === 2) {
     const rows = scopedAdminRows(world, persona, input.segments[1]);
