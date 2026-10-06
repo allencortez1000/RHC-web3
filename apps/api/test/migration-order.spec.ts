@@ -11,7 +11,7 @@ describe('merged migration chronology (static, no database)', () => {
   it('locks down only tables created by that point and ultimately covers the complete schema', () => {
     const created = new Set<string>();
     let lockdowns = 0;
-    let finalAllowlist: string[] = [];
+    const protectedTables = new Set<string>();
     for (const migration of migrations) {
       for (const match of migration.sql.matchAll(/CREATE TABLE "([^"]+)"/g)) created.add(match[1]);
       const allowlist = /application_tables CONSTANT text\[\] := ARRAY\[([\s\S]*?)\];/.exec(migration.sql);
@@ -21,14 +21,28 @@ describe('merged migration chronology (static, no database)', () => {
       expect(new Set(names).size).toBe(names.length);
       expect({ migration: migration.name, missing: names.filter((name) => !created.has(name)) })
         .toEqual({ migration: migration.name, missing: [] });
-      finalAllowlist = names;
+      for (const name of names) protectedTables.add(name);
       lockdowns += 1;
     }
-    expect(lockdowns).toBe(2);
+    expect(lockdowns).toBe(3);
     const schema = readFileSync(resolve(migrationsRoot, '../schema.prisma'), 'utf8');
     const mappedTables = [...schema.matchAll(/@@map\("([^"]+)"\)/g)].map((match) => match[1]).sort();
-    expect(finalAllowlist.sort()).toEqual(mappedTables);
+    expect([...protectedTables].sort()).toEqual(mappedTables);
     expect([...created].sort()).toEqual(mappedTables);
+  });
+
+  it('protects all 16 connected tables in the same transaction that creates them', () => {
+    const connected = migrations.find((migration) => migration.name === '202610060001_connected_domains');
+    expect(connected).toBeDefined();
+    const sql = connected!.sql;
+    const created = [...sql.matchAll(/CREATE TABLE "([^"]+)"/g)].map((match) => match[1]);
+    const block = /application_tables CONSTANT text\[\] := ARRAY\[([\s\S]*?)\];/.exec(sql)![1];
+    const protectedNames = [...block.matchAll(/'([^']+)'/g)].map((match) => match[1]);
+    expect(created).toHaveLength(16);
+    expect(created.sort()).toEqual(protectedNames.sort());
+    expect(sql.indexOf('BEGIN;')).toBeLessThan(sql.indexOf('CREATE TABLE'));
+    expect(sql.indexOf('ENABLE ROW LEVEL SECURITY')).toBeLessThan(sql.lastIndexOf('COMMIT;'));
+    expect(sql).toContain('REVOKE ALL PRIVILEGES ON TABLE public.%I FROM %s');
   });
 
   it('enables RLS on reservation tables in their creation migration, before later ACL hardening', () => {

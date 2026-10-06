@@ -31,6 +31,22 @@ export const APPLICATION_ACL_TABLES = [
   'rewards_transactions',
   'rewards_redemptions',
   'system_settings',
+  'documents',
+  'document_versions',
+  'document_reviews',
+  'identity_review_requests',
+  'payment_records',
+  'payment_record_events',
+  'certificates',
+  'certificate_events',
+  'verification_references',
+  'service_requests',
+  'service_request_events',
+  'saved_properties',
+  'project_milestones',
+  'turnover_cases',
+  'turnover_checklist_items',
+  'rewards_benefits',
 ] as const;
 
 const BROWSER_ROLES = ['anon', 'authenticated'] as const;

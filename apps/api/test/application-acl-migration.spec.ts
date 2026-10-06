@@ -831,14 +831,22 @@ describe('application ACL correction contract', () => {
     expect(assessReachableAuthority({ ...controls, reachableTablePrivileges: collected })).toEqual([]);
   });
 
-  it('keeps the exact independent 29-table allowlist aligned with schema mappings', () => {
+  it('preserves the historical 29-table migration and covers all 45 current tables in preflight', () => {
     const block = migration.match(/application_tables CONSTANT text\[\] := ARRAY\[(.*?)\n\s+\];/s)?.[1] ?? '';
     const migrationTables = [...block.matchAll(/'([^']+)'/g)].map((match) => match[1]);
     const schemaTables = [...schema.matchAll(/@@map\("([^"]+)"\)/g)].map((match) => match[1]);
 
     expect(sorted(migrationTables)).toEqual(sorted(expectedTables));
-    expect(sorted(schemaTables)).toEqual(sorted(expectedTables));
-    expect(sorted(APPLICATION_ACL_TABLES)).toEqual(sorted(expectedTables));
+    const connectedTables = [
+      'documents', 'document_versions', 'document_reviews', 'identity_review_requests',
+      'payment_records', 'payment_record_events', 'certificates', 'certificate_events',
+      'verification_references', 'service_requests', 'service_request_events',
+      'saved_properties', 'project_milestones', 'turnover_cases',
+      'turnover_checklist_items', 'rewards_benefits',
+    ];
+    expect(sorted(schemaTables)).toEqual(sorted([...expectedTables, ...connectedTables]));
+    expect(sorted(APPLICATION_ACL_TABLES)).toEqual(sorted(schemaTables));
+    expect(new Set(APPLICATION_ACL_TABLES).size).toBe(45);
     expect(new Set(migrationTables).size).toBe(29);
     expect(migrationTables).toEqual(expect.arrayContaining(['reservations', 'reservation_events', 'property_status_history']));
   });

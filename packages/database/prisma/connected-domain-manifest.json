@@ -1,0 +1,52 @@
+{
+  "format": 1,
+  "algorithm": "sha256",
+  "byteExact": true,
+  "schema": {
+    "path": "schema.prisma",
+    "sha256": "d081c4053617cc6f6617499a62a5b8a3b71afea151174b3b19bbe8fed74b7cb6"
+  },
+  "migrations": [
+    {
+      "name": "202609110001_month1_foundation",
+      "path": "migrations/202609110001_month1_foundation/migration.sql",
+      "sha256": "d04710f1ba9811acfdabdbcfaf7535642cad70321e3763f5174a3283d7b451a0"
+    },
+    {
+      "name": "202609120001_month1_auth_ledger_hardening",
+      "path": "migrations/202609120001_month1_auth_ledger_hardening/migration.sql",
+      "sha256": "e1da6755fd835120f185abd55368819945bce2635f3ce8735034a23f037b5dde"
+    },
+    {
+      "name": "202609140001_identity_history_seed_hardening",
+      "path": "migrations/202609140001_identity_history_seed_hardening/migration.sql",
+      "sha256": "7d2c377e8cc4b9be93e06bda58e895e6f1c3b8ab3d413ba5c4419f84587a9d0e"
+    },
+    {
+      "name": "202609140002_application_postgrest_lockdown",
+      "path": "migrations/202609140002_application_postgrest_lockdown/migration.sql",
+      "sha256": "c3cf68259b18d20d706c099c62333701dd57d16c56671f412a3df4db160c82e2"
+    },
+    {
+      "name": "202609150001_authorization_scope_delete_restrict",
+      "path": "migrations/202609150001_authorization_scope_delete_restrict/migration.sql",
+      "sha256": "56d4528c384c433dac7225a47d4878b5c8bf803efdd0e4cf042c8b235bcdbfa4"
+    },
+    {
+      "name": "202609160001_reservation_foundation",
+      "path": "migrations/202609160001_reservation_foundation/migration.sql",
+      "sha256": "24508734dac5329afec6c179190f63d3ad65e14cccb66a580ca8b558d9f9bb74"
+    },
+    {
+      "name": "202609210001_application_acl_hardening",
+      "path": "migrations/202609210001_application_acl_hardening/migration.sql",
+      "sha256": "6d5e73d0d69306d52f295e2b52b8afb10c2b89ddf70c14f5a6eabc4fea4a7573"
+    },
+    {
+      "name": "202610060001_connected_domains",
+      "path": "migrations/202610060001_connected_domains/migration.sql",
+      "sha256": "d765162a0abf53cd8dc01b98586c0af1461ac306448045bdb85bacadb9f1a99c"
+    }
+  ],
+  "binding": "5fe6c4289c20c7bfec3e1df76558a049069abd8a16a11ba74ca6bfb78a0d9368"
+}

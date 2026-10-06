@@ -174,6 +174,32 @@ model User {
   reservation_events      ReservationEvent[]      @relation("ReservationEventActor")
   property_status_changes PropertyStatusHistory[] @relation("PropertyStatusActor")
 
+  documents                    Document[]              @relation("DocumentCustomer")
+  uploaded_document_versions   DocumentVersion[]       @relation("DocumentUploader")
+  document_reviews             DocumentReview[]        @relation("DocumentReviewer")
+  identity_requests            IdentityReviewRequest[] @relation("IdentityCustomer")
+  submitted_identity_requests  IdentityReviewRequest[] @relation("IdentityRequester")
+  decided_identity_requests    IdentityReviewRequest[] @relation("IdentityReviewer")
+  payment_records              PaymentRecord[]         @relation("PaymentCustomer")
+  submitted_payment_records    PaymentRecord[]         @relation("PaymentSubmitter")
+  payment_record_events        PaymentRecordEvent[]
+  certificates                 Certificate[]           @relation("CertificateCustomer")
+  created_certificates         Certificate[]           @relation("CertificateCreator")
+  certificate_events           CertificateEvent[]
+  service_requests             ServiceRequest[]        @relation("ServiceCustomer")
+  submitted_service_requests   ServiceRequest[]        @relation("ServiceRequester")
+  service_request_events       ServiceRequestEvent[]   @relation("ServiceEventActor")
+  assigned_service_requests    ServiceRequest[]        @relation("ServiceAssignee")
+  previous_service_assignments ServiceRequestEvent[]   @relation("ServicePreviousAssignee")
+  next_service_assignments     ServiceRequestEvent[]   @relation("ServiceNextAssignee")
+  saved_properties             SavedProperty[]
+  reviewed_milestones          ProjectMilestone[]
+  turnover_cases               TurnoverCase[]
+  created_turnover_cases       TurnoverCase[] @relation("TurnoverCreator")
+  responsible_turnover_cases   TurnoverCase[] @relation("TurnoverResponsible")
+  completed_turnover_items     TurnoverChecklistItem[]
+  approved_rewards_benefits    RewardsBenefit[]
+
   @@index([email])
   @@index([account_status, verification_status])
   @@map("users")
@@ -212,6 +238,8 @@ model UserProfile {
   updated_at          DateTime           @updatedAt
   user                User               @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
+  verification_references VerificationReference[]
+
   @@index([rhc_id])
   @@index([last_name, first_name])
   @@map("user_profiles")
@@ -245,6 +273,10 @@ model Company {
   rewards_rules            RewardsRule[]
   rewards_transactions     RewardsTransaction[] @relation("RewardsSourceCompany")
 
+  service_requests    ServiceRequest[]
+  rewards_benefits    RewardsBenefit[]
+  issued_certificates Certificate[]    @relation("CertificateIssuer")
+
   @@index([status])
   @@map("companies")
 }
@@ -264,6 +296,8 @@ model Project {
   company           Company       @relation(fields: [company_id], references: [id])
   properties        Property[]
   user_roles        UserRole[]
+
+  milestones ProjectMilestone[]
 
   @@index([company_id, status])
   @@map("projects")
@@ -349,6 +383,13 @@ model Property {
   reservations        Reservation[]
   status_history      PropertyStatusHistory[]
 
+  documents        Document[]
+  payment_records  PaymentRecord[]
+  certificates     Certificate[]
+  service_requests ServiceRequest[]
+  saved_by         SavedProperty[]
+  turnover_cases   TurnoverCase[]
+
   @@index([project_id, status])
   @@index([asset_type])
   @@map("properties")
@@ -388,7 +429,10 @@ model Reservation {
   property           Property                @relation(fields: [property_id], references: [id], onDelete: Restrict)
   events             ReservationEvent[]
   status_history     PropertyStatusHistory[]
+  payment_records    PaymentRecord[]
 
+  // Additive candidate key for payment evidence; no reservation workflow changes.
+  @@unique([id, customer_id, property_id], map: "reservations_id_customer_property_key")
   @@index([customer_id, status])
   @@index([property_id, status])
   @@index([expires_at, status])
@@ -447,6 +491,10 @@ model BusinessService {
   updated_at               DateTime          @updatedAt
   company                  Company           @relation(fields: [company_id], references: [id])
 
+  service_requests ServiceRequest[]
+
+  // Supports the service/company FK without changing existing service identity.
+  @@unique([id, company_id])
   @@unique([company_id, service_code])
   @@index([status])
   @@map("business_services")
@@ -525,6 +573,7 @@ model Notification {
   status     String    @default("QUEUED")
   created_at DateTime  @default(now())
   sent_at    DateTime?
+  read_at    DateTime?
   user       User      @relation(fields: [user_id], references: [id], onDelete: Restrict)
 
   @@index([user_id, status])
@@ -620,6 +669,9 @@ model RewardsAccount {
   transactions RewardsTransaction[]
   redemptions  RewardsRedemption[]
 
+  scoped_redemptions RewardsRedemption[] @relation("RedemptionAccountScope")
+
+  @@unique([id, company_id])
   @@unique([id, customer_id])
   @@unique([customer_id, company_id])
   @@map("rewards_accounts")
@@ -663,6 +715,7 @@ model RewardsTransaction {
   rule               RewardsRule?             @relation(fields: [rule_id], references: [id], onDelete: Restrict)
   reversal_of        RewardsTransaction?      @relation("RewardsReversal", fields: [reversal_of_id], references: [id], onDelete: Restrict)
   reversals          RewardsTransaction[]     @relation("RewardsReversal")
+  redemption         RewardsRedemption?       @relation("RedemptionOriginalDebit")
 
   @@index([customer_id, created_at])
   @@index([source_company_id])
@@ -682,6 +735,25 @@ model RewardsRedemption {
   customer           User             @relation(fields: [customer_id], references: [id], onDelete: Restrict)
   account            RewardsAccount   @relation(fields: [rewards_account_id, customer_id], references: [id, customer_id], onDelete: Restrict)
 
+  // Legacy rows remain NULL. The original REDEEM debit is linked once;
+  // reversals remain rewards_transactions.reversal_of_id, never a second link here.
+  // Accepted cost is positive; SQL compares debit magnitude without inventing a
+  // legacy signed/unsigned ledger convention. ADJUSTMENT_DEBIT is not a redemption.
+  benefit_id              String?             @db.Uuid
+  // SQL derives this nullable snapshot from the benefit. Composite FKs protect
+  // scoped linked rows against later account-company changes, including NULLing.
+  // Legacy/unlinked rows and global benefits leave it NULL and are unaffected.
+  benefit_company_id      String?             @db.Uuid
+  scoped_account          RewardsAccount?     @relation("RedemptionAccountScope", fields: [rewards_account_id, benefit_company_id], references: [id, company_id], onDelete: Restrict, onUpdate: Restrict, map: "rewards_redemptions_scoped_account_fkey")
+  scoped_benefit          RewardsBenefit?     @relation("RedemptionBenefitScope", fields: [benefit_id, benefit_company_id], references: [id, company_id], onDelete: Restrict, onUpdate: Restrict, map: "rewards_redemptions_scoped_benefit_fkey")
+  accepted_points_cost    Decimal?            @db.Decimal(18, 2)
+  accepted_terms_snapshot String?
+  original_debit_id       String?             @unique @db.Uuid
+  benefit                 RewardsBenefit?     @relation(fields: [benefit_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  original_debit          RewardsTransaction? @relation("RedemptionOriginalDebit", fields: [original_debit_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([rewards_account_id, benefit_company_id], map: "rewards_redemptions_scoped_account_idx")
+  @@index([benefit_id])
   @@index([customer_id, status])
   @@map("rewards_redemptions")
 }
@@ -695,4 +767,518 @@ model SystemSetting {
   updated_at  DateTime @updatedAt
 
   @@map("system_settings")
+}
+
+// All connected-domain enums and lifecycle values below are engineering proposals
+// pending business approval, not product authorization or API activation.
+// New FKs restrict deletion/key mutation so evidence cannot be silently reparented.
+// SQL supplies CHECKs, append-only triggers, cross-row guards and deny-all RLS.
+// New-table factual defaults use UTC transaction time; supplied factual timestamps
+// are preserved and validated. BEFORE triggers replace only new-table updated_at
+// with database UTC wall time, before all guards, overriding Prisma clock skew.
+// Existing-table timestamp defaults/values are not rewritten.
+enum DocumentStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+}
+
+enum ReviewDecision {
+  APPROVED
+  REJECTED
+}
+
+enum IdentityReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum IdentityReviewKind {
+  VERIFICATION
+  CORRECTION
+}
+
+enum PaymentRecordEventType {
+  SUBMITTED
+  VERIFIED
+  REJECTED
+  REVERSED
+  NOTE
+}
+
+enum CertificateEventType {
+  ISSUED
+  REVOKED
+  SUPERSEDED
+}
+
+enum ServiceRequestStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  REJECTED
+}
+
+enum ServiceRequestEventType {
+  CREATED
+  STATUS_CHANGED
+  ASSIGNMENT_CHANGED
+  NOTE
+}
+
+enum ProjectMilestoneStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum MilestonePublicationStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum TurnoverCaseStatus {
+  DRAFT
+  IN_PROGRESS
+  READY
+  COMPLETED
+  CANCELLED
+}
+
+model Document {
+  id          String            @id @default(uuid()) @db.Uuid
+  customer_id String            @db.Uuid
+  property_id String?           @db.Uuid
+  title       String
+  category    String
+  status      DocumentStatus    @default(DRAFT)
+  created_at  DateTime          @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC')"))
+  updated_at  DateTime          @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC')")) @updatedAt
+  customer    User              @relation("DocumentCustomer", fields: [customer_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  property    Property?         @relation(fields: [property_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  versions    DocumentVersion[]
+
+  // Company/project scope is derived through property; property-less documents
+  // require explicit customer/compliance authorization, not global visibility.
+  @@index([customer_id, status])
+  @@index([property_id])
+  @@map("documents")
+}
+
+model DocumentVersion {
+  id                       String                  @id @default(uuid()) @db.Uuid
+  document_id              String                  @db.Uuid
+  version_number           Int
+  storage_bucket           String
+  storage_object           String
+  checksum_sha256          String                  @db.VarChar(64)
+  size_bytes               BigInt
+  mime_type                String
+  uploaded_by_id           String                  @db.Uuid
+  idempotency_key          String
+  created_at               DateTime                @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC')"))
+  document                 Document                @relation(fields: [document_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  uploaded_by              User                    @relation("DocumentUploader", fields: [uploaded_by_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  reviews                  DocumentReview[]
+  identity_requests        IdentityReviewRequest[]
+  payment_records          PaymentRecord[]
+  certificates             Certificate[]
+  turnover_checklist_items TurnoverChecklistItem[]
+
+  // Immutable storage identity, not content, public URLs or signed URLs.
+  // The storage service must also prohibit overwriting/deleting retained objects.
+  @@unique([document_id, version_number])
+  @@unique([storage_bucket, storage_object])
+  @@unique([document_id, uploaded_by_id, idempotency_key], map: "document_versions_retry_key")
+  @@index([uploaded_by_id])
+  @@map("document_versions")
+}
+
+model DocumentReview {
+  id                  String          @id @default(uuid()) @db.Uuid
+  document_version_id String          @db.Uuid
+  reviewer_user_id    String          @db.Uuid
+  decision            ReviewDecision
+  review_reference    String
+  note                String?
+  idempotency_key     String
+  decided_at          DateTime        @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC')"))
+  version             DocumentVersion @relation(fields: [document_version_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  reviewer            User            @relation("DocumentReviewer", fields: [reviewer_user_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  // Append-only decisions identify the exact immutable version, never "latest".
+  @@unique([document_version_id, reviewer_user_id, idempotency_key], map: "document_reviews_retry_key")
+  @@index([document_version_id, decided_at])
+  @@index([reviewer_user_id])
+  @@map("document_reviews")
+}
+
+model IdentityReviewRequest {
+  id                     String               @id @default(uuid()) @db.Uuid
+  customer_id            String               @db.Uuid
+  requested_by_id        String               @db.Uuid
+  kind                   IdentityReviewKind   @default(VERIFICATION)
+  status                 IdentityReviewStatus @default(PENDING)
+  evidence_version_id    String?              @db.Uuid
+  reason                 String
+  idempotency_key        String
+  requested_first_name   String?
+  requested_middle_name  String?
+  requested_last_name    String?
+  requested_suffix       String?
+  requested_birth_date   DateTime?
+  requested_nationality  String?
+  requested_address_line String?
+  requested_barangay     String?
+  requested_city         String?
+  requested_province     String?
+  requested_postal_code  String?
+  requested_country      String?
+  reviewer_user_id       String?              @db.Uuid
+  review_reference       String?
+  decision_note          String?
+  decided_at             DateTime?
+  created_at             DateTime             @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC')"))
+  updated_at             DateTime             @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC')")) @updatedAt
+  customer               User                 @relation("IdentityCustomer", fields: [customer_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  requested_by           User                 @relation("IdentityRequester", fields: [requested_by_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  reviewer               User?                @relation("IdentityReviewer", fields: [reviewer_user_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  evidence               DocumentVersion?     @relation(fields: [evidence_version_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  // Single optional evidence version is a proposal. NULL correction fields mean
+  // "not requested"; field clearing/multiple evidence need a later contract.
+  // A decision never updates/unlocks the approved UserProfile automatically.
+  @@unique([customer_id, requested_by_id, idempotency_key], map: "identity_review_requests_retry_key")
+  @@index([customer_id, status])
+  @@index([reviewer_user_id, status])
+  @@index([evidence_version_id])
+  @@map("identity_review_requests")
+}
+
+model PaymentRecord {
+  id                  String               @id @default(uuid()) @db.Uuid
+  customer_id         String               @db.Uuid
+  property_id         String               @db.Uuid
+  submitted_by_id     String               @db.Uuid
+  reservation_id      String?              @db.Uuid
+  reference           String
+  amount              Decimal              @db.Decimal(16, 2)
+  currency            String               @default("PHP")
+  due_date            DateTime?
+  paid_at             DateTime?
+  description         String
+  evidence_version_id String?              @db.Uuid
+  idempotency_key     String
+  submitted_at        DateTime             @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC')"))
+  customer            User                 @relation("PaymentCustomer", fields: [customer_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  property            Property             @relation(fields: [property_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  submitted_by        User                 @relation("PaymentSubmitter", fields: [submitted_by_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  evidence            DocumentVersion?     @relation(fields: [evidence_version_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  events              PaymentRecordEvent[]
+  reservation         Reservation?         @relation(fields: [reservation_id, customer_id, property_id], references: [id, customer_id, property_id], onDelete: Restrict, onUpdate: Restrict, map: "payment_records_reservation_scope_fkey")
+
+  // All submitted fields are immutable from insertion. Review state is derived
+  // from events; this is a record of claimed payment, not settlement/gateway proof.
+  @@unique([customer_id, submitted_by_id, idempotency_key], map: "payment_records_retry_key")
+  @@index([customer_id, submitted_at])
+  @@index([property_id])
+  @@index([reference])
+  @@index([evidence_version_id])
+  @@index([reservation_id, customer_id, property_id], map: "payment_records_reservation_scope_idx")
+  @@map("payment_records")
+}
+
+model PaymentRecordEvent {
+  id                String                 @id @default(uuid()) @db.Uuid
+  payment_record_id String                 @db.Uuid
+  event_type        PaymentRecordEventType
+  actor_user_id     String                 @db.Uuid
+  review_reference  String?
+  note              String?
+  reversal_of_id    String?                @unique @db.Uuid
+  idempotency_key   String
+  created_at        DateTime               @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC')"))
+  payment           PaymentRecord          @relation(fields: [payment_record_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  actor             User                   @relation(fields: [actor_user_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  reversal_of       PaymentRecordEvent?    @relation("PaymentVerificationReversal", fields: [reversal_of_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  reversed_by       PaymentRecordEvent?    @relation("PaymentVerificationReversal")
+
+  // SQL requires a REVERSED event to target a VERIFIED event of the same payment.
+  @@unique([payment_record_id, actor_user_id, idempotency_key], map: "payment_record_events_retry_key")
+  @@index([payment_record_id, created_at])
+  @@index([actor_user_id])
+  @@map("payment_record_events")
+}
+
+model Certificate {
+  id                         String                  @id @default(uuid()) @db.Uuid
+  customer_id                String                  @db.Uuid
+  reference                  String                  @unique
+  certificate_type           String
+  issuer_company_id          String                  @db.Uuid
+  issuer                     Company                 @relation("CertificateIssuer", fields: [issuer_company_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  source_document_version_id String?                 @db.Uuid
+  source_property_id         String?                 @db.Uuid
+  supersedes_id              String?                 @unique @db.Uuid
+  created_by_id              String                  @db.Uuid
+  expires_at                 DateTime?
+  idempotency_key            String
+  created_at                 DateTime                @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC')"))
+  customer                   User                    @relation("CertificateCustomer", fields: [customer_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  created_by                 User                    @relation("CertificateCreator", fields: [created_by_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  source_version             DocumentVersion?        @relation(fields: [source_document_version_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  source_property            Property?               @relation(fields: [source_property_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  supersedes                 Certificate?            @relation("CertificateSupersession", fields: [supersedes_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  superseded_by              Certificate?            @relation("CertificateSupersession")
+  events                     CertificateEvent[]      @relation("CertificateEvents")
+  replacement_events         CertificateEvent[]      @relation("CertificateEventReplacement")
+  verification_references    VerificationReference[]
+
+  // Immutable pending artifact. ISSUED/REVOKED/SUPERSEDED events determine state;
+  // exactly one typed source is required. There is no generic entity ID or URL.
+  // Issuer is not necessarily the property's developer. Its authority over the
+  // source and the creator's issuing permission remain service-layer approval gates.
+  @@unique([customer_id, created_by_id, idempotency_key], map: "certificates_retry_key")
+  @@index([customer_id, created_at])
+  @@index([source_document_version_id])
+  @@index([source_property_id])
+  @@index([issuer_company_id, created_at])
+  @@map("certificates")
+}
+
+model CertificateEvent {
+  id                         String               @id @default(uuid()) @db.Uuid
+  certificate_id             String               @db.Uuid
+  event_type                 CertificateEventType
+  actor_user_id              String               @db.Uuid
+  replacement_certificate_id String?              @unique @db.Uuid
+  review_reference           String
+  note                       String?
+  idempotency_key            String
+  created_at                 DateTime             @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC')"))
+  certificate                Certificate          @relation("CertificateEvents", fields: [certificate_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  replacement                Certificate?         @relation("CertificateEventReplacement", fields: [replacement_certificate_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  actor                      User                 @relation(fields: [actor_user_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([certificate_id, event_type])
+  @@unique([certificate_id, actor_user_id, idempotency_key], map: "certificate_events_retry_key")
+  @@index([certificate_id, created_at])
+  @@index([actor_user_id])
+  @@map("certificate_events")
+}
+
+model VerificationReference {
+  id               String       @id @default(uuid()) @db.Uuid
+  token_hash       String       @unique @db.VarChar(64)
+  user_profile_id  String?      @db.Uuid
+  certificate_id   String?      @db.Uuid
+  enabled          Boolean      @default(false)
+  disclosure_scope String       @default("NONE")
+  expires_at       DateTime?
+  revoked_at       DateTime?
+  created_at       DateTime     @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC')"))
+  profile          UserProfile? @relation(fields: [user_profile_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  certificate      Certificate? @relation(fields: [certificate_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  // Only SHA-256 of a high-entropy opaque token. SQL keeps all references disabled
+  // with NONE disclosure until an independently approved activation migration.
+  @@index([user_profile_id])
+  @@index([certificate_id])
+  @@map("verification_references")
+}
+
+model ServiceRequest {
+  id               String                @id @default(uuid()) @db.Uuid
+  customer_id      String                @db.Uuid
+  requested_by_id  String                @db.Uuid
+  company_id       String                @db.Uuid
+  service_id       String                @db.Uuid
+  property_id      String?               @db.Uuid
+  reference        String                @unique
+  title            String
+  description      String?
+  status           ServiceRequestStatus  @default(PENDING)
+  assignee_user_id String?               @db.Uuid
+  assignee         User?                 @relation("ServiceAssignee", fields: [assignee_user_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  idempotency_key  String
+  created_at       DateTime              @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC')"))
+  updated_at       DateTime              @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC')")) @updatedAt
+  customer         User                  @relation("ServiceCustomer", fields: [customer_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  requested_by     User                  @relation("ServiceRequester", fields: [requested_by_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  company          Company               @relation(fields: [company_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  service          BusinessService       @relation(fields: [service_id, company_id], references: [id, company_id], onDelete: Restrict, onUpdate: Restrict)
+  property         Property?             @relation(fields: [property_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  events           ServiceRequestEvent[]
+
+  // Provider company may differ from the property's developer. The API must
+  // authorize both scopes, service eligibility and the customer's property link.
+  // Assignee FK is identity, NOT authorization. The assigning actor and assignee
+  // need approved active staff permissions in scope, rechecked by the future API.
+  // Update this projection and append its assignment/status event atomically.
+  @@unique([customer_id, requested_by_id, idempotency_key], map: "service_requests_retry_key")
+  @@index([customer_id, status])
+  @@index([company_id, status])
+  @@index([service_id, company_id])
+  @@index([property_id])
+  @@index([assignee_user_id, status])
+  @@map("service_requests")
+}
+
+model ServiceRequestEvent {
+  id                        String                  @id @default(uuid()) @db.Uuid
+  service_request_id        String                  @db.Uuid
+  actor_user_id             String                  @db.Uuid
+  event_type                ServiceRequestEventType
+  event_number              Int
+  previous_assignee_user_id String?                 @db.Uuid
+  next_assignee_user_id     String?                 @db.Uuid
+  previous_assignee         User?                   @relation("ServicePreviousAssignee", fields: [previous_assignee_user_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  next_assignee             User?                   @relation("ServiceNextAssignee", fields: [next_assignee_user_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  status                    ServiceRequestStatus
+  note                      String?
+  idempotency_key           String
+  created_at                DateTime                @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC')"))
+  request                   ServiceRequest          @relation(fields: [service_request_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  actor                     User                    @relation("ServiceEventActor", fields: [actor_user_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  // Explicit before/after snapshots include unassignment (next = NULL).
+  // Sequence numbers order events even when TIMESTAMP(3) values are equal.
+  @@unique([service_request_id, event_number], map: "service_request_events_sequence_key")
+  @@unique([service_request_id, actor_user_id, idempotency_key], map: "service_request_events_retry_key")
+  @@index([previous_assignee_user_id])
+  @@index([next_assignee_user_id])
+  @@index([service_request_id, created_at])
+  @@index([actor_user_id])
+  @@map("service_request_events")
+}
+
+model SavedProperty {
+  id          String   @id @default(uuid()) @db.Uuid
+  customer_id String   @db.Uuid
+  property_id String   @db.Uuid
+  created_at  DateTime @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC')"))
+  customer    User     @relation(fields: [customer_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  property    Property @relation(fields: [property_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([customer_id, property_id])
+  @@index([property_id])
+  @@map("saved_properties")
+}
+
+model ProjectMilestone {
+  id                 String                     @id @default(uuid()) @db.Uuid
+  project_id         String                     @db.Uuid
+  milestone_code     String
+  title              String
+  description        String?
+  status             ProjectMilestoneStatus     @default(PLANNED)
+  publication_status MilestonePublicationStatus @default(DRAFT)
+  published_at       DateTime?
+  target_date        DateTime?
+  completed_at       DateTime?
+  reviewer_user_id   String?                    @db.Uuid
+  reviewed_at        DateTime?
+  created_at         DateTime                   @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC')"))
+  updated_at         DateTime                   @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC')")) @updatedAt
+  project            Project                    @relation(fields: [project_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  reviewer           User?                      @relation(fields: [reviewer_user_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([project_id, milestone_code])
+  // Publication is independent of construction progress. Publishing/archiving
+  // requires a reviewed publication timestamp; permission remains an API concern.
+  @@index([project_id, status])
+  @@index([project_id, publication_status, published_at], map: "project_milestones_publication_idx")
+  @@index([reviewer_user_id])
+  @@map("project_milestones")
+}
+
+model TurnoverCase {
+  id          String                  @id @default(uuid()) @db.Uuid
+  customer_id String                  @db.Uuid
+  property_id String                  @db.Uuid
+  case_number String                  @unique
+  status      TurnoverCaseStatus      @default(DRAFT)
+  note        String?
+  created_at  DateTime                @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC')"))
+  updated_at  DateTime                @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC')")) @updatedAt
+  customer    User                    @relation(fields: [customer_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  property    Property                @relation(fields: [property_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  checklist   TurnoverChecklistItem[]
+  // Proposal: actors are optional; no staff assignment or historical actor is
+  // inferred. SQL freezes the creator; responsibility changes require API authorization.
+  created_by_id       String? @db.Uuid
+  responsible_user_id String? @db.Uuid
+  created_by         User? @relation("TurnoverCreator", fields: [created_by_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  responsible        User? @relation("TurnoverResponsible", fields: [responsible_user_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  // Cardinality is unapproved: deliberately NOT unique per customer/property.
+  // DRAFT is the default, not a hard SQL-only-DRAFT lock. Lifecycle values are
+  // proposals; authorized transitions/activation remain a future service decision.
+  @@index([customer_id, status])
+  @@index([property_id, status])
+  @@index([created_by_id])
+  @@index([responsible_user_id])
+  @@map("turnover_cases")
+}
+
+model TurnoverChecklistItem {
+  id                  String           @id @default(uuid()) @db.Uuid
+  turnover_case_id    String           @db.Uuid
+  item_code           String
+  label               String
+  sort_order          Int              @default(0)
+  required            Boolean          @default(true)
+  completed_at        DateTime?
+  completed_by_id     String?          @db.Uuid
+  evidence_version_id String?          @db.Uuid
+  evidence            DocumentVersion? @relation(fields: [evidence_version_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  note                String?
+  created_at          DateTime         @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC')"))
+  updated_at          DateTime         @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC')")) @updatedAt
+  turnover_case       TurnoverCase     @relation(fields: [turnover_case_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  completed_by        User?            @relation(fields: [completed_by_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([turnover_case_id, item_code])
+  @@index([turnover_case_id, sort_order])
+  // A version may be attached after the item is created. Once attached it cannot
+  // be replaced/cleared; completed items are retained unchanged by SQL guards.
+  @@index([completed_by_id])
+  @@index([evidence_version_id])
+  @@map("turnover_checklist_items")
+}
+
+model RewardsBenefit {
+  id                         String              @id @default(uuid()) @db.Uuid
+  company_id                 String?             @db.Uuid
+  benefit_code               String              @unique
+  title                      String
+  description                String?
+  active                     Boolean             @default(false)
+  points_cost                Decimal?            @db.Decimal(18, 2)
+  approved_eligibility_terms String?
+  terms_version              String?
+  approved_by_id             String?             @db.Uuid
+  approved_at                DateTime?
+  available_from             DateTime?
+  available_until            DateTime?
+  created_at                 DateTime            @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC')"))
+  updated_at                 DateTime            @default(dbgenerated("(CURRENT_TIMESTAMP AT TIME ZONE 'UTC')")) @updatedAt
+  company                    Company?            @relation(fields: [company_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  approved_by                User?               @relation(fields: [approved_by_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  redemptions                RewardsRedemption[]
+
+  scoped_redemptions RewardsRedemption[] @relation("RedemptionBenefitScope")
+
+  @@unique([id, company_id])
+  // No offers, prices or eligibility are approved/seeded by this schema.
+  // SQL keeps benefits inactive until a separately approved activation migration.
+  @@index([company_id, active])
+  @@index([approved_by_id])
+  @@map("rewards_benefits")
 }

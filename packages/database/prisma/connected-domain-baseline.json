@@ -1,0 +1,9 @@
+{
+  "format": 1,
+  "sourceCommit": "0abb97a23080ee4ca8429b9b7ee08d03d73be9fc",
+  "retainedTables": 29,
+  "addedTables": 16,
+  "finalTables": 45,
+  "historicalMigrations": 7,
+  "note": "Offline source baseline only, not a database snapshot. Tests require this commit locally; no fetch is attempted."
+}

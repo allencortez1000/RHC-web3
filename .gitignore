@@ -14,3 +14,4 @@ playwright-report
 test-results
 .prisma
 .rhc-demo/
+packages/database/prisma/connected-domain-snapshot-*.json
