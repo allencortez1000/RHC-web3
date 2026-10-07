@@ -1,0 +1,45 @@
+{
+  "preparedBeforeExecution": true,
+  "status": "NOT RUN",
+  "origins": ["http://127.0.0.1:3002", "http://127.0.0.1:3003"],
+  "failureEndpoints": ["/api/demo/web3/token", "/api/demo/admin/integrations/thirdweb"],
+  "failures": [
+    {"id": "http503", "expected": "Only Web3 fixture GETs receive synthetic 503; a visible error replaces observations; core workflows remain usable."},
+    {"id": "connectionfailed", "expected": "Only Web3 fixture GETs are aborted with connectionfailed; error/retry UI appears, never successful zero observations."},
+    {"id": "delayed503", "expected": "Only Web3 fixture GETs wait 2500ms then return synthetic 503; loading is visible before error, core workflows remain usable."}
+  ],
+  "journeys": [
+    {"id": "J1", "name": "Login and profile", "expected": "Maya, Noah and system-admin use supported shared login; separate browser contexts retain correct source identities. Maya's allowed mobile edit survives reload; locked first-name edit is genuinely denied by the demo hub. Never interpret Web3 failure as account failure."},
+    {"id": "J2", "name": "Reservation and shared persistence", "expected": "Maya creates a reservation from available inventory. Staff sees the same reference after navigation. Noah cannot cancel Maya's reservation (404). Maya cancels through UI and reload retains CANCELLED. Filtered inventory has genuine zero matching/available counts, not failed reads."},
+    {"id": "J3", "name": "Document and separate reviewer", "expected": "Maya submits a marked synthetic text document. Staff approves it with an operator note. Maya reload sees Approved; Noah's document list excludes it. Empty search is explicit. No actual download or storage provider is used."},
+    {"id": "J4", "name": "Digital ID, points and unsupported fields", "expected": "Maya retains her seeded Digital ID; Noah has no issuance button, a non-scannable placeholder and disabled public-verification action. Natural identity-review submission yields business-review PENDING (not account PENDING). Both points views match each persona's actual fixture ledger and remain separate from token data. Baseline Web3 synthetic cap unsupported/paused unavailable labels are checked outside injected responses."},
+    {"id": "J5", "name": "Public, navigation and logout", "expected": "Anonymous valid/revoked references remain masked and free of Maya's email/full name. Public mobile menu/skip link, 390/768/1440 layout, reduced-motion scrolling, command-menu focus containment/return work. Customer logout clears protected routes and does not log out staff."}
+  ],
+  "cells": [
+    {"journey":"J1","failure":"http503","status":"NOT RUN"},
+    {"journey":"J2","failure":"http503","status":"NOT RUN"},
+    {"journey":"J3","failure":"http503","status":"NOT RUN"},
+    {"journey":"J4","failure":"http503","status":"NOT RUN"},
+    {"journey":"J5","failure":"http503","status":"NOT RUN"},
+    {"journey":"J1","failure":"connectionfailed","status":"NOT RUN"},
+    {"journey":"J2","failure":"connectionfailed","status":"NOT RUN"},
+    {"journey":"J3","failure":"connectionfailed","status":"NOT RUN"},
+    {"journey":"J4","failure":"connectionfailed","status":"NOT RUN"},
+    {"journey":"J5","failure":"connectionfailed","status":"NOT RUN"},
+    {"journey":"J1","failure":"delayed503","status":"NOT RUN"},
+    {"journey":"J2","failure":"delayed503","status":"NOT RUN"},
+    {"journey":"J3","failure":"delayed503","status":"NOT RUN"},
+    {"journey":"J4","failure":"delayed503","status":"NOT RUN"},
+    {"journey":"J5","failure":"delayed503","status":"NOT RUN"}
+  ],
+  "additionalCoverage": [
+    {"name":"Verifier A-to-B late real response", "check":"real-race-verifier", "status":"NOT RUN", "reason":"Prepared: capture actual successful DEMO A response, retain exact bytes/status/headers, show loading, use supported same-document back/form navigation to real revoked B, release A only after B renders. Assert B remains, no stale A fields. Log released-unchanged versus browser-cancelled honestly."},
+    {"name":"Real not-found/unavailable verification", "check":"real-race-verifier", "status":"NOT RUN", "reason":"Prepared: real unknown opaque reference returns not-found; product legacy-ID guard returns unavailable without any hub lookup. Assert old VALID/REVOKED/masked-holder/QR data are absent; no fabricated business response."},
+    {"name":"Pending real account reads during persona switch", "check":"real-race-pendingSwitch", "status":"NOT RUN", "reason":"Prepared: hold only this page/session's actual GET /me and /me/rhc-id after Refresh status, sign out then select Noah through supported UI in the same document. Release Maya after Noah renders; assert no Maya profile/ID/QR resurrection and Noah has natural unavailable QR."},
+    {"name":"Pending real account reads during logout", "check":"real-race-pendingLogout", "status":"NOT RUN", "reason":"Prepared: hold this page/session's real account/ID reads, sign out, release unchanged. Remain signed out, no protected fields/QR, protected deep link still redirects. Public login persona labels are not treated as protected-data leakage."},
+    {"name":"Account-status PENDING", "status":"NOT RUN", "reason":"Both canonical source customers are ACTIVE. Pending requests and business-review PENDING do not claim account-status PENDING; no account-status or seed rewrite."},
+    {"name":"Non-Web3 failure metric regression", "status":"NOT RUN", "reason":"No failures may be injected outside the two Web3 endpoints. Real-read loading is now covered by narrow timing holds; successful filtered-empty zero is separate."},
+    {"name":"Unavailable QR", "status":"NOT RUN", "reason":"Planned natural Noah unissued credential case in J4; no QR library or non-Web3 response interception."},
+    {"name":"Formal accessibility, real backend/provider/DB, restart persistence", "status":"NOT RUN", "reason":"Out of scope. Reload/shared-store checks are not a server restart or production certification."}
+  ]
+}

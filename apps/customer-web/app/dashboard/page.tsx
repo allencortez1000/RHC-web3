@@ -1,7 +1,8 @@
 'use client';
 
-import { AppShell, Badge, Card, EmptyState, MetricCard, ResourceStatus, Web3Button, useResource } from '@rhc/ui';
+import { AppShell, Badge, Card, EmptyState, MetricCard, ResourceStatus, Web3Button, useResource, useRuntime } from '@rhc/ui';
 import { navFor } from '../web3-nav';
+import { resourceMetric } from '../components/resource-metric';
 import { DirectoryCards, IdentityCard, Notifications, fullName, type Me, type PropertyLink } from '../components/customer-data';
 
 type Reservation = { id: string; reservation_number: string; status: string; created_at: string; expires_at?: string; property?: { property_code?: string; project?: { project_name?: string } } };
@@ -23,14 +24,15 @@ const journey = [
 ];
 
 export default function Page() {
+  const { dataMode } = useRuntime();
   const me = useResource<Me>('/me');
   const properties = useResource<PropertyLink[]>('/me/properties');
   const reservations = useResource<Reservation[]>('/me/reservations');
   const records = useResource<DemoRecords>('/me/demo-records');
   const customerName = me.data ? fullName(me.data) : 'RHC Customer';
-  const activeReservations = reservations.data?.filter((item) => ['PENDING', 'CONFIRMED'].includes(item.status)).length ?? 0;
-  const linkedProperties = properties.data?.length ?? 0;
-  const rewardsBalance = records.data?.rewards.balance ?? 0;
+  const activeReservations = resourceMetric(reservations, (rows) => String(rows.filter((item) => ['PENDING', 'CONFIRMED'].includes(item.status)).length));
+  const linkedProperties = resourceMetric(properties, (rows) => String(rows.length));
+  const rewardsBalance = resourceMetric(records, (data) => data.rewards.balance.toLocaleString());
   const postedPayments = records.data?.payments.filter((item) => item.status === 'POSTED').reduce((sum, item) => sum + item.amount, 0) ?? 0;
 
   return (
@@ -48,22 +50,24 @@ export default function Page() {
             <Web3Button href="/documents" variant="secondary">Open documents</Web3Button>
           </div>
           <p className="mt-5 text-xs leading-5 text-[var(--rhc-muted)]">
-            Demo environment. Records are fictional and no real customer transaction, payment, wallet, token, or blockchain action is processed.
+            {dataMode === 'demo'
+              ? 'Demo environment. Records are fictional and no real customer transaction, payment, wallet, token, or blockchain action is processed.'
+              : 'Account records are returned by the connected API. Unavailable features are identified separately; no wallet, token, or blockchain action is offered here.'}
           </p>
         </Card>
         <IdentityCard />
       </section>
 
       <section className="mt-5 grid gap-4 sm:grid-cols-2 2xl:grid-cols-4">
-        <MetricCard label="RHC Digital ID" value={me.data?.profile?.rhc_id || 'Pending'} detail={me.data?.user?.verification_status || 'Verification status'} icon="ID" />
-        <MetricCard label="Linked properties" value={String(linkedProperties)} detail="Authorized customer records" icon="⌂" />
-        <MetricCard label="Active reservations" value={String(activeReservations)} detail="Pending or confirmed" icon="RS" />
-        <MetricCard label="RHC Rewards" value={rewardsBalance.toLocaleString()} detail="Demo points, not crypto or cash" icon="★" />
+        <MetricCard label="RHC Digital ID" value={resourceMetric(me, (data) => data.profile?.rhc_id || 'Not issued')} detail={me.data?.user?.verification_status || 'Verification status'} icon="ID" />
+        <MetricCard label="Linked properties" value={linkedProperties} detail="Loaded authorized customer records" icon="⌂" />
+        <MetricCard label="Active reservations" value={activeReservations} detail="Pending or confirmed in loaded records" icon="RS" />
+        <MetricCard label="RHC Rewards" value={rewardsBalance} detail={dataMode === 'demo' ? 'Demo points, not crypto or cash' : 'Rewards are unavailable in API mode'} icon="★" />
       </section>
 
       <section className="mt-5 grid gap-5 xl:grid-cols-[1.1fr_.9fr]">
         <Card title="Property Journey">
-          <p className="text-sm leading-6 text-[var(--rhc-muted)]">Track the customer journey from reservation to turnover. Each step is backed by business records and does not imply legal ownership by itself.</p>
+          <p className="text-sm leading-6 text-[var(--rhc-muted)]">A guide to the property workflow, not your current progress. Refer to individual business records for status; these stages do not imply legal ownership.</p>
           <div className="rhc-journey-timeline mt-5 space-y-3">
             {journey.map((step, index) => (
               <div key={step.title} className="rhc-journey-row flex gap-4 rounded-2xl border border-[var(--rhc-border)] bg-[var(--rhc-surface-secondary)] p-4">
@@ -74,7 +78,7 @@ export default function Page() {
                 <div className="min-w-0 flex-1 pb-1">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <h3 className="text-base font-bold text-[var(--rhc-heading)]">{step.title}</h3>
-                    <Badge tone={index < 5 ? 'success' : 'warning'}>{index < 5 ? 'Active' : 'Pending'}</Badge>
+                    <Badge tone="neutral">Workflow stage</Badge>
                   </div>
                   <p className="mt-1 text-sm leading-6 text-[var(--rhc-muted)]">{step.description}</p>
                 </div>
@@ -90,7 +94,7 @@ export default function Page() {
                 <div key={link.id} className="rounded-2xl border border-[var(--rhc-border)] bg-[var(--rhc-surface-secondary)] p-4">
                   <div className="flex flex-wrap justify-between gap-3">
                     <div>
-                      <p className="font-bold text-[var(--rhc-heading)]">{link.property?.property_code || 'Demo property'}</p>
+                      <p className="font-bold text-[var(--rhc-heading)]">{link.property?.property_code || 'Property record'}</p>
                       <p className="mt-1 text-sm text-[var(--rhc-muted)]">{link.property?.project?.project_name || 'RHC property record'} · {link.relationship_type}</p>
                     </div>
                     <Badge tone="gold">{link.status}</Badge>
@@ -99,7 +103,7 @@ export default function Page() {
               ))}
               <Web3Button href="/my-properties" variant="secondary">View property lifecycle</Web3Button>
             </div>
-          ) : <EmptyState title="No linked properties yet" description="Explore the demo inventory to begin your property journey." />)}
+          ) : <EmptyState title="No linked properties yet" description={dataMode === 'demo' ? 'Explore the demo inventory to begin your property journey.' : 'Explore available inventory to begin your property journey.'} />)}
         </Card>
       </section>
 
@@ -137,7 +141,7 @@ export default function Page() {
       <section className="mt-5 grid gap-5 2xl:grid-cols-[.95fr_1.05fr]">
         <Card title="Notifications"><Notifications /></Card>
         <Card title="RHC Ecosystem Services">
-          <p className="mb-4 text-sm leading-6 text-[var(--rhc-muted)]">Participating RHC businesses and services appear here as demo directory records. No external service integration is live.</p>
+          <p className="mb-4 text-sm leading-6 text-[var(--rhc-muted)]">{dataMode === 'demo' ? 'Participating RHC businesses and services appear here as demo directory records. No external service integration is live.' : 'Participating RHC businesses and services are returned by the connected API. A directory listing does not establish external provider availability.'}</p>
           <DirectoryCards path="/business-services" />
           <div className="mt-5 flex flex-wrap gap-3">
             <Web3Button href="/ecosystem" variant="secondary">Open ecosystem</Web3Button>

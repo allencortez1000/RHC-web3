@@ -1,0 +1,224 @@
+{
+  "runId": "20261007T014758Z",
+  "startedUtc": "2026-10-07T01:47:58Z",
+  "reportPreparedUtc": "2026-10-07T03:27:08.474Z",
+  "status": "partially_completed_locally",
+  "mission": "Allen Week 1 frontend and read-only Web3 stabilization; not release acceptance",
+  "repository": {
+    "identity": "github.com/allencortez1000/RHC-web3.git",
+    "protectedOriginal": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-combined-1.0",
+    "taskWorktree": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-frontend-web3",
+    "taskBranch": "allen/frontend-web3-stabilization",
+    "baseSha": "579a007bb56e247836d97d7c9adcc157f848071f",
+    "headSha": "579a007bb56e247836d97d7c9adcc157f848071f",
+    "remoteFreshness": "Normal fetch --no-prune --no-tags; local and remote combined-1.0 equal at freeze",
+    "fetchRefspec": "+refs/heads/*:refs/remotes/origin/*",
+    "baseDecision": "Equal committed combined-1.0 candidates; no source branch moved",
+    "activeGitOperationAtStart": false,
+    "newTaskBranchAuthorized": true,
+    "sourceBranchPointersAtStart": "refs/heads/combined-1.0 579a007bb56e247836d97d7c9adcc157f848071f\nrefs/heads/main aa7ae72bb08a4bdb64857e64ca14fb2305d21d8e\nrefs/heads/redesigned-branch 04a726281c2ba153e2931201fb7a86af75bd6eb3",
+    "unsavedEditorBuffersCaptured": false
+  },
+  "versions": {
+    "os": "Windows",
+    "shell": "Git Bash sh",
+    "git": "2.52.0.windows.1",
+    "node": "24.12.0",
+    "npm": "11.6.2",
+    "typescript": "5.9.3",
+    "prismaCli": "5.22.0",
+    "prismaClient": "5.22.0",
+    "thirdweb": "5.121.6",
+    "next": "15.5.25",
+    "playwright": "1.63.0",
+    "chromium": "153.0.8010.12 / revision 1243",
+    "ciNodeMajor": 22,
+    "ciRuntimeValidated": false
+  },
+  "preservation": {
+    "startingTrackedCount": 386,
+    "startingUntracked": [],
+    "startingStatus": "",
+    "startingIndexSha256": "b1291c5e33362fd516158308287f883eaa72c35da91e4595af385910345c8310",
+    "beforeInventory": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-frontend-web3-evidence/20261007T014758Z/original-before.json",
+    "afterInventory": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-frontend-web3-evidence/20261007T014758Z/original-after.json",
+    "comparison": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-frontend-web3-evidence/20261007T014758Z/preservation-comparison.json",
+    "result": {
+      "utc": "2026-10-07T03:27:07.189Z",
+      "allPreserved": true,
+      "equality": {
+        "head": true,
+        "status": true,
+        "index": true,
+        "sourceBranches": true,
+        "trackedInventory": true,
+        "untrackedInventory": true,
+        "fileFingerprints": true
+      },
+      "changedFingerprints": [],
+      "newUntracked": [],
+      "excluded": "Ignored build/runtime stores and unsaved editor buffers are not covered by source inventory."
+    },
+    "scope": "Tracked source/docs bytes, source pointers, index, tracked/untracked inventory; not ignored runtime/build stores or unsaved buffers"
+  },
+  "includedWork": [
+    "Committed combined-1.0 foundation at frozen BASE_SHA",
+    "11 scoped source/test edits listed in finalModifiedSource",
+    "Six new reports only under this run directory"
+  ],
+  "excludedWork": {
+    "pendingUncommittedOriginalPatch": "None: original starting inventory clean",
+    "databaseSource": "Committed 45-model/eight-migration foundation included read-only; no SQL/runtime acceptance",
+    "otherWorktree": "C:/Users/admin/Desktop/RHBC project/PHC WEB3 DEVELOPMENT untouched",
+    "contractBackendInfrastructure": "No edits; no authority inferred"
+  },
+  "databaseReference": {
+    "foundationCommit": "579a007bb56e247836d97d7c9adcc157f848071f",
+    "changedPathsInFoundationCommit": [
+      "docs/database/connected-domain-access-matrix.md",
+      "docs/database/connected-domain-data-dictionary.md",
+      "docs/database/connected-domain-erd.md",
+      "docs/database/connected-domain-handoff.md",
+      "docs/database/connected-domain-source-map.md",
+      "docs/database/connected-domain-validation.md",
+      "docs/database/supabase-dev-migration-runbook.md",
+      "packages/database/package.json",
+      "packages/database/prisma/application-acl-preflight.ts",
+      "packages/database/prisma/connected-domain-baseline.json",
+      "packages/database/prisma/connected-domain-catalog.spec.ts",
+      "packages/database/prisma/connected-domain-disposable.ts",
+      "packages/database/prisma/connected-domain-fixtures.sql",
+      "packages/database/prisma/connected-domain-gates.ts",
+      "packages/database/prisma/connected-domain-manifest.json",
+      "packages/database/prisma/connected-domain-source.ts",
+      "packages/database/prisma/connected-domain-structure.ts",
+      "packages/database/prisma/connected-domain-upgrade-fixtures.sql",
+      "packages/database/prisma/connected-domain-upgrade.spec.ts",
+      "packages/database/prisma/connected-domain-upgrade.ts",
+      "packages/database/prisma/connected-domain-verify.ts",
+      "packages/database/prisma/connected-domain.spec.ts",
+      "packages/database/prisma/migrations/202610060001_connected_domains/migration.sql",
+      "packages/database/prisma/schema.prisma"
+    ],
+    "handoffs": [
+      "docs/database/connected-domain-handoff.md",
+      "docs/database/connected-domain-access-matrix.md",
+      "docs/database/connected-domain-validation.md",
+      "docs/database/supabase-dev-migration-runbook.md"
+    ],
+    "historicalQuestions": [
+      "non-owner runtime/RLS and invoker guard compatibility",
+      "target migration history/checksum reconciliation"
+    ],
+    "freshDatabaseFailuresClaimed": false,
+    "sqlExecuted": false
+  },
+  "tooling": {
+    "runner": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-frontend-web3-evidence/20261007T014758Z/run.cjs",
+    "commands": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-frontend-web3-evidence/20261007T014758Z/commands.jsonl",
+    "installation": "npm ci --ignore-scripts; first bounded timeout then cached retry passed",
+    "downloadHosts": [
+      "registry.npmjs.org",
+      "binaries.prisma.sh",
+      "cdn.playwright.dev"
+    ],
+    "runtime": "Sanitized process environment and non-loopback Node socket denial; browser intercepted origins/resolver restrictions; fixture API only",
+    "clientGeneration": "Isolated Prisma Client 5.22, explicit engines, inert syntax-only datasource, no connection",
+    "sharedDependenciesOrCaches": false
+  },
+  "finalModifiedSource": {
+    "base": "579a007bb56e247836d97d7c9adcc157f848071f",
+    "branch": "allen/frontend-web3-stabilization",
+    "sourceManifestSha256": "c4950c49575f5d165d5e59922e8665d5be20d6b98bc052110c35256d186d7532",
+    "manifest": [
+      {
+        "path": "apps/customer-web/app/components/meridian-public/public-shell.tsx",
+        "status": "modified",
+        "sha256": "297213349d756fa6c5b6c0f433ae0a2e48a42569df1c9dbe3d4038813cc00fe1"
+      },
+      {
+        "path": "apps/customer-web/app/components/resource-metric.ts",
+        "status": "new",
+        "sha256": "6b7c160f10e5094098f1d7274c1cb91f2c114e1242fb90b70ea722b4f4c7f3cd"
+      },
+      {
+        "path": "apps/customer-web/app/dashboard/page.tsx",
+        "status": "modified",
+        "sha256": "246c32d00b9a4050aa910cf67c065c73618db8def5c7224c465d8fe2fa7c7ff9"
+      },
+      {
+        "path": "apps/customer-web/app/properties/page.tsx",
+        "status": "modified",
+        "sha256": "e7775f7262f6ab500160f0b2e3d580ec87eb666fa587c03f9106b648ab1afcf9"
+      },
+      {
+        "path": "apps/customer-web/app/rhc-verify/page.tsx",
+        "status": "modified",
+        "sha256": "0207a2dba65cfeeefd13e10c63d2b6c41e387e91e1226f99332b3db7ee9ca8fa"
+      },
+      {
+        "path": "apps/customer-web/tests/frontend-mode-regression.cjs",
+        "status": "new",
+        "sha256": "7f400f353c200415d4e9a33b525ae78b1226e50d5b08298fb0f17a75da31e940"
+      },
+      {
+        "path": "apps/customer-web/tests/frontend-state-regression.spec.ts",
+        "status": "new",
+        "sha256": "a454f74c50d6e49103dd54f50ccaae4f1e77413702fc86a655c01409af476a1d"
+      },
+      {
+        "path": "packages/ui/src/web3-read-panel.tsx",
+        "status": "modified",
+        "sha256": "72b764efdeef4968fa0538fb4004242b12864ba9dd25a848d7a71371d3d12759"
+      },
+      {
+        "path": "packages/web3/src/thirdweb-read-provider.ts",
+        "status": "modified",
+        "sha256": "51cd4912e2a1bb383020268826298b9fe6a612be4f894fc07af91a67520af5af"
+      },
+      {
+        "path": "packages/web3/test/readonly.test.cjs",
+        "status": "modified",
+        "sha256": "faf579d5128b757df9be0b595a942fa843c4d1893beedbf261430956c0c3b75e"
+      },
+      {
+        "path": "scripts/web3-browser-test.mjs",
+        "status": "modified",
+        "sha256": "15a35cec7110b9df2a434462449881224eb796cfc614e0e9930f00b8caabb69e"
+      }
+    ],
+    "trackedDiffSha256": "162c72654f9d030603758020c85558e9a038ca4bf4e3a6a0c056a53ee9d2b8d7",
+    "protectedEdits": [],
+    "staged": "",
+    "uncommitted": true
+  },
+  "finalReportPaths": [
+    "docs/release/2026-11-10/allen/20261007T014758Z/run-context.json",
+    "docs/release/2026-11-10/allen/20261007T014758Z/validation.md",
+    "docs/release/2026-11-10/allen/20261007T014758Z/issues-and-fixes.md",
+    "docs/release/2026-11-10/allen/20261007T014758Z/integration-handoff.md",
+    "docs/release/2026-11-10/allen/20261007T014758Z/coordination-and-eod.md",
+    "docs/release/2026-11-10/allen/20261007T014758Z/next-actions.md"
+  ],
+  "reportIdentityNote": "Source manifest hashes exact bytes of all 11 changed/new source/test files sorted by path. SHA-256 over JSON.stringify(manifest). Reports excluded to avoid self-reference. External final-artifacts.json records report byte hashes after creation.",
+  "blocked": [
+    "Persistent demo: ports 3002/3003 foreign listeners; zero demo journeys",
+    "Exact browser expiry: no authoritative expiry metadata in existing DTO",
+    "Node 22 not executed",
+    "Roadmap attachment pages 3/9/11 unavailable",
+    "Deployment cause not verified: no current logs/permitted connector",
+    "Backend owner, approved network/contract/provenance/read budget unresolved"
+  ],
+  "noActionsPerformed": [
+    "original-checkout source/index edits",
+    "other-worktree edits",
+    "database connections or migrations/preflight/seed",
+    "live application-provider connections",
+    "contract changes or live chain reads/writes/signing",
+    "purchases or cloud settings",
+    "messages/PRs/ClickUp publications",
+    "stage/commit/push/merge/rebase/stash/reset/clean",
+    "deployments"
+  ],
+  "evidenceDirectory": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-frontend-web3-evidence/20261007T014758Z"
+}

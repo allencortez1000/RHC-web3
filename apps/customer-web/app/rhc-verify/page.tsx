@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { Badge, Card, Web3Button } from '@rhc/ui';
+import { Badge, Card, Web3Button, useRuntime } from '@rhc/ui';
 import { PublicShell } from '../components/meridian-public/public-shell';
 
 const examples = [
@@ -16,6 +16,7 @@ const examples = [
 
 export default function Page() {
   const router = useRouter();
+  const { dataMode } = useRuntime();
   const [error, setError] = useState('');
 
   function submit(event: FormEvent<HTMLFormElement>) {
@@ -47,7 +48,7 @@ export default function Page() {
               Verify the record, <span className="text-[var(--rhc-primary)]">not the person.</span>
             </h1>
             <p className="mt-6 max-w-3xl text-lg leading-8 text-[var(--rhc-secondary-text)]">
-              Enter an opaque credential reference or scan the QR on an RHC-issued demo credential. Public results reveal only the approved minimum state and never provide a customer directory.
+              {dataMode === 'demo' ? 'Enter an opaque credential reference or scan the QR on an RHC-issued demo credential. Public results reveal only the approved minimum state and never provide a customer directory.' : 'Enter an opaque reference to check API availability. Public verification is not currently active; no customer identity is disclosed.'}
             </p>
             <div className="mt-8 grid gap-3 sm:grid-cols-3">
               {[
@@ -67,7 +68,7 @@ export default function Page() {
             <form onSubmit={submit} className="grid gap-4">
               <label className="text-sm font-semibold">
                 Opaque reference or verification URL
-                <input name="reference" required autoComplete="off" placeholder="demo-passport-…" className="mt-2 w-full rounded-xl border p-3 font-mono" />
+                <input name="reference" required autoComplete="off" placeholder={dataMode === 'demo' ? 'demo-passport-…' : 'Opaque verification reference'} className="mt-2 w-full rounded-xl border p-3 font-mono" />
               </label>
               <Web3Button type="submit">Check credential</Web3Button>
             </form>
@@ -77,7 +78,7 @@ export default function Page() {
         </div>
       </section>
 
-      <section className="border-y border-[var(--rhc-border)] bg-[var(--rhc-bg-secondary)] px-5 py-14 md:px-8">
+      {dataMode === 'demo' && <section className="border-y border-[var(--rhc-border)] bg-[var(--rhc-bg-secondary)] px-5 py-14 md:px-8">
         <div className="mx-auto max-w-6xl">
           <h2 className="text-2xl font-bold text-[var(--rhc-heading)]">Deterministic demo examples</h2>
           <p className="mt-2 text-sm text-[var(--rhc-muted)]">Use these synthetic references to review each safe public state.</p>
@@ -90,7 +91,7 @@ export default function Page() {
             ))}
           </div>
         </div>
-      </section>
+      </section>}
     </PublicShell>
   );
 }

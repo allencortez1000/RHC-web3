@@ -1,0 +1,132 @@
+{
+  "started": {
+    "utc": "2026-10-07T06:09:55.068Z",
+    "local": "Wed Oct 07 2026 14:09:55 GMT+0800 (China Standard Time)"
+  },
+  "finished": {
+    "utc": "2026-10-07T06:09:58.268Z",
+    "local": "Wed Oct 07 2026 14:09:58 GMT+0800 (China Standard Time)"
+  },
+  "execPath": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3-evidence\\20261007T040805Z\\tools\\node-v22.20.0-win-x64\\node.exe",
+  "version": "v22.20.0",
+  "checks": [
+    {
+      "name": "Protected source/index/HEAD preserved",
+      "passed": true
+    },
+    {
+      "name": "git diff HEAD --check",
+      "passed": true
+    },
+    {
+      "name": "No listeners on demo/intercepted ports",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "name": "All recorded parent validation children ran selected Node22",
+      "passed": true,
+      "detail": {
+        "records": 209,
+        "files": 23
+      }
+    },
+    {
+      "name": "Every recorded bounded run cleaned owned processes",
+      "passed": true
+    },
+    {
+      "name": "Syntax docs/release/2026-11-10/allen/20261007T040805Z/evidence/closeout.cjs",
+      "passed": true
+    },
+    {
+      "name": "Syntax docs/release/2026-11-10/allen/20261007T040805Z/evidence/demo/boundary.cjs",
+      "passed": true
+    },
+    {
+      "name": "Syntax docs/release/2026-11-10/allen/20261007T040805Z/evidence/demo/exercise.cjs",
+      "passed": true
+    },
+    {
+      "name": "Syntax docs/release/2026-11-10/allen/20261007T040805Z/evidence/demo/races.cjs",
+      "passed": true
+    },
+    {
+      "name": "Syntax docs/release/2026-11-10/allen/20261007T040805Z/evidence/demo/real-response-delay.cjs",
+      "passed": true
+    },
+    {
+      "name": "Syntax docs/release/2026-11-10/allen/20261007T040805Z/evidence/demo/real-response-delay.test.cjs",
+      "passed": true
+    },
+    {
+      "name": "Syntax docs/release/2026-11-10/allen/20261007T040805Z/evidence/demo/runtime-preload.cjs",
+      "passed": true
+    },
+    {
+      "name": "Syntax docs/release/2026-11-10/allen/20261007T040805Z/evidence/demo/selection.cjs",
+      "passed": true
+    },
+    {
+      "name": "Syntax docs/release/2026-11-10/allen/20261007T040805Z/evidence/demo/selection.test.cjs",
+      "passed": true
+    },
+    {
+      "name": "Syntax docs/release/2026-11-10/allen/20261007T040805Z/evidence/demo/self-test.cjs",
+      "passed": true
+    },
+    {
+      "name": "Syntax docs/release/2026-11-10/allen/20261007T040805Z/evidence/demo/summarize-targeted.cjs",
+      "passed": true
+    },
+    {
+      "name": "Syntax docs/release/2026-11-10/allen/20261007T040805Z/evidence/demo/summarize.cjs",
+      "passed": true
+    },
+    {
+      "name": "Syntax docs/release/2026-11-10/allen/20261007T040805Z/evidence/demo/supervisor.cjs",
+      "passed": true
+    },
+    {
+      "name": "Syntax docs/release/2026-11-10/allen/20261007T040805Z/evidence/demo/validate.cjs",
+      "passed": true
+    },
+    {
+      "name": "Syntax docs/release/2026-11-10/allen/20261007T040805Z/evidence/guard-test.cjs",
+      "passed": true
+    },
+    {
+      "name": "Syntax docs/release/2026-11-10/allen/20261007T040805Z/evidence/offline.cjs",
+      "passed": true
+    },
+    {
+      "name": "Syntax docs/release/2026-11-10/allen/20261007T040805Z/evidence/prepare-generated.cjs",
+      "passed": true
+    },
+    {
+      "name": "Syntax docs/release/2026-11-10/allen/20261007T040805Z/evidence/preserve.cjs",
+      "passed": true
+    },
+    {
+      "name": "Syntax docs/release/2026-11-10/allen/20261007T040805Z/evidence/provision-node.cjs",
+      "passed": true
+    },
+    {
+      "name": "Syntax docs/release/2026-11-10/allen/20261007T040805Z/evidence/run.cjs",
+      "passed": true
+    },
+    {
+      "name": "Syntax docs/release/2026-11-10/allen/20261007T040805Z/evidence/validate.cjs",
+      "passed": true
+    },
+    {
+      "name": "Shell syntax docs/release/2026-11-10/allen/20261007T040805Z/evidence/demo/restart-bounded.sh",
+      "passed": true
+    },
+    {
+      "name": "Shell syntax docs/release/2026-11-10/allen/20261007T040805Z/evidence/demo/restart-targeted-bounded.sh",
+      "passed": true
+    }
+  ],
+  "scope": "Read-only source/index comparison, runtime audit, OS ports, syntax; no application requests or new acceptance claims"
+}

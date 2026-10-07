@@ -162,3 +162,91 @@ test('transport refuses redirects, hides provider errors, checks response ID and
   const bad = createTransport(31337, 'fixture', 'fixture', new AbortController().signal, async () => new Response('x'.repeat(262145)));
   await assert.rejects(bad({ method: 'eth_chainId' }), { code: 'BAD_RESPONSE' });
 });
+
+// Deterministic cache-age regressions; status reads must never probe the provider.
+for (const partial of [false, true]) {
+  test('idle ' + (partial ? 'partial' : 'fresh') + ' snapshot reaches TTL without inventing a failed refresh', async () => {
+    const c = config(); let time = 100000; let calls = 0;
+    const provider = new ThirdwebReadProvider(c, async () => {
+      calls++; const result = successful(c);
+      return partial ? { ...result, snapshot: 'partial', connection: 'degraded', diagnosticCode: 'PARTIAL_METADATA', data: { ...result.data, name: unavailable() } } : result;
+    }, () => time);
+    const first = await provider.getTokenSnapshot();
+    time += c.ttlMs - 1;
+    assert.equal((await provider.getTokenSnapshot()).snapshot, first.snapshot);
+    time++;
+    const stale = await provider.getReadStatus();
+    assert.equal(stale.snapshot, 'stale'); assert.equal(stale.connection, 'degraded');
+    assert.equal(stale.diagnosticCode, 'REFRESH_REQUIRED');
+    assert.equal(stale.lastSuccessAt, first.lastSuccessAt);
+    assert.equal(stale.lastAttemptAt, first.lastAttemptAt);
+    assert.deepEqual(stale.data, first.data); assert.equal(calls, 1);
+  });
+  for (const equalLimits of [false, true]) {
+    test('expires ' + (partial ? 'partial' : 'fresh') + ' at exact maximum age; equal limits=' + equalLimits, async () => {
+      const c = config(); if (equalLimits) c.maxStaleMs = c.ttlMs;
+      let time = 100000; let calls = 0;
+      const provider = new ThirdwebReadProvider(c, async () => {
+        calls++; const result = successful(c);
+        return partial ? { ...result, snapshot: 'partial', connection: 'degraded', diagnosticCode: 'PARTIAL_METADATA', data: { ...result.data, name: unavailable() } } : result;
+      }, () => time);
+      const first = await provider.getTokenSnapshot();
+      time += c.maxStaleMs - 1; assert.ok((await provider.getReadStatus()).data);
+      for (const age of [c.maxStaleMs, c.maxStaleMs + 1]) {
+        time = 100000 + age;
+        const expired = await provider.getReadStatus();
+        assert.equal(expired.snapshot, 'absent'); assert.equal(expired.connection, 'unavailable');
+        assert.equal(expired.data, null); assert.equal(expired.block, null); assert.equal(expired.observedAt, null);
+        assert.equal(expired.diagnosticCode, 'SNAPSHOT_EXPIRED');
+        assert.equal(expired.lastSuccessAt, first.lastSuccessAt); assert.equal(expired.lastAttemptAt, first.lastAttemptAt);
+      }
+      assert.equal(calls, 1);
+    });
+  }
+}
+test('rate-limit evidence and original timestamps survive TTL and exact expiry during backoff', async () => {
+  const c = config(); let time = 100000; let calls = 0;
+  const provider = new ThirdwebReadProvider(c, async () => {
+    if (++calls > 1) throw new ReadError('RATE_LIMITED', 600000);
+    return successful(c);
+  }, () => time);
+  const first = await provider.getTokenSnapshot(); time += c.ttlMs;
+  const failed = await provider.getTokenSnapshot();
+  assert.equal(failed.snapshot, 'stale'); assert.equal(failed.diagnosticCode, 'RATE_LIMITED');
+  assert.equal(failed.observedAt, first.observedAt); assert.equal(failed.lastSuccessAt, first.lastSuccessAt);
+  for (const age of [c.maxStaleMs - 1, c.maxStaleMs, c.maxStaleMs + 1]) {
+    time = 100000 + age; const result = await provider.getTokenSnapshot();
+    assert.equal(result.snapshot, age < c.maxStaleMs ? 'stale' : 'absent');
+    assert.equal(result.diagnosticCode, 'RATE_LIMITED');
+    assert.equal(result.lastSuccessAt, first.lastSuccessAt); assert.equal(result.lastAttemptAt, failed.lastAttemptAt);
+    if (age >= c.maxStaleMs) { assert.equal(result.data, null); assert.equal(result.block, null); assert.equal(result.observedAt, null); }
+  }
+  assert.equal(calls, 2);
+  time = 100000 + c.ttlMs + 600000;
+  await provider.getTokenSnapshot(); assert.equal(calls, 3);
+});
+for (const code of ['WRONG_CHAIN', 'NO_CONTRACT', 'REORG', 'PROVIDER_AUTH']) {
+  test(code + ' discards a prior successful snapshot without erasing historical success', async () => {
+    const c = config(); let time = 100000; let fail = false;
+    const provider = new ThirdwebReadProvider(c, async () => { if (fail) throw new ReadError(code); return successful(c); }, () => time);
+    const first = await provider.getTokenSnapshot(); fail = true; time += c.ttlMs;
+    const result = await provider.getTokenSnapshot();
+    assert.equal(result.snapshot, 'absent'); assert.equal(result.data, null); assert.equal(result.block, null); assert.equal(result.observedAt, null);
+    assert.equal(result.diagnosticCode, code); assert.equal(result.lastSuccessAt, first.lastSuccessAt);
+    assert.notEqual(result.lastAttemptAt, first.lastAttemptAt);
+  });
+}
+
+test('idle partial snapshot beyond maximum age reports expiry rather than old field diagnostics', async () => {
+  const c = config(); let time = 100000; let calls = 0;
+  const provider = new ThirdwebReadProvider(c, async () => {
+    calls++; const result = successful(c);
+    return { ...result, snapshot: 'partial', connection: 'degraded', diagnosticCode: 'PARTIAL_METADATA', data: { ...result.data, name: unavailable() } };
+  }, () => time);
+  const first = await provider.getTokenSnapshot(); time += c.maxStaleMs + 1;
+  const expired = await provider.getReadStatus();
+  assert.equal(expired.snapshot, 'absent'); assert.equal(expired.data, null);
+  assert.equal(expired.diagnosticCode, 'SNAPSHOT_EXPIRED');
+  assert.equal(expired.lastSuccessAt, first.lastSuccessAt); assert.equal(expired.lastAttemptAt, first.lastAttemptAt);
+  assert.equal(calls, 1);
+});

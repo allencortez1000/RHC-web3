@@ -315,7 +315,7 @@ test('isolated read-only Web3 browser coverage', { timeout: 60000 }, async (t) =
             ...explorerFixture,
             diagnosticCode: 'SYNTHETIC_LONG_METADATA_' + 'x'.repeat(100),
             data: { ...synthetic.data, totalSupply: { status: 'observed', value: { raw: longNumber, formatted: longNumber } } },
-            block: { number: longNumber, hash: '0x' + 'b'.repeat(64), timestamp: synthetic.observedAt, finality: 'observed' },
+            block: { number: longNumber, hash: '0x' + 'b'.repeat(64), timestamp: '1791331200', finality: 'observed' },
           };
           const view = await visit({ authenticated: true, admin, result, theme, viewport: { width: 390, height: 844 } });
           await expect(view.page.getByText(sourceLabels.thirdweb_testnet, { exact: true })).toBeVisible();
@@ -400,7 +400,7 @@ test('isolated read-only Web3 browser coverage', { timeout: 60000 }, async (t) =
           chain: { id: 11155111, name: 'Sepolia' },
           contractAddress: '0x0000000000000000000000000000000000000001',
           explorerUrl: 'https://sepolia.etherscan.io/address/0x0000000000000000000000000000000000000001',
-          block: { number: '9007199254740993', hash: '0x' + 'a'.repeat(64), timestamp: synthetic.observedAt, finality: 'observed' },
+          block: { number: '9007199254740993', hash: '0x' + 'a'.repeat(64), timestamp: '1791331200', finality: 'observed' },
           data: {
             ...synthetic.data,
             decimals: { status: 'observed', value: 0 },
@@ -420,10 +420,9 @@ test('isolated read-only Web3 browser coverage', { timeout: 60000 }, async (t) =
         await expect(view.page.getByText('Last attempted read', { exact: true }).locator('..')).toContainText(result.lastAttemptAt);
         if (snapshot === 'stale') {
           await expect(view.page.getByRole('status')).toContainText('Stale snapshot');
-          await expect(view.page.getByRole('status')).toContainText(diagnosticCode === 'REFRESH_REQUIRED'
-            ? 'Refresh is required to obtain a current observation.'
-            : 'The provider cannot currently refresh this snapshot.');
-          if (diagnosticCode === 'REFRESH_REQUIRED') await expect(view.page.getByRole('status')).not.toContainText('provider cannot');
+          await expect(view.page.getByRole('status')).toContainText('Refresh is required to obtain a current observation.');
+          await expect(view.page.getByRole('status')).not.toContainText('provider cannot');
+          await expect(view.page.getByText('Diagnostic code', { exact: true }).locator('..')).toContainText(diagnosticCode);
         }
         const explorer = view.page.getByRole('link', { name: 'Open testnet explorer (opens in a new tab)', exact: true });
         await expect(explorer).toHaveAttribute('href', result.explorerUrl);
@@ -470,6 +469,126 @@ test('isolated read-only Web3 browser coverage', { timeout: 60000 }, async (t) =
       await expect(view.page.getByRole('alert')).toContainText('Global read access denied by server');
       await expect(view.page.getByRole('region', { name: 'Read-only Web3 result' })).toHaveCount(0);
       await view.finish();
+    });
+
+    for (const snapshot of ['fresh', 'partial']) {
+      await t.test(snapshot + ' is explicitly last-response state after elapsed time and tab resume', async () => {
+        const result = { ...explorerFixture, snapshot, connection: snapshot === 'fresh' ? 'ready' : 'degraded', lastSuccessAt: synthetic.observedAt };
+        const view = await visit({ authenticated: true, result });
+        try {
+          const panel = view.page.getByRole('region', { name: 'Read-only Web3 result' });
+          await expect(panel).toBeVisible();
+          const before = view.requests.length;
+          await view.page.clock.install();
+          await view.page.evaluate(() => {
+            Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'hidden' });
+            document.dispatchEvent(new Event('visibilitychange'));
+            window.dispatchEvent(new Event('blur'));
+          });
+          await view.page.clock.fastForward(3600001);
+          await view.page.evaluate(() => {
+            Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'visible' });
+            document.dispatchEvent(new Event('visibilitychange'));
+            window.dispatchEvent(new Event('focus'));
+            window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }));
+          });
+          assert.equal(await panel.getByText('Snapshot', { exact: true }).locator('..').locator('dd').textContent(), snapshot + ' (at last response)');
+          assert.equal(await panel.getByText('Connection', { exact: true }).locator('..').locator('dd').textContent(), result.connection + ' (at last response)');
+          assert.match(await panel.textContent(), /does not automatically recheck freshness, including after returning to this tab/);
+          await expect(panel.getByText('Last successful read', { exact: true }).locator('..')).toContainText(synthetic.observedAt);
+          await expect(view.page.getByRole('heading', { name: 'Public roadmap', exact: true })).toBeVisible();
+          assert.equal(view.requests.length, before, 'Resume must not initiate API or provider traffic');
+        } finally { await view.finish(); }
+      });
+    }
+
+    await t.test('block timestamp is exact decimal Unix seconds, not ISO or milliseconds', async () => {
+      for (const timestamp of ['0', '1791331200', '9007199254740993']) {
+        const result = { ...explorerFixture, block: { number: '123', hash: '0x' + 'a'.repeat(64), timestamp, finality: 'observed' } };
+        const view = await visit({ authenticated: true, result });
+        try {
+          const field = view.page.getByText('Block timestamp', { exact: true }).locator('..').locator('dd');
+          await expect(field).toBeVisible();
+          assert.equal(await field.textContent(), timestamp + ' (Unix seconds)');
+          await expect(view.page.getByText('Observed at', { exact: true }).locator('..')).toContainText(synthetic.observedAt);
+        } finally { await view.finish(); }
+      }
+    });
+
+    await t.test('stale partial metadata does not invent a failed provider refresh', async () => {
+      const view = await visit({ authenticated: true, result: { ...explorerFixture, snapshot: 'stale', connection: 'degraded', diagnosticCode: 'PARTIAL_METADATA' } });
+      try {
+        await expect(view.page.getByRole('region', { name: 'Read-only Web3 result' })).toBeVisible();
+        const status = view.page.getByRole('status'); await expect(status).toBeVisible();
+        assert.doesNotMatch(await status.textContent(), /provider cannot/);
+        await expect(status).toContainText('Refresh is required to obtain a current observation.');
+        await expect(view.page.getByText('Diagnostic code', { exact: true }).locator('..')).toContainText('PARTIAL_METADATA');
+      } finally { await view.finish(); }
+    });
+
+    await t.test('observed zero supply differs from unknown without inventing formatted units', async () => {
+      for (const observed of [true, false]) {
+        const result = { ...synthetic, data: { ...synthetic.data, decimals: { status: 'unavailable', value: null },
+          totalSupply: observed ? { status: 'observed', value: { raw: '0', formatted: null } } : { status: 'unavailable', value: null } } };
+        const view = await visit({ authenticated: true, result });
+        try {
+          const field = view.page.getByText('Total supply', { exact: true }).locator('..');
+          await expect(field).toBeVisible();
+          if (observed) {
+            await expect(field).toContainText('Raw base units: 0');
+            await expect(field).toContainText('Formatted: Not available');
+          } else {
+            await expect(field).toContainText('No observation available');
+            await expect(field).not.toContainText('Raw base units: 0');
+          }
+          await expect(view.page.getByText('Decimals', { exact: true }).locator('..')).toContainText('unavailable');
+        } finally { await view.finish(); }
+      }
+    });
+
+    await t.test('neither paused value establishes universal restrictions or activates capabilities', async () => {
+      for (const paused of [true, false]) {
+        const result = { ...explorerFixture, data: { ...synthetic.data, paused: { status: 'observed', value: paused } } };
+        const view = await visit({ authenticated: true, result });
+        try {
+          await expect(view.page.getByText('Paused flag', { exact: true }).locator('..')).toContainText(String(paused));
+          await expect(view.page.getByText('Restriction assessment', { exact: true }).locator('..')).toContainText('not_assessed');
+          await expect(view.page.getByText('A paused flag or cap observation does not verify transfer restrictions or authorize any capability.', { exact: true })).toBeVisible();
+          await expect(view.page.getByRole('button')).toHaveCount(0);
+          await expect(view.page.getByRole('listitem')).toHaveCount(5);
+        } finally { await view.finish(); }
+      }
+    });
+
+    await t.test('wrong-chain and expired responses retain history but display no token or block observations', async () => {
+      for (const diagnosticCode of ['WRONG_CHAIN', 'SNAPSHOT_EXPIRED']) {
+        const result = { ...explorerFixture, snapshot: 'absent', connection: 'unavailable', diagnosticCode,
+          data: null, block: null, observedAt: null, lastSuccessAt: synthetic.observedAt, lastAttemptAt: '2026-09-22T10:00:00.000Z' };
+        const view = await visit({ authenticated: true, result });
+        try {
+          await expect(view.page.getByRole('status')).toContainText('Missing observations are not zero balances or successful reads.');
+          await expect(view.page.getByText('Token field observations', { exact: true })).toHaveCount(0);
+          await expect(view.page.getByText('Block number', { exact: true })).toHaveCount(0);
+          await expect(view.page.getByText('Observed at', { exact: true }).locator('..')).toContainText('Not observed');
+          await expect(view.page.getByText('Last successful read', { exact: true }).locator('..')).toContainText(synthetic.observedAt);
+          await expect(view.page.getByText('Diagnostic code', { exact: true }).locator('..')).toContainText(diagnosticCode);
+        } finally { await view.finish(); }
+      }
+    });
+
+    await t.test('customer read failure leaves roadmap and session usable with explicit retry', async () => {
+      const view = await visit({ authenticated: true, failOnce: true });
+      try {
+        await expect(view.page.getByRole('alert')).toContainText('Synthetic read failure');
+        await expect(view.page.getByRole('heading', { name: 'Public roadmap', exact: true })).toBeVisible();
+        await expect(view.page.getByRole('region', { name: 'Read-only Web3 result' })).toHaveCount(0);
+        await view.page.getByRole('button', { name: 'Retry', exact: true }).click();
+        await expect(view.page.getByText(sourceLabels.synthetic, { exact: true })).toBeVisible();
+        assert.equal(view.requests.filter(request => request.path === '/api/web3/token').length, 2);
+        await view.page.evaluate(() => window.web3Harness.logout());
+        await expect(view.page.getByRole('region', { name: 'Read-only Web3 result' })).toHaveCount(0);
+        await expect(view.page.getByRole('heading', { name: 'Public roadmap', exact: true })).toBeVisible();
+      } finally { await view.finish(); }
     });
 
     await t.test('changing session removes previously visible customer data', async () => {

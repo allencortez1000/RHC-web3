@@ -1,0 +1,58 @@
+[
+  {
+    "label": "node22-customer-browser",
+    "started": "2026-10-07T04:50:39.488Z",
+    "startedLocal": "Wed Oct 07 2026 12:50:39 GMT+0800 (China Standard Time)",
+    "finished": "2026-10-07T04:52:38.533Z",
+    "durationMs": 119045,
+    "cwd": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3",
+    "executable": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3-evidence\\20261007T040805Z\\tools\\node-v22.20.0-win-x64\\node.exe",
+    "args": [
+      "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3-evidence\\20261007T040805Z\\tools\\node-v22.20.0-win-x64\\node_modules\\npm\\bin\\npm-cli.js",
+      "run",
+      "test:e2e",
+      "-w",
+      "@rhc/customer-web",
+      "--",
+      "--reporter=line",
+      "--output=C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3-evidence\\20261007T040805Z\\customer-results"
+    ],
+    "timeoutMs": 600000,
+    "mode": "offline",
+    "sourceManifestSha256": "c4950c49575f5d165d5e59922e8665d5be20d6b98bc052110c35256d186d7532",
+    "exitCode": 0,
+    "signal": null,
+    "timedOut": false,
+    "remainingOwned": [],
+    "log": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3-evidence\\20261007T040805Z\\node22-customer-browser.log",
+    "runtimeAudit": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3-evidence\\20261007T040805Z\\node22-customer-browser-runtime.jsonl"
+  },
+  {
+    "label": "node22-admin-browser",
+    "started": "2026-10-07T04:52:38.878Z",
+    "startedLocal": "Wed Oct 07 2026 12:52:38 GMT+0800 (China Standard Time)",
+    "finished": "2026-10-07T04:55:30.227Z",
+    "durationMs": 171349,
+    "cwd": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3",
+    "executable": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3-evidence\\20261007T040805Z\\tools\\node-v22.20.0-win-x64\\node.exe",
+    "args": [
+      "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3-evidence\\20261007T040805Z\\tools\\node-v22.20.0-win-x64\\node_modules\\npm\\bin\\npm-cli.js",
+      "run",
+      "test:e2e",
+      "-w",
+      "@rhc/admin-web",
+      "--",
+      "--reporter=line",
+      "--output=C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3-evidence\\20261007T040805Z\\admin-results"
+    ],
+    "timeoutMs": 600000,
+    "mode": "offline",
+    "sourceManifestSha256": "c4950c49575f5d165d5e59922e8665d5be20d6b98bc052110c35256d186d7532",
+    "exitCode": 0,
+    "signal": null,
+    "timedOut": false,
+    "remainingOwned": [],
+    "log": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3-evidence\\20261007T040805Z\\node22-admin-browser.log",
+    "runtimeAudit": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3-evidence\\20261007T040805Z\\node22-admin-browser-runtime.jsonl"
+  }
+]

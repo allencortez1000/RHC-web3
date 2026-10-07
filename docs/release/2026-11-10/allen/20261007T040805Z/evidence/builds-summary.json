@@ -1,0 +1,139 @@
+[
+  {
+    "label": "node22-npm",
+    "started": "2026-10-07T04:30:34.036Z",
+    "startedLocal": "Wed Oct 07 2026 12:30:34 GMT+0800 (China Standard Time)",
+    "finished": "2026-10-07T04:30:48.440Z",
+    "durationMs": 14404,
+    "cwd": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3",
+    "executable": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3-evidence\\20261007T040805Z\\tools\\node-v22.20.0-win-x64\\node.exe",
+    "args": [
+      "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3-evidence\\20261007T040805Z\\tools\\node-v22.20.0-win-x64\\node_modules\\npm\\bin\\npm-cli.js",
+      "--version"
+    ],
+    "timeoutMs": 30000,
+    "mode": "offline",
+    "sourceManifestSha256": "c4950c49575f5d165d5e59922e8665d5be20d6b98bc052110c35256d186d7532",
+    "exitCode": 0,
+    "signal": null,
+    "timedOut": false,
+    "remainingOwned": [],
+    "log": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3-evidence\\20261007T040805Z\\node22-npm.log",
+    "runtimeAudit": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3-evidence\\20261007T040805Z\\node22-npm-runtime.jsonl"
+  },
+  {
+    "label": "node22-prisma-generate",
+    "started": "2026-10-07T04:30:48.455Z",
+    "startedLocal": "Wed Oct 07 2026 12:30:48 GMT+0800 (China Standard Time)",
+    "finished": "2026-10-07T04:31:09.329Z",
+    "durationMs": 20874,
+    "cwd": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3",
+    "executable": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3-evidence\\20261007T040805Z\\tools\\node-v22.20.0-win-x64\\node.exe",
+    "args": [
+      "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3-evidence\\20261007T040805Z\\tools\\node-v22.20.0-win-x64\\node_modules\\npm\\bin\\npm-cli.js",
+      "run",
+      "db:generate"
+    ],
+    "timeoutMs": 120000,
+    "mode": "offline",
+    "sourceManifestSha256": "c4950c49575f5d165d5e59922e8665d5be20d6b98bc052110c35256d186d7532",
+    "exitCode": 0,
+    "signal": null,
+    "timedOut": false,
+    "remainingOwned": [],
+    "log": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3-evidence\\20261007T040805Z\\node22-prisma-generate.log",
+    "runtimeAudit": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3-evidence\\20261007T040805Z\\node22-prisma-generate-runtime.jsonl"
+  },
+  {
+    "label": "node22-typecheck",
+    "started": "2026-10-07T04:31:09.339Z",
+    "startedLocal": "Wed Oct 07 2026 12:31:09 GMT+0800 (China Standard Time)",
+    "finished": "2026-10-07T04:33:12.422Z",
+    "durationMs": 123083,
+    "cwd": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3",
+    "executable": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3-evidence\\20261007T040805Z\\tools\\node-v22.20.0-win-x64\\node.exe",
+    "args": [
+      "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3-evidence\\20261007T040805Z\\tools\\node-v22.20.0-win-x64\\node_modules\\npm\\bin\\npm-cli.js",
+      "run",
+      "typecheck"
+    ],
+    "timeoutMs": 480000,
+    "mode": "offline",
+    "sourceManifestSha256": "c4950c49575f5d165d5e59922e8665d5be20d6b98bc052110c35256d186d7532",
+    "exitCode": 0,
+    "signal": null,
+    "timedOut": false,
+    "remainingOwned": [],
+    "log": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3-evidence\\20261007T040805Z\\node22-typecheck.log",
+    "runtimeAudit": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3-evidence\\20261007T040805Z\\node22-typecheck-runtime.jsonl"
+  },
+  {
+    "label": "node22-build-customer",
+    "started": "2026-10-07T04:33:12.430Z",
+    "startedLocal": "Wed Oct 07 2026 12:33:12 GMT+0800 (China Standard Time)",
+    "finished": "2026-10-07T04:34:45.575Z",
+    "durationMs": 93145,
+    "cwd": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3",
+    "executable": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3-evidence\\20261007T040805Z\\tools\\node-v22.20.0-win-x64\\node.exe",
+    "args": [
+      "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3-evidence\\20261007T040805Z\\tools\\node-v22.20.0-win-x64\\node_modules\\npm\\bin\\npm-cli.js",
+      "run",
+      "build:customer"
+    ],
+    "timeoutMs": 480000,
+    "mode": "offline",
+    "sourceManifestSha256": "c4950c49575f5d165d5e59922e8665d5be20d6b98bc052110c35256d186d7532",
+    "exitCode": 0,
+    "signal": null,
+    "timedOut": false,
+    "remainingOwned": [],
+    "log": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3-evidence\\20261007T040805Z\\node22-build-customer.log",
+    "runtimeAudit": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3-evidence\\20261007T040805Z\\node22-build-customer-runtime.jsonl"
+  },
+  {
+    "label": "node22-build-admin",
+    "started": "2026-10-07T04:34:45.590Z",
+    "startedLocal": "Wed Oct 07 2026 12:34:45 GMT+0800 (China Standard Time)",
+    "finished": "2026-10-07T04:36:22.402Z",
+    "durationMs": 96812,
+    "cwd": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3",
+    "executable": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3-evidence\\20261007T040805Z\\tools\\node-v22.20.0-win-x64\\node.exe",
+    "args": [
+      "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3-evidence\\20261007T040805Z\\tools\\node-v22.20.0-win-x64\\node_modules\\npm\\bin\\npm-cli.js",
+      "run",
+      "build:admin"
+    ],
+    "timeoutMs": 480000,
+    "mode": "offline",
+    "sourceManifestSha256": "c4950c49575f5d165d5e59922e8665d5be20d6b98bc052110c35256d186d7532",
+    "exitCode": 0,
+    "signal": null,
+    "timedOut": false,
+    "remainingOwned": [],
+    "log": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3-evidence\\20261007T040805Z\\node22-build-admin.log",
+    "runtimeAudit": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3-evidence\\20261007T040805Z\\node22-build-admin-runtime.jsonl"
+  },
+  {
+    "label": "node22-build-api",
+    "started": "2026-10-07T04:36:22.415Z",
+    "startedLocal": "Wed Oct 07 2026 12:36:22 GMT+0800 (China Standard Time)",
+    "finished": "2026-10-07T04:37:21.511Z",
+    "durationMs": 59096,
+    "cwd": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3",
+    "executable": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3-evidence\\20261007T040805Z\\tools\\node-v22.20.0-win-x64\\node.exe",
+    "args": [
+      "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3-evidence\\20261007T040805Z\\tools\\node-v22.20.0-win-x64\\node_modules\\npm\\bin\\npm-cli.js",
+      "run",
+      "build:api"
+    ],
+    "timeoutMs": 480000,
+    "mode": "offline",
+    "sourceManifestSha256": "c4950c49575f5d165d5e59922e8665d5be20d6b98bc052110c35256d186d7532",
+    "exitCode": 0,
+    "signal": null,
+    "timedOut": false,
+    "remainingOwned": [],
+    "log": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3-evidence\\20261007T040805Z\\node22-build-api.log",
+    "runtimeAudit": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3-evidence\\20261007T040805Z\\node22-build-api-runtime.jsonl"
+  }
+]

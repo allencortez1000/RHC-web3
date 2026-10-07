@@ -1,0 +1,13 @@
+{
+  "started": "2026-10-07T04:27:05.307Z",
+  "finished": "2026-10-07T04:27:39.325Z",
+  "source": "https://nodejs.org/dist/v22.20.0/node-v22.20.0-win-x64.zip",
+  "checksumSource": "https://nodejs.org/dist/v22.20.0/SHASUMS256.txt",
+  "expected": "bb819d6eb8f5bfda294bbc83a7e4ec6539da67c4233d54b0d655b9248b15e29d",
+  "actual": "bb819d6eb8f5bfda294bbc83a7e4ec6539da67c4233d54b0d655b9248b15e29d",
+  "verified": true,
+  "selected": "22.20.0 is a compatible selected patch, not a claim of latest",
+  "version": "v22.20.0",
+  "arch": "x64",
+  "execPath": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3-evidence\\20261007T040805Z\\tools\\node-v22.20.0-win-x64\\node.exe"
+}

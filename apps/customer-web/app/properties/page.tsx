@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { AppShell, Badge, Card, EmptyState, MetricCard, ResourceStatus, Web3Button, errorMessage, useResource, useRuntime } from '@rhc/ui';
 import { LinkedProperties, type Property } from '../components/customer-data';
 import { navFor } from '../web3-nav';
+import { resourceMetric } from '../components/resource-metric';
 
 type InventoryProperty = Property & {
   metadata?: Record<string, unknown>;
@@ -97,8 +98,8 @@ export default function Page() {
             <p className="rhc-body-copy mt-4 max-w-3xl">{dataMode === 'demo' ? 'Browse fictional property records from the RHC demo inventory.' : 'Browse available property records returned by the connected API.'} Reservations remain off-chain business workflows and do not represent legal ownership or tokenized assets.</p>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
-            <MetricCard label="Matching records" value={String(filtered.length)} detail="Loaded inventory" icon="INV" />
-            <MetricCard label="Available units" value={String(availableCount)} detail={`${reservedCount} held/reserved/contracted`} icon="AV" />
+            <MetricCard label="Matching records" value={resourceMetric(inventory, () => String(filtered.length))} detail="Loaded inventory" icon="INV" />
+            <MetricCard label="Available units" value={resourceMetric(inventory, () => String(availableCount))} detail={resourceMetric(inventory, () => String(reservedCount) + ' held/reserved/contracted in loaded records')} icon="AV" />
           </div>
         </div>
       </section>

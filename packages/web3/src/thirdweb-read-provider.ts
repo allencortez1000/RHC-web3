@@ -17,8 +17,10 @@ export class ThirdwebReadProvider implements ReadProvider {
     const result = this.last ?? { ...emptyResult(this.config), connection: 'unavailable' as const, diagnosticCode: 'NOT_READ' };
     if (!result.lastSuccessAt || !result.data) return structuredClone(result);
     const age = this.now() - Date.parse(result.lastSuccessAt);
-    if (age > this.config.maxStaleMs) return { ...result, data: null, block: null, observedAt: null, snapshot: 'absent', connection: 'unavailable', diagnosticCode: result.diagnosticCode ?? 'SNAPSHOT_EXPIRED' };
-    if (age >= this.config.ttlMs || result.snapshot === 'stale') return { ...structuredClone(result), snapshot: 'stale', connection: 'degraded', diagnosticCode: result.diagnosticCode ?? 'REFRESH_REQUIRED' };
+    // Only a retained failed refresh carries provider-error evidence across age transitions.
+    const failureCode = result.snapshot === 'stale' ? result.diagnosticCode : null;
+    if (age >= this.config.maxStaleMs) return { ...result, data: null, block: null, observedAt: null, snapshot: 'absent', connection: 'unavailable', diagnosticCode: failureCode ?? 'SNAPSHOT_EXPIRED' };
+    if (age >= this.config.ttlMs || result.snapshot === 'stale') return { ...structuredClone(result), snapshot: 'stale', connection: 'degraded', diagnosticCode: failureCode ?? 'REFRESH_REQUIRED' };
     return structuredClone(result);
   }
   async getReadStatus() { return this.status(); }

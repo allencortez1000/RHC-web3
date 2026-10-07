@@ -1,0 +1,24 @@
+{
+  "declaration": "Written before the single authorized targeted attempt",
+  "selection": "delayed503-j4-j5",
+  "status": "NOT RUN",
+  "parentLabel": "demo-targeted-delayed503-j4-j5-01",
+  "selected": [
+    {
+      "journey": "J4",
+      "failure": "delayed503",
+      "expected": "Keep all existing J4 assertions: delayed Web3 loading then error on customer and staff fixtures; Maya real issued ID; Noah actual unissued ID and unavailable QR; actual 409 eligibility denial; submit actual identity review to business-verification PENDING; both personas' actual points ledger values and non-crypto explanation."
+    },
+    {
+      "journey": "J5",
+      "failure": "delayed503",
+      "expected": "Keep all existing J5 assertions: delayed Web3 loading then error on both fixtures; masked real valid/revoked public references; public mobile menu/skip link; customer 390/768/1440 layout, reduced motion and focus; command-menu containment and return; customer logout and protected-route rejection without ending staff session; admin mobile layout and correct admin skip-target focus."
+    }
+  ],
+  "other13Cells": "NOT RUN in this attempt; no inherited PASS status",
+  "supplemental": "NOT RUN; do not repeat baseline or race coverage",
+  "minimalSetup": "Separate Maya, Noah, staff and public contexts; supported named-persona login only. No J1/J2/J3 mutations. No need to repeat prior supplemental checks.",
+  "bounds": {"perCheckMs":75000,"supervisorMs":540000,"parentMs":900000},
+  "safety": "Same absolute Node22.20.0 and async parent offline runner. Recheck dotenv filenames and fixed 3002/3003 ownership before launch; foreign => BLOCKED. Exact owned HTTP/WS/Node boundary unchanged. New absent canonical external store, natural hub init, no reset/import. Cleanup owned trees on completion/failure/deadline.",
+  "history": "Preserve attempt03 timeout and 13 PASS, as well as all earlier failures. This is not one clean 15/15 on one store. Stop after this single targeted attempt regardless of outcome."
+}

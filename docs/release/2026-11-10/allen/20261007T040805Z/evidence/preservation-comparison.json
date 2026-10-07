@@ -1,0 +1,26 @@
+{
+  "utc": "2026-10-07T06:09:53.593Z",
+  "comparisons": {
+    "task": {
+      "head": true,
+      "branch": true,
+      "indexSha256": true,
+      "staged": true,
+      "tracked": true,
+      "untracked": true,
+      "files": true,
+      "activeOperations": true
+    },
+    "original": {
+      "head": true,
+      "branch": true,
+      "indexSha256": true,
+      "staged": true,
+      "tracked": true,
+      "untracked": true,
+      "files": true,
+      "activeOperations": true
+    }
+  },
+  "sourceUnchanged": true
+}

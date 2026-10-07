@@ -64,22 +64,27 @@ export function Web3ReadPanel({ result }: { result: Web3ReadResult }) {
       {(result.source === 'disabled' || result.configuration === 'disabled') && <p className="text-sm">No Web3 read is enabled. No token observation is available.</p>}
       {result.source === 'synthetic' && <p className="text-sm">All values and observation times below are fictional local fixtures, not blockchain evidence.</p>}
       {result.source === 'thirdweb_testnet' && <p className="text-sm">Testnet observations only; not production verification, legal approval, ownership evidence, or proof of transfer restrictions.</p>}
+      {result.source === 'thirdweb_testnet' && (
+        <p className="text-sm text-[var(--rhc-muted)]">
+          Connection and snapshot describe the last server response, not current provider health.
+          This view does not automatically recheck freshness, including after returning to this tab.
+          Reload the page to request updated status; diagnostics alone do not initiate a blockchain read.
+        </p>
+      )}
       {result.snapshot === 'absent' && <p role="status">No snapshot is available. Missing observations are not zero balances or successful reads.</p>}
       {result.snapshot === 'stale' && (
         <p role="status">
           Stale snapshot — retained observations are not a current successful read.{' '}
-          {result.diagnosticCode === 'REFRESH_REQUIRED'
-            ? 'Refresh is required to obtain a current observation.'
-            : 'The provider cannot currently refresh this snapshot.'}
+          Refresh is required to obtain a current observation.
         </p>
       )}
       {result.snapshot === 'partial' && <p role="status">Partial snapshot — some token fields were not observed.</p>}
       <dl className="grid gap-3 sm:grid-cols-2">
         <Metadata label="Source">{result.source}</Metadata>
         <Metadata label="Capability">{result.capability}</Metadata>
-        <Metadata label="Connection">{result.connection}</Metadata>
+        <Metadata label="Connection">{result.connection}{result.source === 'thirdweb_testnet' && ' (at last response)'}</Metadata>
         <Metadata label="Configuration">{result.configuration}</Metadata>
-        <Metadata label="Snapshot">{result.snapshot}</Metadata>
+        <Metadata label="Snapshot">{result.snapshot}{result.source === 'thirdweb_testnet' && ' (at last response)'}</Metadata>
         <Metadata label="Diagnostic code">{result.diagnosticCode ?? 'None reported'}</Metadata>
         <Metadata label="Restriction assessment">{result.restrictionAssessment}</Metadata>
         <Metadata label="Chain">{result.chain ? `${result.chain.name} (${result.chain.id})` : 'Not available'}</Metadata>
@@ -114,7 +119,7 @@ export function Web3ReadPanel({ result }: { result: Web3ReadResult }) {
         <dl className="grid gap-3 sm:grid-cols-2">
           <Metadata label="Block number">{result.block.number}</Metadata>
           <Metadata label="Block hash">{result.block.hash ?? 'Not available'}</Metadata>
-          <Metadata label="Block timestamp">{result.block.timestamp ?? 'Not available'}</Metadata>
+          <Metadata label="Block timestamp">{result.block.timestamp} (Unix seconds)</Metadata>
           <Metadata label="Block finality">{result.block.finality} — no finality guarantee</Metadata>
         </dl>
       ) : <p className="text-sm text-[var(--rhc-muted)]">No block observation is available.</p>}

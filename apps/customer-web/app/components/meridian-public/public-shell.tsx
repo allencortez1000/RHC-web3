@@ -1,6 +1,8 @@
+'use client';
+
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import { Badge, RHCLogoMark, ThemeToggle, Web3Button, Web3Shell } from '@rhc/ui';
+import { Badge, RHCLogoMark, ThemeToggle, Web3Button, Web3Shell, useRuntime } from '@rhc/ui';
 import { PUBLIC_NAV_ITEMS, type PublicNavKey } from './data';
 import { MeridianIcon } from './meridian-icon';
 
@@ -27,6 +29,7 @@ export function PublicShell({
   children: ReactNode;
   current?: PublicNavKey;
 }) {
+  const { dataMode } = useRuntime();
   return (
     <>
       <a href="#main-content" className="rhc-skip-link">
@@ -102,10 +105,10 @@ export function PublicShell({
         </div>
       </header>
 
-      <div role="note" aria-label="Demonstration environment" className="border-b border-[rgba(212,175,55,.2)] bg-[var(--rhc-accent-soft)]">
+      <div role="note" aria-label={dataMode === 'demo' ? 'Demonstration environment' : 'API data mode'} className="border-b border-[rgba(212,175,55,.2)] bg-[var(--rhc-accent-soft)]">
         <div className="mx-auto flex max-w-7xl items-center justify-center gap-2 px-5 py-2 text-center text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--rhc-secondary-text)] sm:text-xs">
           <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--rhc-primary)]" />
-          Demonstration environment · All records and service states are illustrative
+          {dataMode === 'demo' ? 'Demonstration environment · All records and service states are illustrative' : 'API data mode · Availability is reported per feature; illustrative concepts are labeled separately'}
         </div>
       </div>
 
@@ -154,7 +157,7 @@ export function PublicShell({
           </div>
 
           <div className="mt-10 flex flex-col gap-3 border-t border-[var(--rhc-border)] pt-6 text-xs leading-5 text-[var(--rhc-muted)] md:flex-row md:items-start md:justify-between">
-            <p>Rabino Holdings Corporation · RHC public demonstration</p>
+            <p>Rabino Holdings Corporation · {dataMode === 'demo' ? 'RHC public demonstration' : 'RHC Digital'}</p>
             <p className="max-w-2xl md:text-right">
               No live purchase, payment, token, wallet custody, blockchain settlement, or legal-title transfer is offered on these public pages.
             </p>
