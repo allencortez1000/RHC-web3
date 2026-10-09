@@ -1,0 +1,329 @@
+{
+  "schema": "rhc-wallet-w2a-offline-handoff-v1",
+  "generatedAt": "2026-10-09T04:51:54.980Z",
+  "machine": "DESKTOP-5TQ68F9",
+  "owner": "Boss Allen",
+  "executor": "ChatGPT / Remote Desktop Commander",
+  "worktree": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009",
+  "branch": "allen/w2a-thirdweb-wallet",
+  "baseCommit": "d951c91800f00d31a4ec4bd7b4da14e8a266e01d",
+  "status": "W2A_OFFLINE_SCOPE_ACCEPTED__CONNECTED_WALLET_STILL_BLOCKED",
+  "sdkVersion": "5.121.6",
+  "providerReleaseLock": "OFFLINE_REVIEW_ONLY",
+  "thirdwebSdkLoadedByApp": false,
+  "sourceRecords": [
+    {
+      "path": "apps/customer-web/app/account/page.tsx",
+      "bytes": 393,
+      "sha256": "a6d9e4f8f97d8b82bd49f04efabec25f21438ca7468ee75c3f9178be55956e3b",
+      "tracked": true
+    },
+    {
+      "path": "apps/customer-web/app/components/wallet-thirdweb/policy.ts",
+      "bytes": 3416,
+      "sha256": "d703a7cc9677caa0ff066c8a9de87a5738c282b419e2411c16a86a1e5d21998f",
+      "tracked": false
+    },
+    {
+      "path": "apps/customer-web/app/components/wallet-thirdweb/sdk-preparation.ts",
+      "bytes": 2911,
+      "sha256": "462ac9c3e19181f21b82a337ef5b8849c28f1e1fc9cb025ce1254ebe48cefd34",
+      "tracked": false
+    },
+    {
+      "path": "apps/customer-web/app/components/wallet-thirdweb/ThirdwebWalletReadiness.tsx",
+      "bytes": 2863,
+      "sha256": "23e43f4a4f7c6f9bacaf842007e29a56d1810309888b17d87edc9cdff4109435",
+      "tracked": false
+    },
+    {
+      "path": "apps/customer-web/package.json",
+      "bytes": 886,
+      "sha256": "955ad40e32e41f25e622121a72f1cc6b6f4fb38f58a267e65c6d4d870077183b",
+      "tracked": true
+    },
+    {
+      "path": "apps/customer-web/tests/w2a-thirdweb.browser.cjs",
+      "bytes": 6699,
+      "sha256": "173e6f14bb53cd8b40f60c3229126d28ba8122c05e996037db519bb8d86047fb",
+      "tracked": false
+    },
+    {
+      "path": "apps/customer-web/tests/w2a-thirdweb.offline.cjs",
+      "bytes": 8717,
+      "sha256": "c84cfbbe2712ded9855ed6f099a5fc6c0a74589f07d4fee7527a4b188d5bb1d6",
+      "tracked": false
+    },
+    {
+      "path": "docs/wallet/w2a-20261009/ACCEPTANCE-DECISION.md",
+      "bytes": 4802,
+      "sha256": "226dd00de56c7cce6e812c50c50e94d3cec3deea68a67d3ab03106a872a5071c",
+      "tracked": false
+    },
+    {
+      "path": "docs/wallet/w2a-20261009/BACKEND-DECISIONS.md",
+      "bytes": 3452,
+      "sha256": "d5fc9767881455ed43169cb639441c99c889525915d27a8a0c9085113b26463f",
+      "tracked": false
+    },
+    {
+      "path": "docs/wallet/w2a-20261009/IMPLEMENTATION-RESULT.md",
+      "bytes": 3734,
+      "sha256": "69f860233f8aeadb38b819d08cc2bf4f7d324338950469557eb4addc3e01a123",
+      "tracked": false
+    },
+    {
+      "path": "docs/wallet/w2a-20261009/PRESERVATION-RESULT.md",
+      "bytes": 2739,
+      "sha256": "40504b4ca248266e2c45d0aa14b952e387df0092c90767328966ad8a33b7b5d4",
+      "tracked": false
+    },
+    {
+      "path": "docs/wallet/w2a-20261009/RUN-STATE.md",
+      "bytes": 3914,
+      "sha256": "255ff581cf68c21f5b90b78e20266e8b18e9746d8217cd68c1393032bcf1c0d4",
+      "tracked": false
+    },
+    {
+      "path": "docs/wallet/w2a-20261009/VALIDATION-RESULT.md",
+      "bytes": 4015,
+      "sha256": "f43fc412821b4992ff45080f3300655bc38961c98509e6ec82bee06e7d45b974",
+      "tracked": false
+    },
+    {
+      "path": "docs/wallet/w2a-20261009/W2B-AGENT-HANDOFF.md",
+      "bytes": 2371,
+      "sha256": "903520012730311dbcd99b2aebd0bba07ae2f928cba96bafe549845a02fcead3",
+      "tracked": false
+    },
+    {
+      "path": "package-lock.json",
+      "bytes": 881263,
+      "sha256": "70a6e57ff66d57b26e59572290ea6564a28274321c05c894e02adc61aa14a723",
+      "tracked": true
+    }
+  ],
+  "tests": [
+    {
+      "name": "w2a-policy",
+      "at": "2026-10-09T04:30:39.799Z",
+      "elapsedMs": 3301,
+      "exit": 0,
+      "error": null,
+      "signal": null,
+      "expected": 16,
+      "tests": 16,
+      "pass": 16,
+      "fail": 0,
+      "skipped": 0,
+      "sha256": "eb5483e1c174814b6bbfc916d8da26b2307097c5b8c6815cbd76b074d190ac28",
+      "log": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-wallet-w2a-20261009-evidence\\w2a-20261009\\followup-w2a-policy.log"
+    },
+    {
+      "name": "w2a-browser",
+      "at": "2026-10-09T04:30:43.102Z",
+      "elapsedMs": 3129,
+      "exit": 0,
+      "error": null,
+      "signal": null,
+      "expected": 7,
+      "tests": 7,
+      "pass": 7,
+      "fail": 0,
+      "skipped": 0,
+      "sha256": "e5dc8aa1a5ee0ac8bcf3fedf24a55bbcb27b7360217a91cb97a5870fc6de44b2",
+      "log": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-wallet-w2a-20261009-evidence\\w2a-20261009\\followup-w2a-browser.log"
+    },
+    {
+      "name": "w1-unit",
+      "at": "2026-10-09T04:30:46.231Z",
+      "elapsedMs": 606,
+      "exit": 0,
+      "error": null,
+      "signal": null,
+      "expected": 25,
+      "tests": 25,
+      "pass": 25,
+      "fail": 0,
+      "skipped": 0,
+      "sha256": "8be115f6ed982865d9325775ba28b7a460db01f7b1dc9fd69ac6743b35a49b6f",
+      "log": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-wallet-w2a-20261009-evidence\\w2a-20261009\\followup-w1-unit.log"
+    },
+    {
+      "name": "frontend-demo",
+      "at": "2026-10-09T04:30:46.838Z",
+      "elapsedMs": 747,
+      "exit": 0,
+      "error": null,
+      "signal": null,
+      "expected": 3,
+      "tests": 3,
+      "pass": 3,
+      "fail": 0,
+      "skipped": 0,
+      "sha256": "1b49dcef2085b79c78a7ba6fe9fed5ff98be06b72ceff120dc50f6c5d9a9ca09",
+      "log": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-wallet-w2a-20261009-evidence\\w2a-20261009\\followup-frontend-demo.log"
+    },
+    {
+      "name": "frontend-permission",
+      "at": "2026-10-09T04:30:47.586Z",
+      "elapsedMs": 1091,
+      "exit": 0,
+      "error": null,
+      "signal": null,
+      "expected": 11,
+      "tests": 11,
+      "pass": 11,
+      "fail": 0,
+      "skipped": 0,
+      "sha256": "d6859f8b641a93497bf0e6902f0f71611b2a7a602c65bb28842c80c199e35e3a",
+      "log": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-wallet-w2a-20261009-evidence\\w2a-20261009\\followup-frontend-permission.log"
+    },
+    {
+      "name": "web3-read",
+      "at": "2026-10-09T04:30:48.678Z",
+      "elapsedMs": 930,
+      "exit": 0,
+      "error": null,
+      "signal": null,
+      "expected": 46,
+      "tests": 46,
+      "pass": 46,
+      "fail": 0,
+      "skipped": 0,
+      "sha256": "db22d8435b0186af2abfc9009c09261f7f3a4295e5b90a11f01788af6bdc62da",
+      "log": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-wallet-w2a-20261009-evidence\\w2a-20261009\\followup-web3-read.log"
+    },
+    {
+      "name": "web3-sdk-fixture",
+      "at": "2026-10-09T04:30:49.608Z",
+      "elapsedMs": 2449,
+      "exit": 0,
+      "error": null,
+      "signal": null,
+      "expected": 18,
+      "tests": 18,
+      "pass": 18,
+      "fail": 0,
+      "skipped": 0,
+      "sha256": "2ea0682e2e747ac7f6f7ac33ecddf05c9ec7e4f54dc68f1bd962277c9afcf150",
+      "log": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-wallet-w2a-20261009-evidence\\w2a-20261009\\followup-web3-sdk-fixture.log"
+    },
+    {
+      "name": "web3-browser-fixture",
+      "at": "2026-10-09T04:30:52.057Z",
+      "elapsedMs": 21757,
+      "exit": 0,
+      "error": null,
+      "signal": null,
+      "expected": 50,
+      "tests": 50,
+      "pass": 50,
+      "fail": 0,
+      "skipped": 0,
+      "sha256": "f1624b07a4e9f97627ba3627bdf4493e92e5b0df4d2d311812203c1cfbb50771",
+      "log": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-wallet-w2a-20261009-evidence\\w2a-20261009\\followup-web3-browser-fixture.log"
+    },
+    {
+      "name": "customer-typecheck",
+      "at": "2026-10-09T04:31:13.814Z",
+      "elapsedMs": 9811,
+      "exit": 0,
+      "error": null,
+      "signal": null,
+      "expected": null,
+      "tests": null,
+      "pass": null,
+      "fail": null,
+      "skipped": null,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "log": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-wallet-w2a-20261009-evidence\\w2a-20261009\\followup-customer-typecheck.log"
+    },
+    {
+      "name": "frontend-lint",
+      "at": "2026-10-09T04:31:23.625Z",
+      "elapsedMs": 4253,
+      "exit": 0,
+      "error": null,
+      "signal": null,
+      "expected": null,
+      "tests": null,
+      "pass": null,
+      "fail": null,
+      "skipped": null,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "log": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-wallet-w2a-20261009-evidence\\w2a-20261009\\followup-frontend-lint.log"
+    }
+  ],
+  "productionBuild": {
+    "status": "PASS",
+    "sha256": "58a1ea6500ee9665b961aaa140e47020101e39ff8a2926c23dbb2767203af751",
+    "log": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-wallet-w2a-20261009-evidence\\w2a-20261009\\customer-production-build.log"
+  },
+  "preservedW1": {
+    "worktree": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-frontend-web3",
+    "head": "d951c91800f00d31a4ec4bd7b4da14e8a266e01d",
+    "clean": true
+  },
+  "allowedTrackedChanges": [
+    "apps/customer-web/app/account/page.tsx",
+    "apps/customer-web/package.json",
+    "package-lock.json"
+  ],
+  "allowedNewFiles": [
+    "apps/customer-web/app/components/wallet-thirdweb/ThirdwebWalletReadiness.tsx",
+    "apps/customer-web/app/components/wallet-thirdweb/policy.ts",
+    "apps/customer-web/app/components/wallet-thirdweb/sdk-preparation.ts",
+    "apps/customer-web/tests/w2a-thirdweb.browser.cjs",
+    "apps/customer-web/tests/w2a-thirdweb.offline.cjs",
+    "docs/wallet/w2a-20261009/ACCEPTANCE-DECISION.md",
+    "docs/wallet/w2a-20261009/BACKEND-DECISIONS.md",
+    "docs/wallet/w2a-20261009/IMPLEMENTATION-RESULT.md",
+    "docs/wallet/w2a-20261009/PRESERVATION-RESULT.md",
+    "docs/wallet/w2a-20261009/RUN-STATE.md",
+    "docs/wallet/w2a-20261009/VALIDATION-RESULT.md",
+    "docs/wallet/w2a-20261009/W2B-AGENT-HANDOFF.md",
+    "docs/wallet/w2a-20261009/handoff-manifest.json"
+  ],
+  "localIgnoredDependencyJunction": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009/node_modules",
+  "locallyBuiltIgnoredArtifacts": [
+    "packages/types/dist",
+    "packages/web3/dist",
+    "apps/customer-web/.next"
+  ],
+  "noAppOrTestPortsRemaining": true,
+  "acceptance": {
+    "w2aHumanAccepted": true,
+    "walletConnectedAccepted": false,
+    "embeddedWalletEnrolledAccepted": false,
+    "backendWalletLinkedAccepted": false,
+    "tokenAccepted": false,
+    "internalUat": false,
+    "w2aOfflineScopeAccepted": true
+  },
+  "noThirdwebRequests": true,
+  "noBackendWrites": true,
+  "nextApprovalPoint": "Boss Allen W2A human review; Boss Gal wallet auth/link contract and service readiness for later W2B",
+  "finalReview": {
+    "status": "PASS",
+    "approvalScope": "W2A offline preparation only",
+    "ownerApprovalMode": "Boss Allen explicit delegated approval in project chat",
+    "technicalReviewer": "ChatGPT",
+    "reviewLedger": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2a-acceptance-closure-20261009/ACCEPTANCE-REVIEW-LEDGER.json",
+    "allFiveFreshChecksPassed": true,
+    "allTenPriorChecksPassed": true,
+    "offlineNextBuildPassed": true,
+    "noConnectedUat": true,
+    "connectedProviderAllowed": false
+  },
+  "gitClosure": {
+    "authorized": true,
+    "branch": "allen/w2a-thirdweb-wallet",
+    "baseCommit": "d951c91800f00d31a4ec4bd7b4da14e8a266e01d",
+    "commitPushResult": "not yet performed when this manifest was written; see subsequent Git closure evidence",
+    "noMerge": true,
+    "noForce": true
+  },
+  "formattedBeforeGitClosure": true,
+  "documentationFormatting": "Nine previously reviewed Markdown hard-break trailing spaces normalized to bullet metadata while preserving W2A acceptance content."
+}
