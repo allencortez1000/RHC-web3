@@ -1,0 +1,202 @@
+{
+  "utc": "2026-10-08T04:24:49.442Z",
+  "local": "Thu Oct 08 2026 12:24:49 GMT+0800 (China Standard Time)",
+  "head": "4c83c23d4341303cbe031db8f32f296d7df838b6",
+  "branch": "allen/frontend-web3-stabilization",
+  "execPath": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3-evidence\\20261007T040805Z\\tools\\node-v22.20.0-win-x64\\node.exe",
+  "checks": [
+    {
+      "name": "HEAD/index/staged bytes preserved",
+      "pass": true
+    },
+    {
+      "name": "Only exact frontend/test allowlist changed",
+      "pass": true,
+      "details": [
+        "apps/admin-web/app/capability-scopes.ts",
+        "apps/admin-web/tests/capability-request-coordinator.spec.ts",
+        "apps/customer-web/app/components/digital-id-page.tsx",
+        "apps/customer-web/app/properties/[id]/page.tsx",
+        "apps/customer-web/tests/integration-preparation.spec.ts"
+      ]
+    },
+    {
+      "name": "Diff whitespace check",
+      "pass": true
+    },
+    {
+      "name": "Owned fixture ports have no listeners",
+      "pass": true,
+      "details": []
+    },
+    {
+      "name": "All bounded commands cleaned owned processes",
+      "pass": true
+    },
+    {
+      "name": "Recorded validation children use selected Node22",
+      "pass": true,
+      "details": {
+        "records": 152
+      }
+    },
+    {
+      "name": "Syntax docs/integration/20261008T035421Z/evidence/admin-scope-regression.cjs",
+      "pass": true
+    },
+    {
+      "name": "Syntax docs/integration/20261008T035421Z/evidence/finalize.cjs",
+      "pass": true
+    },
+    {
+      "name": "Syntax docs/integration/20261008T035421Z/evidence/preserve.cjs",
+      "pass": true
+    },
+    {
+      "name": "Syntax docs/integration/20261008T035421Z/evidence/run.cjs",
+      "pass": true
+    },
+    {
+      "name": "Syntax docs/integration/20261008T035421Z/evidence/validate.cjs",
+      "pass": true
+    },
+    {
+      "name": "Link integration-readiness.md:local-smoke-checklist.md",
+      "pass": true
+    },
+    {
+      "name": "Link integration-readiness.md:evidence/commands.jsonl",
+      "pass": true
+    },
+    {
+      "name": "Link integration-readiness.md:../../release/2026-11-10/allen/20261007T040805Z/decisions-and-handoff.md",
+      "pass": true
+    },
+    {
+      "name": "Link local-smoke-checklist.md:integration-readiness.md",
+      "pass": true
+    },
+    {
+      "name": "Final check customer-prep-build-green-01",
+      "pass": true
+    },
+    {
+      "name": "Final check customer-browser-prep-green-01",
+      "pass": true
+    },
+    {
+      "name": "Final check customer-browser-prep-full-01",
+      "pass": true
+    },
+    {
+      "name": "Final check customer-prep-typecheck-01",
+      "pass": true
+    },
+    {
+      "name": "Final check customer-prep-lint-01",
+      "pass": true
+    },
+    {
+      "name": "Final check admin-scope-regression-green",
+      "pass": true
+    },
+    {
+      "name": "Final check admin-production-build",
+      "pass": true
+    },
+    {
+      "name": "Final check frontend-web3-typecheck",
+      "pass": true
+    },
+    {
+      "name": "Final check frontend-web3-lint",
+      "pass": true
+    },
+    {
+      "name": "Final check web3-unit-sdk",
+      "pass": true
+    },
+    {
+      "name": "Final check ui-frontend-unit",
+      "pass": true
+    },
+    {
+      "name": "Final check web3-browser",
+      "pass": true
+    },
+    {
+      "name": "Final check admin-browser-full",
+      "pass": true
+    }
+  ],
+  "finalCommandResults": [
+    {
+      "label": "admin-scope-regression-green",
+      "sourceManifestSha256": "042f8f5836732ada51d79282675c7d8d42db428f6fa5ff047615385e5580d288",
+      "exitCode": 0
+    },
+    {
+      "label": "customer-prep-build-green-01",
+      "sourceManifestSha256": "4cf6c6f6ec30e0955b30818334c52f8c6bf0d0e85bbc802998293e7c9d22e30d",
+      "exitCode": 0
+    },
+    {
+      "label": "customer-browser-prep-green-01",
+      "sourceManifestSha256": "4cf6c6f6ec30e0955b30818334c52f8c6bf0d0e85bbc802998293e7c9d22e30d",
+      "exitCode": 0
+    },
+    {
+      "label": "customer-prep-lint-01",
+      "sourceManifestSha256": "4cf6c6f6ec30e0955b30818334c52f8c6bf0d0e85bbc802998293e7c9d22e30d",
+      "exitCode": 0
+    },
+    {
+      "label": "customer-prep-typecheck-01",
+      "sourceManifestSha256": "4cf6c6f6ec30e0955b30818334c52f8c6bf0d0e85bbc802998293e7c9d22e30d",
+      "exitCode": 0
+    },
+    {
+      "label": "customer-browser-prep-full-01",
+      "sourceManifestSha256": "4cf6c6f6ec30e0955b30818334c52f8c6bf0d0e85bbc802998293e7c9d22e30d",
+      "exitCode": 0
+    },
+    {
+      "label": "admin-production-build",
+      "sourceManifestSha256": "4cf6c6f6ec30e0955b30818334c52f8c6bf0d0e85bbc802998293e7c9d22e30d",
+      "exitCode": 0
+    },
+    {
+      "label": "frontend-web3-typecheck",
+      "sourceManifestSha256": "4cf6c6f6ec30e0955b30818334c52f8c6bf0d0e85bbc802998293e7c9d22e30d",
+      "exitCode": 0
+    },
+    {
+      "label": "frontend-web3-lint",
+      "sourceManifestSha256": "4cf6c6f6ec30e0955b30818334c52f8c6bf0d0e85bbc802998293e7c9d22e30d",
+      "exitCode": 0
+    },
+    {
+      "label": "web3-unit-sdk",
+      "sourceManifestSha256": "4cf6c6f6ec30e0955b30818334c52f8c6bf0d0e85bbc802998293e7c9d22e30d",
+      "exitCode": 0
+    },
+    {
+      "label": "ui-frontend-unit",
+      "sourceManifestSha256": "4cf6c6f6ec30e0955b30818334c52f8c6bf0d0e85bbc802998293e7c9d22e30d",
+      "exitCode": 0
+    },
+    {
+      "label": "web3-browser",
+      "sourceManifestSha256": "4cf6c6f6ec30e0955b30818334c52f8c6bf0d0e85bbc802998293e7c9d22e30d",
+      "exitCode": 0
+    },
+    {
+      "label": "admin-browser-full",
+      "sourceManifestSha256": "4cf6c6f6ec30e0955b30818334c52f8c6bf0d0e85bbc802998293e7c9d22e30d",
+      "exitCode": 0
+    }
+  ],
+  "contractComparison": "BLOCKED: named contract/recovery/exact standalone CORS allowlist missing",
+  "connectedRequests": 0,
+  "backendServicesStarted": 0
+}

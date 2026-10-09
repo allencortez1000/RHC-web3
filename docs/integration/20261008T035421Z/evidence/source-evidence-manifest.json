@@ -1,0 +1,232 @@
+{
+  "utc": "2026-10-08T04:24:49.442Z",
+  "head": "4c83c23d4341303cbe031db8f32f296d7df838b6",
+  "branch": "allen/frontend-web3-stabilization",
+  "productChanges": [
+    {
+      "path": "apps/admin-web/app/capability-scopes.ts",
+      "sha256": "af44ca4a7604b7f14b8d6a582cc86efeecc3f45324b1f1d8f62dcdd33ffa9d9f"
+    },
+    {
+      "path": "apps/admin-web/tests/capability-request-coordinator.spec.ts",
+      "sha256": "c9d9c875f334bf15e99e23840bfc9a09ec029e5eb0055ebb2277a98bd1ac1507"
+    },
+    {
+      "path": "apps/customer-web/app/components/digital-id-page.tsx",
+      "sha256": "9ae59d1628409a573c21e587b28cadff053c33713d2bbdb0457651be22e517ea"
+    },
+    {
+      "path": "apps/customer-web/app/properties/[id]/page.tsx",
+      "sha256": "b66094b7d1f307ad0b62aa08faf15d73d9acfb0177b79a78c01faf68c4371c94"
+    },
+    {
+      "path": "apps/customer-web/tests/integration-preparation.spec.ts",
+      "sha256": "78b457dd8e4f03b3e3878ee7aae14b7b677afc6b02e8f90e419c877426a32f9a"
+    }
+  ],
+  "productChangeManifestSha256": "24c02faf12cbbbeb407587fcdd42aa532e4a5fe5cc698d0604033e728a7f78fd",
+  "finalTestedSourceIdentity": "4cf6c6f6ec30e0955b30818334c52f8c6bf0d0e85bbc802998293e7c9d22e30d",
+  "sourceIdentityDefinition": "SHA256(JSON.stringify(sorted {path,sha256} array of tracked+untracked nonignored files, excluding dotenv and this report folder)); per-command source manifests are external",
+  "followUpArtifacts": [
+    {
+      "path": "docs/integration/20261008T035421Z/evidence/admin-scope-regression.cjs",
+      "sha256": "a3dd93aabfe157b98e0fbfa9d5bcdbbe9bb81b20deb5fcee206049b1882f4d4c"
+    },
+    {
+      "path": "docs/integration/20261008T035421Z/evidence/commands.jsonl",
+      "sha256": "02f48860827aaef514d3d0db9c0a5c05ab7cbefd0834773bdd620eaac3b92a1d"
+    },
+    {
+      "path": "docs/integration/20261008T035421Z/evidence/final-checks.json",
+      "sha256": "cdc3ac65c459ccd739834198cac92e9b8601f27c9c27829b1ecc1dac44e243d1"
+    },
+    {
+      "path": "docs/integration/20261008T035421Z/evidence/finalize.cjs",
+      "sha256": "bc21c1fc1f82a4d1786c05c371b0f30389726f6e293f70a954436a28973cf057"
+    },
+    {
+      "path": "docs/integration/20261008T035421Z/evidence/preservation-after.json",
+      "sha256": "c7cbbc99e9350efedcecec4bd24556338fb5a4dc8ddc6b51ed5d54dea4231f7c"
+    },
+    {
+      "path": "docs/integration/20261008T035421Z/evidence/preservation-before.json",
+      "sha256": "3d42db8182f31a472da59430f6b0df681b742c969b9bec0d5a39b81a62586ad6"
+    },
+    {
+      "path": "docs/integration/20261008T035421Z/evidence/preservation-comparison.json",
+      "sha256": "eed2ebbdf6a0a22659facc7654035d504cc531314372f696ec82c155f08bab43"
+    },
+    {
+      "path": "docs/integration/20261008T035421Z/evidence/preserve.cjs",
+      "sha256": "7a1621c13d1a399c90172b9dbfaf22069b6857b658cb629e5d2b66f80fadbb42"
+    },
+    {
+      "path": "docs/integration/20261008T035421Z/evidence/run.cjs",
+      "sha256": "336bfea1d0e2dedf7f9f445fe015c1bc057d9762bb315d26c01b1276be453932"
+    },
+    {
+      "path": "docs/integration/20261008T035421Z/evidence/validate.cjs",
+      "sha256": "135c4577e0e73fbfa9ae3aaf26965a7d3eba34fcacf04bf519b4868a7da1381a"
+    },
+    {
+      "path": "docs/integration/20261008T035421Z/evidence/validation-summary.json",
+      "sha256": "c5cbb6637b60eb38a10de4c7728c32dd0f6df0ea6bd79568c61f4387af641d3b"
+    },
+    {
+      "path": "docs/integration/20261008T035421Z/integration-readiness.md",
+      "sha256": "14e35ad544094be7c647f4f9aed238c0a6252b0373a9746b49591def251ca6e6"
+    },
+    {
+      "path": "docs/integration/20261008T035421Z/local-smoke-checklist.md",
+      "sha256": "f9f931a69fb550c70fe69e9cffd3a7995ec543144109afae1e66172719afdb8c"
+    }
+  ],
+  "externalRoot": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3-evidence\\20261008T035421Z",
+  "externalLogs": [
+    {
+      "path": "admin-browser-full-runtime.jsonl",
+      "sha256": "01e04470562ec667386ddbe9809a52a6711861898ce40f4aec1392bda0d81b9c"
+    },
+    {
+      "path": "admin-browser-full.log",
+      "sha256": "c3b23c4f753dc5856ffe54b65c50e2e51de217fc838e1a2cd8cb5323a2183d4a"
+    },
+    {
+      "path": "admin-production-build-runtime.jsonl",
+      "sha256": "7c3bbcb28dc75ba297b3ece3af1db3954bb9a40c1035d4e38c81f51ad475d011"
+    },
+    {
+      "path": "admin-production-build.log",
+      "sha256": "f11f2c229d8c350e1594111a24c02ed5db166b2a83a513e6ab00202488ea3718"
+    },
+    {
+      "path": "admin-scope-regression-green-runtime.jsonl",
+      "sha256": "94a8b7df43be0008f9228c6bc12f8cf2b8ca729825d2fbe57a443aaf425827b4"
+    },
+    {
+      "path": "admin-scope-regression-green.log",
+      "sha256": "fedd55944fe39a4fb9e2f9bfa17adf05c7b058344300526c7bb26f79fa071a7e"
+    },
+    {
+      "path": "admin-scope-regression-red-runtime.jsonl",
+      "sha256": "9ae7737b063e0207d24c010ec6eaaee6faf52350ed731e007feff3f21b90aa85"
+    },
+    {
+      "path": "admin-scope-regression-red.log",
+      "sha256": "9f4566056f2eb1d8199451135b4084b161416edb2933a056b7b8edacfda50d97"
+    },
+    {
+      "path": "customer-browser-prep-full-01-runtime.jsonl",
+      "sha256": "df3f2e4c122647cd12e36b35042dfa6b8860b53714724888755c3810d81548bf"
+    },
+    {
+      "path": "customer-browser-prep-full-01.log",
+      "sha256": "73f01963fadd2b47bd33eae5908f1b39d69ecbc3651d745a809afe99992ddf01"
+    },
+    {
+      "path": "customer-browser-prep-green-01-runtime.jsonl",
+      "sha256": "3279b63285e68fb24005353fd4ccc5a6491981e028a1ef8615dda36052d9d839"
+    },
+    {
+      "path": "customer-browser-prep-green-01.log",
+      "sha256": "e6340374d35d725490ca5849c25d364a34bbcbd26816abfcf34ccf4e4d445540"
+    },
+    {
+      "path": "customer-browser-prep-red-01-runtime.jsonl",
+      "sha256": "f2436ba5e43e7bf0882b0eac3f6d5ae29673794b36f11a7b99b37b472305bc6b"
+    },
+    {
+      "path": "customer-browser-prep-red-01.log",
+      "sha256": "cc2de07af562bab23df99600380393784ae05681fb1b330deb5a9fb31e5d72d7"
+    },
+    {
+      "path": "customer-browser-prep-red-02-runtime.jsonl",
+      "sha256": "2cc1580205c745459119d38f3e55733745f6a332addffb88de51fbcd378f10de"
+    },
+    {
+      "path": "customer-browser-prep-red-02.log",
+      "sha256": "b2b5d643b9701b0ba5f8919aaea809a3f08aa7b1589a6249595a5beff743d6e5"
+    },
+    {
+      "path": "customer-prep-build-green-01-runtime.jsonl",
+      "sha256": "b4d9a95a4d1004e675a54cf36e14d65551b256310ec2e094a996ea6259ce7066"
+    },
+    {
+      "path": "customer-prep-build-green-01.log",
+      "sha256": "b99e41c1b8c12b5070b653b25becb291dc05dac0a87bbaf1e31cf46e9f83871b"
+    },
+    {
+      "path": "customer-prep-build-red-01-runtime.jsonl",
+      "sha256": "bb94d9d0b40d992f668e9ac77adf3671fb0c652be22f53f220f941927bcd29ef"
+    },
+    {
+      "path": "customer-prep-build-red-01.log",
+      "sha256": "5eec1f1c6ad4237d7ba8e4a55b8d7b155ac028a19b8bf41afc591b0c12f7e60a"
+    },
+    {
+      "path": "customer-prep-lint-01-runtime.jsonl",
+      "sha256": "95335015550f54ab255f7dcde184d8dfb7c1acd54ba9d30706a8de1eedc30492"
+    },
+    {
+      "path": "customer-prep-lint-01.log",
+      "sha256": "ad24dd6af302dae189de45e7b98689be592fe00e4b29b3f139d881555d4ab4e8"
+    },
+    {
+      "path": "customer-prep-typecheck-01-runtime.jsonl",
+      "sha256": "f6abfe403e352a5a1d17173febeb9d4e0048603d7a7489a4688ec3fea7b7d9ed"
+    },
+    {
+      "path": "customer-prep-typecheck-01.log",
+      "sha256": "c4170521e2d7ca77c1a7c8568aab9ddaa3465522ff9928a35c5171de0b7ce2d4"
+    },
+    {
+      "path": "frontend-web3-lint-runtime.jsonl",
+      "sha256": "99ea769dbf061cac1a8ab2adaef2861b0bb0a658126ee5308d80d09738b03b7b"
+    },
+    {
+      "path": "frontend-web3-lint.log",
+      "sha256": "9ea0216a14012b8ba864034eecad2d912d93e0b2f7fea64dcccce6028ebc0595"
+    },
+    {
+      "path": "frontend-web3-typecheck-runtime.jsonl",
+      "sha256": "aec61f6108555d74b76d81e799ef33aff51eec937d93f22841d4f8d8b9b119fb"
+    },
+    {
+      "path": "frontend-web3-typecheck.log",
+      "sha256": "69b3e6338df5ad57ec7f846c637a20312f32ce2136282da5c57b25d86c395d8b"
+    },
+    {
+      "path": "shared-web3-build-runtime.jsonl",
+      "sha256": "5d44357bd37d35795ecc27a568ef77ebeffed1ed97be9d5cc1dc732df389622a"
+    },
+    {
+      "path": "shared-web3-build.log",
+      "sha256": "7c6ee6b96c740a3c470e4009ec15a03d9e638c1616363dfff630c44fa62b70cb"
+    },
+    {
+      "path": "ui-frontend-unit-runtime.jsonl",
+      "sha256": "8b6d34ad6aa0de4cbff916d4aaa6611a8917e6a7d461a26576960541fd2f6b4b"
+    },
+    {
+      "path": "ui-frontend-unit.log",
+      "sha256": "872c397bb368b39ae5f18caa6e312e6d31814f8c6939db4cc0487f9f86fe8fc8"
+    },
+    {
+      "path": "web3-browser-runtime.jsonl",
+      "sha256": "f8d5967f84ae95784412661b2c9b6a52b17fd40996ad58f7a05736733acdff9c"
+    },
+    {
+      "path": "web3-browser.log",
+      "sha256": "413d7457f43eddf343c1eb19ccb44290b6096fef892b65d1826a72dca8d86baa"
+    },
+    {
+      "path": "web3-unit-sdk-runtime.jsonl",
+      "sha256": "12afff816730d6becb7a3173a370d1e2b2451c90dc994fb75cd2e48478960ed1"
+    },
+    {
+      "path": "web3-unit-sdk.log",
+      "sha256": "b32c88e95b5dd6f7d84f27d1d78a5ea304e7f4bedaf757a6e984e975e4286887"
+    }
+  ],
+  "exclusions": "Own manifest avoids self-reference; ignored .next/dist/node_modules, external traces/runtime/caches and unsaved editor buffers excluded from source identity; no env contents read"
+}

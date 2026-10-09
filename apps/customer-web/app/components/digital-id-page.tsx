@@ -59,7 +59,7 @@ function VerificationQr({ token }: { token?: string | null }) {
         <Image src={source} width={200} height={200} unoptimized alt="QR code for the privacy-safe RHC verification page" className="h-full w-full" />
       ) : (
         <div role="img" aria-label="Non-scannable verification reference placeholder" className="grid h-full w-full place-items-center rounded-xl border border-dashed border-slate-300 p-5 text-center text-xs font-bold text-slate-500">
-          Verification QR appears after credential issuance
+          Verification QR requires an approved public reference
         </div>
       )}
     </div>
@@ -77,9 +77,11 @@ export function DigitalIdPage() {
   const account = me.data?.user;
   const profile = me.data?.profile;
   const rhcId = id.data?.rhc_id || profile?.rhc_id;
-  const token = id.data?.public_reference || null;
-  const eligible = isRhcIdEligible(account);
-  const reviewable = dataMode === 'demo' && ['UNVERIFIED', 'REJECTED'].includes(account?.verification_status || '');
+  const identityReady = Boolean(me.data && id.data) && !me.loading && !id.loading && !me.error && !id.error;
+  const unknownStatus = me.error || id.error ? 'Unavailable' : me.loading || id.loading ? 'Loading…' : 'Unavailable';
+  const token = identityReady ? id.data?.public_reference || null : null;
+  const eligible = identityReady && isRhcIdEligible(account);
+  const reviewable = identityReady && dataMode === 'demo' && ['UNVERIFIED', 'REJECTED'].includes(account?.verification_status || '');
 
   async function submitReview() {
     if (!reviewable || busy) return;
@@ -130,7 +132,7 @@ export function DigitalIdPage() {
         <div className="grid gap-5">
           <ResourceStatus {...me} />
           <ResourceStatus {...id} />
-          {me.data && (
+          {identityReady && me.data && (
             <DigitalIDCard
               name={fullName(me.data)}
               rhcId={rhcId}
@@ -155,7 +157,7 @@ export function DigitalIdPage() {
                   {busy ? 'Issuing…' : 'Issue RHC Digital ID'}
                 </Web3Button>
               ) : null}
-              {!rhcId && account?.verification_status === 'PENDING' ? (
+              {identityReady && !rhcId && account?.verification_status === 'PENDING' ? (
                 <Badge tone="warning">Business review pending</Badge>
               ) : null}
               <Web3Button
@@ -182,8 +184,8 @@ export function DigitalIdPage() {
             <div className="grid gap-6 md:grid-cols-[auto_1fr] md:items-center">
               <VerificationQr key={token || 'unavailable'} token={token} />
               <div>
-                <Badge tone={rhcId ? 'gold' : 'neutral'}>{rhcId ? 'Issued' : 'Pending issuance'}</Badge>
-                <p className="mt-4 font-mono text-xl font-black text-[var(--rhc-heading)]">{maskedReference(rhcId)}</p>
+                <Badge tone={identityReady && rhcId ? 'gold' : 'neutral'}>{identityReady ? rhcId ? 'Issued' : 'Pending issuance' : unknownStatus}</Badge>
+                <p className="mt-4 font-mono text-xl font-black text-[var(--rhc-heading)]">{identityReady ? maskedReference(rhcId) : unknownStatus}</p>
                 <p className="mt-3 text-sm leading-6 text-[var(--rhc-muted)]">
                   Only an opaque public reference returned by the backend enables a verification QR.
                   The internal RHC ID is never encoded as a public sharing token.
@@ -213,7 +215,11 @@ export function DigitalIdPage() {
 
           <Card title="Eligibility Checklist">
             <div className="grid gap-3">
-              {checks.map(([label, ok, detail]) => (
+              {!identityReady ? (
+                <p role="status" className="text-sm text-[var(--rhc-muted)]">
+                  {unknownStatus === 'Loading…' ? 'Loading eligibility…' : 'Eligibility unavailable'}
+                </p>
+              ) : checks.map(([label, ok, detail]) => (
                 <div key={label} className="flex gap-3 rounded-xl border border-[var(--rhc-border)] bg-[var(--rhc-surface-secondary)] p-4">
                   <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-full text-xs font-black ${ok ? 'bg-[var(--rhc-accent-soft)] text-[var(--rhc-primary)]' : 'bg-[var(--rhc-surface)] text-[var(--rhc-muted)]'}`}>
                     {ok ? '✓' : '•'}

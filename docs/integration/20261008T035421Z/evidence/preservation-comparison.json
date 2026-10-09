@@ -1,0 +1,15 @@
+{
+  "utc": "2026-10-08T04:24:47.896Z",
+  "headPreserved": true,
+  "indexPreserved": true,
+  "stagedPreserved": true,
+  "changed": [
+    "apps/admin-web/app/capability-scopes.ts",
+    "apps/admin-web/tests/capability-request-coordinator.spec.ts",
+    "apps/customer-web/app/components/digital-id-page.tsx",
+    "apps/customer-web/app/properties/[id]/page.tsx",
+    "apps/customer-web/tests/integration-preparation.spec.ts"
+  ],
+  "removed": [],
+  "protectedChanges": []
+}

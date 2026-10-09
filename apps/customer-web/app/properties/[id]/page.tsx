@@ -12,7 +12,7 @@ function statusTone(status?: string) { if (status === 'AVAILABLE') return 'succe
 
 function PropertyDetails({ id }: { id: string }) {
   const linked = useResource<PropertyLink[]>('/me/properties');
-  const { request, dataMode } = useRuntime();
+  const { request, dataMode, navigate } = useRuntime();
   const [publicRecord, setPublicRecord] = useState<InventoryProperty>();
   const [publicLoading, setPublicLoading] = useState(true);
   const [publicError, setPublicError] = useState('');
@@ -70,12 +70,12 @@ function PropertyDetails({ id }: { id: string }) {
     setMessage('');
     setError('');
     try {
-      const reservation = await request<{ id: string; reservation_number: string }>('/me/reservations', {
+      await request('/me/reservations', {
         method: 'POST',
         body: JSON.stringify({ property_id: record.id }),
       });
-      setMessage(`Reservation ${reservation.reservation_number} created. This property is now held.`);
-      reload();
+      // Held inventory can disappear from public detail; read the owner-scoped reservation instead.
+      navigate('/reservations');
     } catch (cause) {
       setError(errorMessage(cause));
     } finally {

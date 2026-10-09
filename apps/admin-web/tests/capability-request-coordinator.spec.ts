@@ -170,6 +170,53 @@ test('global, company and project grants remain distinct for mutation targets', 
   expect(grantCoversTarget(globalScope(), null)).toBe(false);
 });
 
+for (const resource of ['projects', 'integrations', 'business-services'] as const) {
+  test(`${resource} scalar and nested company representations retain the same mutation scope`, () => {
+    const target = { company_id: 'company-a', project_id: resource === 'projects' ? 'project-a' : null };
+    const permissions = requiredMutationPermissions(resource, 'edit');
+    const capabilities: AdminCapabilities = {
+      permissions: [], grants: {}, mutation_grants: { [permissions[0]]: [target] },
+    };
+    for (const company of [{ company_id: 'company-a' }, { company: { id: 'company-a' } }]) {
+      const resolved = targetForResource(resource, { id: 'project-a', ...company });
+      expect(resolved).toEqual(target);
+      expect(hasRequiredMutationGrants(capabilities, permissions, resolved)).toBe(true);
+      expect(hasRequiredMutationGrants(undefined, permissions, resolved)).toBe(false);
+      expect(grantCoversTarget(globalScope(), resolved)).toBe(true);
+      expect(grantCoversTarget({ ...target, company_id: 'company-b' }, resolved)).toBe(false);
+      expect(grantCoversTarget({ ...target, project_id: 'project-b' }, resolved)).toBe(false);
+      expect(grantCoversTarget(target, globalScope())).toBe(false);
+    }
+  });
+
+  test(`${resource} missing or malformed nested company cannot become a global target`, () => {
+    for (const company of [undefined, null, 'company-a', {}, { id: null }, { id: 42 }, { id: '' }]) {
+      const resolved = targetForResource(resource, { id: 'project-a', company });
+      expect(resolved).toBeNull();
+      expect(grantCoversTarget(globalScope(), resolved)).toBe(false);
+    }
+  });
+
+  test(`${resource} retains explicit scalar company precedence over a conflicting nested company`, () => {
+    const target = { company_id: 'company-a', project_id: resource === 'projects' ? 'project-a' : null };
+    const resolved = targetForResource(resource, {
+      id: 'project-a', company_id: 'company-a', company: { id: 'company-b' },
+    });
+    expect(resolved).toEqual(target);
+    expect(grantCoversTarget({ ...target, company_id: 'company-b' }, resolved)).toBe(false);
+  });
+}
+
+test('nested company normalization does not supply a missing project identity or grant scope', () => {
+  const target = { company_id: 'company-a', project_id: 'project-a' };
+  expect(targetForResource('projects', { company: { id: 'company-a' } })).toBeNull();
+  for (const grant of [undefined, null, {}, { company_id: 'company-a' },
+    { project_id: 'project-a' }, { company_id: '', project_id: null },
+    { company_id: 42, project_id: null }, { company_id: null, project_id: '' }]) {
+    expect(grantCoversTarget(grant, target)).toBe(false);
+  }
+});
+
 test('relationship scalars and nested reservation properties resolve the same scoped target', () => {
   const target = { company_id: 'company-a', project_id: 'project-a' };
   expect(targetForResource('customer-properties', {

@@ -204,7 +204,7 @@ export function targetForResource(resource: string, row: Record<string, unknown>
   );
   const company_id = typeof rowValue(row, 'company_id') === 'string'
     ? String(rowValue(row, 'company_id'))
-    : nestedCompanyId(rowValue(row, 'company')) ||
+    : nestedId(rowValue(row, 'company')) ||
       nestedCompanyId(resourceProject) ||
       nestedCompanyId(project);
   const project_id = typeof rowValue(row, 'project_id') === 'string'
