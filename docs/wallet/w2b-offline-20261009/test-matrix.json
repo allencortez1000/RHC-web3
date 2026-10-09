@@ -1,0 +1,716 @@
+{
+  "schema": "rhc-w2b-p1-test-matrix-v1",
+  "at": "2026-10-09T06:45:47.356Z",
+  "branch": "allen/w2b-offline-auth-contract-20261009",
+  "head": "dcf2a81aa5158f2e56141dac8a2ebe60d7fd236b",
+  "offline": {
+    "planned": 50,
+    "passed": 50,
+    "failed": 0,
+    "notRun": 0,
+    "cases": [
+      {
+        "id": "OFF-01",
+        "scenario": "W2A hard lock, default no config",
+        "result": "PASS",
+        "scope": "synthetic_unit",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-unit",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-unit.log",
+          "sha256": "00106be617ba8d997a94b7b3c74fd326b19250f813578a94f7493ee8f6da6785"
+        }
+      },
+      {
+        "id": "OFF-02",
+        "scenario": "Forged options say all approvals true",
+        "result": "PASS",
+        "scope": "synthetic_unit",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-unit",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-unit.log",
+          "sha256": "00106be617ba8d997a94b7b3c74fd326b19250f813578a94f7493ee8f6da6785"
+        }
+      },
+      {
+        "id": "OFF-03",
+        "scenario": "Missing RHC session",
+        "result": "PASS",
+        "scope": "synthetic_unit",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-unit",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-unit.log",
+          "sha256": "00106be617ba8d997a94b7b3c74fd326b19250f813578a94f7493ee8f6da6785"
+        }
+      },
+      {
+        "id": "OFF-04",
+        "scenario": "Pending/locked/disabled RHC account",
+        "result": "PASS",
+        "scope": "synthetic_unit",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-unit",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-unit.log",
+          "sha256": "00106be617ba8d997a94b7b3c74fd326b19250f813578a94f7493ee8f6da6785"
+        }
+      },
+      {
+        "id": "OFF-05",
+        "scenario": "Admin/staff identity attempts customer wallet",
+        "result": "PASS",
+        "scope": "synthetic_unit",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-unit",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-unit.log",
+          "sha256": "00106be617ba8d997a94b7b3c74fd326b19250f813578a94f7493ee8f6da6785"
+        }
+      },
+      {
+        "id": "OFF-06",
+        "scenario": "Malformed/unknown RHC UUID or client claim",
+        "result": "PASS",
+        "scope": "synthetic_unit",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-unit",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-unit.log",
+          "sha256": "00106be617ba8d997a94b7b3c74fd326b19250f813578a94f7493ee8f6da6785"
+        }
+      },
+      {
+        "id": "OFF-07",
+        "scenario": "No selected chain",
+        "result": "PASS",
+        "scope": "synthetic_unit",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-unit",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-unit.log",
+          "sha256": "00106be617ba8d997a94b7b3c74fd326b19250f813578a94f7493ee8f6da6785"
+        }
+      },
+      {
+        "id": "OFF-08",
+        "scenario": "Unsupported/mismatched chain",
+        "result": "PASS",
+        "scope": "synthetic_unit",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-unit",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-unit.log",
+          "sha256": "00106be617ba8d997a94b7b3c74fd326b19250f813578a94f7493ee8f6da6785"
+        }
+      },
+      {
+        "id": "OFF-09",
+        "scenario": "Chain changes while connecting",
+        "result": "PASS",
+        "scope": "synthetic_unit",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-unit",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-unit.log",
+          "sha256": "00106be617ba8d997a94b7b3c74fd326b19250f813578a94f7493ee8f6da6785"
+        }
+      },
+      {
+        "id": "OFF-10",
+        "scenario": "Missing/invalid reviewed public Client ID",
+        "result": "PASS",
+        "scope": "synthetic_unit",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-unit",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-unit.log",
+          "sha256": "00106be617ba8d997a94b7b3c74fd326b19250f813578a94f7493ee8f6da6785"
+        }
+      },
+      {
+        "id": "OFF-11",
+        "scenario": "Thirdweb project ID from wrong environment",
+        "result": "PASS",
+        "scope": "synthetic_unit",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-unit",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-unit.log",
+          "sha256": "00106be617ba8d997a94b7b3c74fd326b19250f813578a94f7493ee8f6da6785"
+        }
+      },
+      {
+        "id": "OFF-12",
+        "scenario": "Public config contains secret-like field",
+        "result": "PASS",
+        "scope": "synthetic_unit",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-unit",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-unit.log",
+          "sha256": "00106be617ba8d997a94b7b3c74fd326b19250f813578a94f7493ee8f6da6785"
+        }
+      },
+      {
+        "id": "OFF-13",
+        "scenario": "Dynamic SDK loader called while locked",
+        "result": "PASS",
+        "scope": "synthetic_unit",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-unit",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-unit.log",
+          "sha256": "00106be617ba8d997a94b7b3c74fd326b19250f813578a94f7493ee8f6da6785"
+        }
+      },
+      {
+        "id": "OFF-14",
+        "scenario": "Fake SDK loader throws while locked",
+        "result": "PASS",
+        "scope": "synthetic_unit",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-unit",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-unit.log",
+          "sha256": "00106be617ba8d997a94b7b3c74fd326b19250f813578a94f7493ee8f6da6785"
+        }
+      },
+      {
+        "id": "OFF-15",
+        "scenario": "Guest/public signup option accidentally included",
+        "result": "PASS",
+        "scope": "synthetic_unit",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-unit",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-unit.log",
+          "sha256": "00106be617ba8d997a94b7b3c74fd326b19250f813578a94f7493ee8f6da6785"
+        }
+      },
+      {
+        "id": "OFF-16",
+        "scenario": "Independent email/social signup not approved",
+        "result": "PASS",
+        "scope": "synthetic_unit",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-unit",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-unit.log",
+          "sha256": "00106be617ba8d997a94b7b3c74fd326b19250f813578a94f7493ee8f6da6785"
+        }
+      },
+      {
+        "id": "OFF-17",
+        "scenario": "OAuth/redirect response forged in fixture",
+        "result": "PASS",
+        "scope": "synthetic_unit",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-unit",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-unit.log",
+          "sha256": "00106be617ba8d997a94b7b3c74fd326b19250f813578a94f7493ee8f6da6785"
+        }
+      },
+      {
+        "id": "OFF-18",
+        "scenario": "Recovery link invoked without owner approval",
+        "result": "PASS",
+        "scope": "synthetic_unit",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-unit",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-unit.log",
+          "sha256": "00106be617ba8d997a94b7b3c74fd326b19250f813578a94f7493ee8f6da6785"
+        }
+      },
+      {
+        "id": "OFF-19",
+        "scenario": "Provider outage/timeouts in mocked adapter",
+        "result": "PASS",
+        "scope": "synthetic_unit",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-unit",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-unit.log",
+          "sha256": "00106be617ba8d997a94b7b3c74fd326b19250f813578a94f7493ee8f6da6785"
+        }
+      },
+      {
+        "id": "OFF-20",
+        "scenario": "Logout during outstanding connect",
+        "result": "PASS",
+        "scope": "synthetic_unit",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-unit",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-unit.log",
+          "sha256": "00106be617ba8d997a94b7b3c74fd326b19250f813578a94f7493ee8f6da6785"
+        }
+      },
+      {
+        "id": "OFF-21",
+        "scenario": "RHC customer A → customer B",
+        "result": "PASS",
+        "scope": "synthetic_unit",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-unit",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-unit.log",
+          "sha256": "00106be617ba8d997a94b7b3c74fd326b19250f813578a94f7493ee8f6da6785"
+        }
+      },
+      {
+        "id": "OFF-22",
+        "scenario": "Wallet switch during prior adapter cleanup",
+        "result": "PASS",
+        "scope": "synthetic_unit",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-unit",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-unit.log",
+          "sha256": "00106be617ba8d997a94b7b3c74fd326b19250f813578a94f7493ee8f6da6785"
+        }
+      },
+      {
+        "id": "OFF-23",
+        "scenario": "Duplicate connect/double-submit",
+        "result": "PASS",
+        "scope": "synthetic_unit",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-unit",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-unit.log",
+          "sha256": "00106be617ba8d997a94b7b3c74fd326b19250f813578a94f7493ee8f6da6785"
+        }
+      },
+      {
+        "id": "OFF-24",
+        "scenario": "Disconnect rejected or timed out",
+        "result": "PASS",
+        "scope": "synthetic_unit",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-unit",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-unit.log",
+          "sha256": "00106be617ba8d997a94b7b3c74fd326b19250f813578a94f7493ee8f6da6785"
+        }
+      },
+      {
+        "id": "OFF-25",
+        "scenario": "Disconnect then repeat attempt",
+        "result": "PASS",
+        "scope": "synthetic_unit",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-unit",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-unit.log",
+          "sha256": "00106be617ba8d997a94b7b3c74fd326b19250f813578a94f7493ee8f6da6785"
+        }
+      },
+      {
+        "id": "OFF-26",
+        "scenario": "Connected wallet with no RHC link",
+        "result": "PASS",
+        "scope": "synthetic_unit",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-unit",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-unit.log",
+          "sha256": "00106be617ba8d997a94b7b3c74fd326b19250f813578a94f7493ee8f6da6785"
+        }
+      },
+      {
+        "id": "OFF-27",
+        "scenario": "Backend link `unknown` versus `unlinked`",
+        "result": "PASS",
+        "scope": "synthetic_unit",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-unit",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-unit.log",
+          "sha256": "00106be617ba8d997a94b7b3c74fd326b19250f813578a94f7493ee8f6da6785"
+        }
+      },
+      {
+        "id": "OFF-28",
+        "scenario": "Simulated backend `revoked` / `conflict`",
+        "result": "PASS",
+        "scope": "synthetic_unit",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-unit",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-unit.log",
+          "sha256": "00106be617ba8d997a94b7b3c74fd326b19250f813578a94f7493ee8f6da6785"
+        }
+      },
+      {
+        "id": "OFF-29",
+        "scenario": "Browser injects `RHC_user_id` or permission",
+        "result": "PASS",
+        "scope": "synthetic_unit",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-unit",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-unit.log",
+          "sha256": "00106be617ba8d997a94b7b3c74fd326b19250f813578a94f7493ee8f6da6785"
+        }
+      },
+      {
+        "id": "OFF-30",
+        "scenario": "Provider JWT used as API bearer (synthetic)",
+        "result": "PASS",
+        "scope": "synthetic_unit",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-unit",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-unit.log",
+          "sha256": "00106be617ba8d997a94b7b3c74fd326b19250f813578a94f7493ee8f6da6785"
+        }
+      },
+      {
+        "id": "OFF-31",
+        "scenario": "Displayed wallet balance mistaken for RHC Points",
+        "result": "PASS",
+        "scope": "synthetic_unit",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-unit",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-unit.log",
+          "sha256": "00106be617ba8d997a94b7b3c74fd326b19250f813578a94f7493ee8f6da6785"
+        }
+      },
+      {
+        "id": "OFF-32",
+        "scenario": "Persistence/autoConnect replay after logout",
+        "result": "PASS",
+        "scope": "synthetic_unit",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-unit",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-unit.log",
+          "sha256": "00106be617ba8d997a94b7b3c74fd326b19250f813578a94f7493ee8f6da6785"
+        }
+      },
+      {
+        "id": "OFF-33",
+        "scenario": "Browser offline guard on all requests",
+        "result": "PASS",
+        "scope": "synthetic_unit",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-unit",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-unit.log",
+          "sha256": "00106be617ba8d997a94b7b3c74fd326b19250f813578a94f7493ee8f6da6785"
+        }
+      },
+      {
+        "id": "OFF-34",
+        "scenario": "CORS mismatch fixture",
+        "result": "PASS",
+        "scope": "synthetic_unit",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-unit",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-unit.log",
+          "sha256": "00106be617ba8d997a94b7b3c74fd326b19250f813578a94f7493ee8f6da6785"
+        }
+      },
+      {
+        "id": "OFF-35",
+        "scenario": "Provider rejects bad/expired ID token",
+        "result": "PASS",
+        "scope": "synthetic_unit",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-unit",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-unit.log",
+          "sha256": "00106be617ba8d997a94b7b3c74fd326b19250f813578a94f7493ee8f6da6785"
+        }
+      },
+      {
+        "id": "OFF-36",
+        "scenario": "Secret in URL/log/telemetry/exception",
+        "result": "PASS",
+        "scope": "synthetic_unit",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-unit",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-unit.log",
+          "sha256": "00106be617ba8d997a94b7b3c74fd326b19250f813578a94f7493ee8f6da6785"
+        }
+      },
+      {
+        "id": "OFF-37",
+        "scenario": "Keyboard Tab/Enter/Escape behavior",
+        "result": "PASS",
+        "scope": "synthetic_chromium",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-browser",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-browser.log",
+          "sha256": "fffd9469c0e3c41c011a9338dea95e2df32c275f94c12368fe58372a49fa3d12"
+        }
+      },
+      {
+        "id": "OFF-38",
+        "scenario": "Screen-reader status/error announcements",
+        "result": "PASS",
+        "scope": "synthetic_chromium",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-browser",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-browser.log",
+          "sha256": "fffd9469c0e3c41c011a9338dea95e2df32c275f94c12368fe58372a49fa3d12"
+        }
+      },
+      {
+        "id": "OFF-39",
+        "scenario": "Responsive 375/768/1440px",
+        "result": "PASS",
+        "scope": "synthetic_chromium",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-browser",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-browser.log",
+          "sha256": "fffd9469c0e3c41c011a9338dea95e2df32c275f94c12368fe58372a49fa3d12"
+        }
+      },
+      {
+        "id": "OFF-40",
+        "scenario": "`prefers-reduced-motion`",
+        "result": "PASS",
+        "scope": "synthetic_chromium",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-browser",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-browser.log",
+          "sha256": "fffd9469c0e3c41c011a9338dea95e2df32c275f94c12368fe58372a49fa3d12"
+        }
+      },
+      {
+        "id": "OFF-41",
+        "scenario": "Server prerender/hydration safety",
+        "result": "PASS",
+        "scope": "isolated_ssr",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "isolated_ssr",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/ssr-check.log",
+          "sha256": "0d14a998a1cc1390f182a4912c72df822c6c0c4238be30333ef759c90694e1f7"
+        }
+      },
+      {
+        "id": "OFF-42",
+        "scenario": "Next production build with offline fixture config",
+        "result": "PASS",
+        "scope": "offline_compile_build",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "guarded_customer_next_build",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/offline-next-build.log",
+          "sha256": "16ebe6bdd2b1918400e32b881643c7193d70840ae2c1efbfacbe9b791c220ab4"
+        }
+      },
+      {
+        "id": "OFF-43",
+        "scenario": "W1 and W2A full regression recheck",
+        "result": "PASS",
+        "scope": "guarded_regression",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "inherited_W1_W2A_frontend_web3_regressions",
+          "ledger": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/final-offline-test-ledger-v2.json"
+        }
+      },
+      {
+        "id": "OFF-44",
+        "scenario": "Worktree/branch/commit/allowlist",
+        "result": "PASS",
+        "scope": "preservation_audit",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "scope_and_git_preservation",
+          "ledger": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/preservation-final.json"
+        }
+      },
+      {
+        "id": "OFF-45",
+        "scenario": "SDK mocked signing/sending",
+        "result": "PASS",
+        "scope": "synthetic_unit",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-unit",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-unit.log",
+          "sha256": "00106be617ba8d997a94b7b3c74fd326b19250f813578a94f7493ee8f6da6785"
+        }
+      },
+      {
+        "id": "OFF-46",
+        "scenario": "EIP-1271/contract-wallet link request",
+        "result": "PASS",
+        "scope": "synthetic_unit",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-unit",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-unit.log",
+          "sha256": "00106be617ba8d997a94b7b3c74fd326b19250f813578a94f7493ee8f6da6785"
+        }
+      },
+      {
+        "id": "OFF-47",
+        "scenario": "Billing/service readiness missing",
+        "result": "PASS",
+        "scope": "synthetic_unit",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-unit",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-unit.log",
+          "sha256": "00106be617ba8d997a94b7b3c74fd326b19250f813578a94f7493ee8f6da6785"
+        }
+      },
+      {
+        "id": "OFF-48",
+        "scenario": "Thirdweb method not on explicit allowlist",
+        "result": "PASS",
+        "scope": "synthetic_unit",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-unit",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-unit.log",
+          "sha256": "00106be617ba8d997a94b7b3c74fd326b19250f813578a94f7493ee8f6da6785"
+        }
+      },
+      {
+        "id": "OFF-49",
+        "scenario": "Provider subject collision across environment",
+        "result": "PASS",
+        "scope": "synthetic_unit",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-unit",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-unit.log",
+          "sha256": "00106be617ba8d997a94b7b3c74fd326b19250f813578a94f7493ee8f6da6785"
+        }
+      },
+      {
+        "id": "OFF-50",
+        "scenario": "Missing consent/revoked privacy policy",
+        "result": "PASS",
+        "scope": "synthetic_unit",
+        "actual": "offline fixture/static/compilation only; NOT real provider, backend or wallet acceptance",
+        "evidence": {
+          "suite": "w2b-unit",
+          "log": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w2b-p1-implementation-20261009/v2-w2b-unit.log",
+          "sha256": "00106be617ba8d997a94b7b3c74fd326b19250f813578a94f7493ee8f6da6785"
+        }
+      }
+    ]
+  },
+  "connected": {
+    "planned": 14,
+    "executed": 0,
+    "passed": 0,
+    "cases": [
+      {
+        "id": "CON-01",
+        "scenario": "Approved HTTPS JWKS reachable remotely",
+        "result": "BLOCKED_NOT_RUN",
+        "reason": "Connected Thirdweb/provider/JWKS/Auth, approved chain/test identities and security gates not authorized"
+      },
+      {
+        "id": "CON-02",
+        "scenario": "Wrong `aud`, expired or forged JWT",
+        "result": "BLOCKED_NOT_RUN",
+        "reason": "Connected Thirdweb/provider/JWKS/Auth, approved chain/test identities and security gates not authorized"
+      },
+      {
+        "id": "CON-03",
+        "scenario": "Only invited ACTIVE RHC identity may reach onboarding",
+        "result": "BLOCKED_NOT_RUN",
+        "reason": "Connected Thirdweb/provider/JWKS/Auth, approved chain/test identities and security gates not authorized"
+      },
+      {
+        "id": "CON-04",
+        "scenario": "Disposable approved user's first embedded-wallet connect",
+        "result": "BLOCKED_NOT_RUN",
+        "reason": "Connected Thirdweb/provider/JWKS/Auth, approved chain/test identities and security gates not authorized"
+      },
+      {
+        "id": "CON-05",
+        "scenario": "Same user reconnect/recover within approved policy",
+        "result": "BLOCKED_NOT_RUN",
+        "reason": "Connected Thirdweb/provider/JWKS/Auth, approved chain/test identities and security gates not authorized"
+      },
+      {
+        "id": "CON-06",
+        "scenario": "Account A/B browser logout and switch",
+        "result": "BLOCKED_NOT_RUN",
+        "reason": "Connected Thirdweb/provider/JWKS/Auth, approved chain/test identities and security gates not authorized"
+      },
+      {
+        "id": "CON-07",
+        "scenario": "Approved external wallet connect (only if agreed)",
+        "result": "BLOCKED_NOT_RUN",
+        "reason": "Connected Thirdweb/provider/JWKS/Auth, approved chain/test identities and security gates not authorized"
+      },
+      {
+        "id": "CON-08",
+        "scenario": "Nonapproved chain requested",
+        "result": "BLOCKED_NOT_RUN",
+        "reason": "Connected Thirdweb/provider/JWKS/Auth, approved chain/test identities and security gates not authorized"
+      },
+      {
+        "id": "CON-09",
+        "scenario": "Provider outage/billing/rate-limit",
+        "result": "BLOCKED_NOT_RUN",
+        "reason": "Connected Thirdweb/provider/JWKS/Auth, approved chain/test identities and security gates not authorized"
+      },
+      {
+        "id": "CON-10",
+        "scenario": "CORS + Supabase Auth/Admin/Redis backend readiness",
+        "result": "BLOCKED_NOT_RUN",
+        "reason": "Connected Thirdweb/provider/JWKS/Auth, approved chain/test identities and security gates not authorized"
+      },
+      {
+        "id": "CON-11",
+        "scenario": "Invite-only and consent withdrawal during session",
+        "result": "BLOCKED_NOT_RUN",
+        "reason": "Connected Thirdweb/provider/JWKS/Auth, approved chain/test identities and security gates not authorized"
+      },
+      {
+        "id": "CON-12",
+        "scenario": "Browser persistence/device recovery",
+        "result": "BLOCKED_NOT_RUN",
+        "reason": "Connected Thirdweb/provider/JWKS/Auth, approved chain/test identities and security gates not authorized"
+      },
+      {
+        "id": "CON-13",
+        "scenario": "Provider data minimization and deletion/retention",
+        "result": "BLOCKED_NOT_RUN",
+        "reason": "Connected Thirdweb/provider/JWKS/Auth, approved chain/test identities and security gates not authorized"
+      },
+      {
+        "id": "CON-14",
+        "scenario": "Session cleanup/rollback after test",
+        "result": "BLOCKED_NOT_RUN",
+        "reason": "Connected Thirdweb/provider/JWKS/Auth, approved chain/test identities and security gates not authorized"
+      }
+    ]
+  },
+  "suiteRunner": {
+    "testEntries": 239,
+    "suites": 11,
+    "staticStages": 2,
+    "allPassed": true
+  },
+  "caveats": [
+    "OFF01..36 and OFF45..50 are synthetic unit tests",
+    "OFF37..40 are isolated Chromium tests with denied external URLs",
+    "OFF41, OFF42, OFF43, OFF44 are SSR/build/regression/preservation gates, not independent business feature tests",
+    "No live provider, Auth, wallet ownership proof, smart account, token or blockchain interaction performed",
+    "Current W2B-P1 candidate is TESTING until Boss Allen internal review/acceptance"
+  ]
+}
