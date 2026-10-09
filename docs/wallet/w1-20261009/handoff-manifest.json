@@ -1,0 +1,342 @@
+{
+  "schema": "rhc-w1-synthetic-offline-handoff-v1",
+  "generatedAt": "2026-10-09T03:54:20.021Z",
+  "machine": "DESKTOP-5TQ68F9",
+  "actor": "ChatGPT / Remote Desktop Commander — engineering acceptance-review continuation",
+  "branch": "allen/frontend-web3-stabilization",
+  "baseCommit": "0189f6def4b44a23a7ff9350764c41a25d860d36",
+  "baseTree": "adfc17eae0253cb76cff646d654b3f776edd1048",
+  "gitTrackedDiffEmpty": true,
+  "gitIndexDiffEmpty": true,
+  "scope": "W1 synthetic offline only, unmounted in production",
+  "sourceRecords": [
+    {
+      "path": "apps/customer-web/app/components/wallet-foundation/types.ts",
+      "bytes": 2435,
+      "sha256": "b9876fbecde3770690d2c81992761a573978fa458cc42bc54857b1d41ecd3c27"
+    },
+    {
+      "path": "apps/customer-web/app/components/wallet-foundation/controller.ts",
+      "bytes": 11313,
+      "sha256": "e0871e25bbc7c499ebc549add79b9d89494c06156eab65335d8cf9aa4a81459c"
+    },
+    {
+      "path": "apps/customer-web/app/components/wallet-foundation/WalletFoundation.tsx",
+      "bytes": 7368,
+      "sha256": "42865458bd80759e8e7630d86115ea37227764f7fd17ba217292a569e88b94e5"
+    },
+    {
+      "path": "apps/customer-web/tests/wallet-foundation.unit.mjs",
+      "bytes": 13628,
+      "sha256": "8dbde13384313d4722dcf6cb18ec59fb2286fdd11aadff320cd8302c231295d9"
+    },
+    {
+      "path": "apps/customer-web/tests/wallet-foundation.browser.cjs",
+      "bytes": 8331,
+      "sha256": "6c57fd3308036ee59aa1b1410e715a6548d145195750bf8739d4d4c01c44e0a8"
+    },
+    {
+      "path": "docs/wallet/w1-20261009/RUN-STATE.md",
+      "bytes": 3067,
+      "sha256": "6540a1612d216def2321e5606728c7eff27f03112feff344d74616b071e9ea7f"
+    },
+    {
+      "path": "docs/wallet/w1-20261009/IMPLEMENTATION-RESULT.md",
+      "bytes": 4244,
+      "sha256": "b43d7d92a4255db7e256e076ad7ba790291b5d6731dcb683af3756dc7a4d6144"
+    },
+    {
+      "path": "docs/wallet/w1-20261009/VALIDATION-RESULT.md",
+      "bytes": 5032,
+      "sha256": "589ac28fc964b0705ab563eb153fd0900d552607f9b35e2f9a25b7051112e65e"
+    },
+    {
+      "path": "docs/wallet/w1-20261009/BACKEND-DECISIONS.md",
+      "bytes": 3573,
+      "sha256": "8b23c256fb3d5b6e09a561c0d1b01b480460f1ed57c3b108f4efac644d093216"
+    },
+    {
+      "path": "docs/wallet/w1-20261009/PRESERVATION-RESULT.md",
+      "bytes": 2564,
+      "sha256": "c370fad5af1abf13dec6cdf9648e9475520c7e275517c9f4031f20b83b1c1b34"
+    },
+    {
+      "path": "docs/wallet/w1-20261009/ACCEPTANCE-REVIEW.md",
+      "bytes": 6078,
+      "sha256": "dab34114beaca2eed4a2903d47ac35d258f9754b869b424143f0b64d6eb3f685"
+    }
+  ],
+  "validations": [
+    {
+      "name": "w1-unit",
+      "startedAt": "2026-10-09T03:51:20.969Z",
+      "elapsedMs": 564,
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "expected": 25,
+      "tests": 25,
+      "passed": 25,
+      "failed": 0,
+      "skipped": 0,
+      "log": "review-w1-unit.log",
+      "sha256": "b81880c6c096b7183ba3a55ba5ac0bb12c2a524f45523103f9ff8bdfa1408dad"
+    },
+    {
+      "name": "w1-browser",
+      "startedAt": "2026-10-09T03:51:21.536Z",
+      "elapsedMs": 4143,
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "expected": 7,
+      "tests": 7,
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0,
+      "log": "review-w1-browser.log",
+      "sha256": "eb80ae9de51c7ef498ea640989a3ef2c409ccd4802377d27f7ed316cbfce3081"
+    },
+    {
+      "name": "typecheck",
+      "startedAt": "2026-10-09T03:51:25.679Z",
+      "elapsedMs": 7206,
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "expected": null,
+      "tests": null,
+      "passed": null,
+      "failed": null,
+      "skipped": null,
+      "log": "review-typecheck.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "eslint",
+      "startedAt": "2026-10-09T03:51:32.886Z",
+      "elapsedMs": 4214,
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "expected": null,
+      "tests": null,
+      "passed": null,
+      "failed": null,
+      "skipped": null,
+      "log": "review-eslint.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "regression-customer",
+      "startedAt": "2026-10-09T03:51:37.100Z",
+      "elapsedMs": 799,
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "expected": 3,
+      "tests": 3,
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "log": "review-regression-customer.log",
+      "sha256": "c69fae8a363dae1babef2109c748157e214ebe9ed829b14813526e756191441c"
+    },
+    {
+      "name": "regression-frontend",
+      "startedAt": "2026-10-09T03:51:37.899Z",
+      "elapsedMs": 1109,
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "expected": 11,
+      "tests": 11,
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0,
+      "log": "review-regression-frontend.log",
+      "sha256": "7fce2e58225d807a2dbc60f8d43c1e66191f2bd480cf278f89b3cf15abac5b00"
+    },
+    {
+      "name": "regression-web3-core",
+      "startedAt": "2026-10-09T03:51:39.008Z",
+      "elapsedMs": 998,
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "expected": 46,
+      "tests": 46,
+      "passed": 46,
+      "failed": 0,
+      "skipped": 0,
+      "log": "review-regression-web3-core.log",
+      "sha256": "b1921b939413b84e3964ada5dc3085e6b48a77ade039b34ceb0f0c1f1188bdd1"
+    },
+    {
+      "name": "regression-web3-sdk",
+      "startedAt": "2026-10-09T03:51:40.006Z",
+      "elapsedMs": 2801,
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "expected": 18,
+      "tests": 18,
+      "passed": 18,
+      "failed": 0,
+      "skipped": 0,
+      "log": "review-regression-web3-sdk.log",
+      "sha256": "69d11daee539c300705960201a5c998c8c2b5a46ebb944b0fa8099a3496e59ff"
+    },
+    {
+      "name": "regression-web3-browser",
+      "startedAt": "2026-10-09T03:51:42.807Z",
+      "elapsedMs": 18930,
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "expected": 50,
+      "tests": 50,
+      "passed": 50,
+      "failed": 0,
+      "skipped": 0,
+      "log": "review-regression-web3-browser.log",
+      "sha256": "73b9a45d86d52d959bbd2ff0a347fa91740347f447bd66a6df5cc13a460f3641"
+    }
+  ],
+  "priorRegressions": {
+    "customerMode": {
+      "pass": 3,
+      "fail": 0
+    },
+    "frontendIntegration": {
+      "pass": 11,
+      "fail": 0
+    },
+    "web3ReadProvider": {
+      "pass": 46,
+      "fail": 0
+    },
+    "web3Sdk": {
+      "pass": 18,
+      "fail": 0
+    },
+    "web3Browser": {
+      "pass": 50,
+      "fail": 0
+    }
+  },
+  "forbiddenActionsPerformed": [],
+  "portsWithListener": [],
+  "accepted": {
+    "walletLive": false,
+    "backendLink": false,
+    "token": false,
+    "internalUat": false
+  },
+  "status": "W1 technical code review and offline tests PASS; human acceptance and ClickUp DONE remain pending",
+  "externalEvidence": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-frontend-web3-evidence/w1-run-20261009T025342Z",
+  "historicalValidations": [
+    {
+      "name": "unit",
+      "node": "v22.20.0",
+      "argv": [
+        "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-frontend-web3-evidence/20261007T040805Z/tools/node-v22.20.0-win-x64/node.exe",
+        "--require",
+        "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-frontend-web3/apps/customer-web/tests/offline-network.cjs",
+        "--no-warnings",
+        "--experimental-transform-types",
+        "--test",
+        "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-frontend-web3/apps/customer-web/tests/wallet-foundation.unit.mjs"
+      ],
+      "startedAt": "2026-10-09T03:12:49.696Z",
+      "elapsedMs": 659,
+      "status": 0,
+      "error": null,
+      "signal": null,
+      "pass": 24,
+      "fail": 0,
+      "sha256": "f9abc7854b880f4fe772c8e13b982db1fe617a68c0a35092e99783e96133bbba",
+      "log": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3-evidence\\w1-run-20261009T025342Z\\followup-unit.log"
+    },
+    {
+      "name": "browser",
+      "node": "v22.20.0",
+      "argv": [
+        "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-frontend-web3-evidence/20261007T040805Z/tools/node-v22.20.0-win-x64/node.exe",
+        "--test",
+        "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-frontend-web3/apps/customer-web/tests/wallet-foundation.browser.cjs"
+      ],
+      "startedAt": "2026-10-09T03:12:50.357Z",
+      "elapsedMs": 5013,
+      "status": 0,
+      "error": null,
+      "signal": null,
+      "pass": 7,
+      "fail": 0,
+      "sha256": "dfc12d4e01f0d90195da383da80eb95ae7391e5da3f6f9e5c49b8e7e676f1ece",
+      "log": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3-evidence\\w1-run-20261009T025342Z\\followup-browser.log"
+    },
+    {
+      "name": "typescript",
+      "node": "v22.20.0",
+      "argv": [
+        "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-frontend-web3-evidence/20261007T040805Z/tools/node-v22.20.0-win-x64/node.exe",
+        "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-frontend-web3/node_modules/typescript/bin/tsc",
+        "-p",
+        "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-frontend-web3/apps/customer-web/tsconfig.json",
+        "--noEmit",
+        "--incremental",
+        "false"
+      ],
+      "startedAt": "2026-10-09T03:12:55.370Z",
+      "elapsedMs": 10576,
+      "status": 0,
+      "error": null,
+      "signal": null,
+      "pass": null,
+      "fail": null,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "log": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3-evidence\\w1-run-20261009T025342Z\\followup-typescript.log"
+    },
+    {
+      "name": "eslint",
+      "node": "v22.20.0",
+      "argv": [
+        "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-frontend-web3-evidence/20261007T040805Z/tools/node-v22.20.0-win-x64/node.exe",
+        "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-frontend-web3/node_modules/eslint/bin/eslint.js",
+        "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-frontend-web3/apps/customer-web/app/components/wallet-foundation/types.ts",
+        "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-frontend-web3/apps/customer-web/app/components/wallet-foundation/controller.ts",
+        "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-frontend-web3/apps/customer-web/app/components/wallet-foundation/WalletFoundation.tsx"
+      ],
+      "startedAt": "2026-10-09T03:13:05.947Z",
+      "elapsedMs": 5905,
+      "status": 0,
+      "error": null,
+      "signal": null,
+      "pass": null,
+      "fail": null,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "log": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3-evidence\\w1-run-20261009T025342Z\\followup-eslint.log"
+    }
+  ],
+  "finalReview": {
+    "status": "TECHNICAL_REVIEW_PASS__HUMAN_INTERNAL_ACCEPTANCE_PENDING",
+    "finding": "Disconnect timeout reported generic failure; reproduced red, corrected and retested green.",
+    "reviewFile": "docs/wallet/w1-20261009/ACCEPTANCE-REVIEW.md",
+    "reviewLedger": "w1-acceptance-review-20261009/acceptance-test-ledger.json",
+    "testCounts": {
+      "unit": 25,
+      "browser": 7,
+      "regression": [
+        3,
+        11,
+        46,
+        18,
+        50
+      ]
+    },
+    "allPass": true,
+    "internalAcceptance": false,
+    "clickupUpdated": false
+  }
+}
