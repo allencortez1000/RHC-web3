@@ -1,0 +1,464 @@
+{
+  "schema": "rhc-w01-p1-offline-acceptance-matrix-v1",
+  "dateUtc": "2026-10-10T02:14:59.934Z",
+  "source": {
+    "machine": "DESKTOP-5TQ68F9",
+    "branch": "allen/w01-w02-readonly-offline-20261010",
+    "head": "aeff8976f993a75d584d4e7a6b61b008b94ad02a",
+    "tree": "40d9b7dd0c3c2b4834dc0a6cd3c6cf93abb0c9d1"
+  },
+  "offline": {
+    "planned": 28,
+    "accepted": 26,
+    "unmet": 2,
+    "executedEvidenceCases": 28,
+    "cases": [
+      {
+        "id": "OFF-01",
+        "description": "No approved testnet + default env",
+        "acceptance": "PASS",
+        "testExecution": "AUTOMATED_PASS",
+        "reason": "Requirement supported within bounded OFFLINE synthetic/static/compilation scope; not connected acceptance",
+        "evidence": [
+          {
+            "suite": "w01-unit",
+            "sha256": "91747e65b43cbe578df155e61677242d13afb620286d92ee73fb8bda995d3f84"
+          }
+        ]
+      },
+      {
+        "id": "OFF-02",
+        "description": "Forged env flags and demo/connected conflict",
+        "acceptance": "PASS",
+        "testExecution": "AUTOMATED_PASS",
+        "reason": "Requirement supported within bounded OFFLINE synthetic/static/compilation scope; not connected acceptance",
+        "evidence": [
+          {
+            "suite": "w01-unit",
+            "sha256": "91747e65b43cbe578df155e61677242d13afb620286d92ee73fb8bda995d3f84"
+          }
+        ]
+      },
+      {
+        "id": "OFF-03",
+        "description": "Fixture provider only in test context",
+        "acceptance": "PASS",
+        "testExecution": "AUTOMATED_PASS",
+        "reason": "Requirement supported within bounded OFFLINE synthetic/static/compilation scope; not connected acceptance",
+        "evidence": [
+          {
+            "suite": "w01-unit",
+            "sha256": "91747e65b43cbe578df155e61677242d13afb620286d92ee73fb8bda995d3f84"
+          }
+        ]
+      },
+      {
+        "id": "OFF-04",
+        "description": "Invalid chain ID / chain mismatch",
+        "acceptance": "PASS",
+        "testExecution": "AUTOMATED_PASS",
+        "reason": "Requirement supported within bounded OFFLINE synthetic/static/compilation scope; not connected acceptance",
+        "evidence": [
+          {
+            "suite": "w01-unit",
+            "sha256": "91747e65b43cbe578df155e61677242d13afb620286d92ee73fb8bda995d3f84"
+          }
+        ]
+      },
+      {
+        "id": "OFF-05",
+        "description": "Wrong contract address / zero address",
+        "acceptance": "PASS",
+        "testExecution": "AUTOMATED_PASS",
+        "reason": "Requirement supported within bounded OFFLINE synthetic/static/compilation scope; not connected acceptance",
+        "evidence": [
+          {
+            "suite": "w01-unit",
+            "sha256": "91747e65b43cbe578df155e61677242d13afb620286d92ee73fb8bda995d3f84"
+          }
+        ]
+      },
+      {
+        "id": "OFF-06",
+        "description": "Invalid explorer origin and arbitrary URLs",
+        "acceptance": "PASS",
+        "testExecution": "AUTOMATED_PASS",
+        "reason": "Requirement supported within bounded OFFLINE synthetic/static/compilation scope; not connected acceptance",
+        "evidence": [
+          {
+            "suite": "w01-unit",
+            "sha256": "91747e65b43cbe578df155e61677242d13afb620286d92ee73fb8bda995d3f84"
+          }
+        ]
+      },
+      {
+        "id": "OFF-07",
+        "description": "Missing or unsafe server provider key",
+        "acceptance": "PASS",
+        "testExecution": "AUTOMATED_PASS",
+        "reason": "Requirement supported within bounded OFFLINE synthetic/static/compilation scope; not connected acceptance",
+        "evidence": [
+          {
+            "suite": "w01-unit",
+            "sha256": "91747e65b43cbe578df155e61677242d13afb620286d92ee73fb8bda995d3f84"
+          }
+        ]
+      },
+      {
+        "id": "OFF-08",
+        "description": "Only four JSON-RPC read methods",
+        "acceptance": "PASS",
+        "testExecution": "AUTOMATED_PASS",
+        "reason": "Requirement supported within bounded OFFLINE synthetic/static/compilation scope; not connected acceptance",
+        "evidence": [
+          {
+            "suite": "w01-unit",
+            "sha256": "91747e65b43cbe578df155e61677242d13afb620286d92ee73fb8bda995d3f84"
+          }
+        ]
+      },
+      {
+        "id": "OFF-09",
+        "description": "Response body/redirect/JSON/abort safety",
+        "acceptance": "PASS",
+        "testExecution": "AUTOMATED_PASS",
+        "reason": "Requirement supported within bounded OFFLINE synthetic/static/compilation scope; not connected acceptance",
+        "evidence": [
+          {
+            "suite": "w01-unit",
+            "sha256": "91747e65b43cbe578df155e61677242d13afb620286d92ee73fb8bda995d3f84"
+          }
+        ]
+      },
+      {
+        "id": "OFF-10",
+        "description": "HTTP auth/rate/5xx and timeout handling",
+        "acceptance": "PASS",
+        "testExecution": "AUTOMATED_PASS",
+        "reason": "Requirement supported within bounded OFFLINE synthetic/static/compilation scope; not connected acceptance",
+        "evidence": [
+          {
+            "suite": "w01-unit",
+            "sha256": "91747e65b43cbe578df155e61677242d13afb620286d92ee73fb8bda995d3f84"
+          }
+        ]
+      },
+      {
+        "id": "OFF-11",
+        "description": "Missing contract bytecode or wrong network",
+        "acceptance": "PASS",
+        "testExecution": "AUTOMATED_PASS",
+        "reason": "Requirement supported within bounded OFFLINE synthetic/static/compilation scope; not connected acceptance",
+        "evidence": [
+          {
+            "suite": "w01-unit",
+            "sha256": "91747e65b43cbe578df155e61677242d13afb620286d92ee73fb8bda995d3f84"
+          }
+        ]
+      },
+      {
+        "id": "OFF-12",
+        "description": "ABI optional/unavailable never zero",
+        "acceptance": "PASS",
+        "testExecution": "AUTOMATED_PASS",
+        "reason": "Requirement supported within bounded OFFLINE synthetic/static/compilation scope; not connected acceptance",
+        "evidence": [
+          {
+            "suite": "w01-unit",
+            "sha256": "91747e65b43cbe578df155e61677242d13afb620286d92ee73fb8bda995d3f84"
+          }
+        ]
+      },
+      {
+        "id": "OFF-13",
+        "description": "Pinned-height metadata and end-block hash",
+        "acceptance": "PASS",
+        "testExecution": "AUTOMATED_PASS",
+        "reason": "Requirement supported within bounded OFFLINE synthetic/static/compilation scope; not connected acceptance",
+        "evidence": [
+          {
+            "suite": "w01-unit",
+            "sha256": "91747e65b43cbe578df155e61677242d13afb620286d92ee73fb8bda995d3f84"
+          }
+        ]
+      },
+      {
+        "id": "OFF-14",
+        "description": "Genesis and exact uint256 format",
+        "acceptance": "PASS",
+        "testExecution": "AUTOMATED_PASS",
+        "reason": "Requirement supported within bounded OFFLINE synthetic/static/compilation scope; not connected acceptance",
+        "evidence": [
+          {
+            "suite": "w01-unit",
+            "sha256": "91747e65b43cbe578df155e61677242d13afb620286d92ee73fb8bda995d3f84"
+          }
+        ]
+      },
+      {
+        "id": "OFF-15",
+        "description": "Single-flight TTL stale and expiry",
+        "acceptance": "PASS",
+        "testExecution": "AUTOMATED_PASS",
+        "reason": "Requirement supported within bounded OFFLINE synthetic/static/compilation scope; not connected acceptance",
+        "evidence": [
+          {
+            "suite": "w01-unit",
+            "sha256": "91747e65b43cbe578df155e61677242d13afb620286d92ee73fb8bda995d3f84"
+          }
+        ]
+      },
+      {
+        "id": "OFF-16",
+        "description": "Return-tab elapsed-time reclassification",
+        "acceptance": "FAIL",
+        "testExecution": "AUTOMATED_PASS",
+        "reason": "Idle tab continues to show last server fresh status; no automatic elapsed stale reclassification",
+        "evidence": [
+          {
+            "suite": "w01-browser",
+            "sha256": "8f1cad87973573a66aef08ee5775ea22b27486a948e2202487c7158d95d1ceef"
+          }
+        ]
+      },
+      {
+        "id": "OFF-17",
+        "description": "Invalid/expired customer session denial",
+        "acceptance": "PASS",
+        "testExecution": "AUTOMATED_PASS",
+        "reason": "Requirement supported within bounded OFFLINE synthetic/static/compilation scope; not connected acceptance",
+        "evidence": [
+          {
+            "suite": "w01-browser",
+            "sha256": "8f1cad87973573a66aef08ee5775ea22b27486a948e2202487c7158d95d1ceef"
+          }
+        ]
+      },
+      {
+        "id": "OFF-18",
+        "description": "Global admin integration.view grant",
+        "acceptance": "PASS",
+        "testExecution": "AUTOMATED_PASS",
+        "reason": "Requirement supported within bounded OFFLINE synthetic/static/compilation scope; not connected acceptance",
+        "evidence": [
+          {
+            "suite": "w01-browser",
+            "sha256": "8f1cad87973573a66aef08ee5775ea22b27486a948e2202487c7158d95d1ceef"
+          }
+        ]
+      },
+      {
+        "id": "OFF-19",
+        "description": "Customer/admin role and account switch isolation",
+        "acceptance": "PASS",
+        "testExecution": "AUTOMATED_PASS",
+        "reason": "Requirement supported within bounded OFFLINE synthetic/static/compilation scope; not connected acceptance",
+        "evidence": [
+          {
+            "suite": "w01-browser",
+            "sha256": "8f1cad87973573a66aef08ee5775ea22b27486a948e2202487c7158d95d1ceef"
+          }
+        ]
+      },
+      {
+        "id": "OFF-20",
+        "description": "Read-only browser controls and disclosures",
+        "acceptance": "PASS",
+        "testExecution": "AUTOMATED_PASS",
+        "reason": "Requirement supported within bounded OFFLINE synthetic/static/compilation scope; not connected acceptance",
+        "evidence": [
+          {
+            "suite": "w01-browser",
+            "sha256": "8f1cad87973573a66aef08ee5775ea22b27486a948e2202487c7158d95d1ceef"
+          }
+        ]
+      },
+      {
+        "id": "OFF-21",
+        "description": "Browser excludes provider secrets/JWT",
+        "acceptance": "PASS",
+        "testExecution": "AUTOMATED_PASS",
+        "reason": "Requirement supported within bounded OFFLINE synthetic/static/compilation scope; not connected acceptance",
+        "evidence": [
+          {
+            "suite": "w01-browser",
+            "sha256": "8f1cad87973573a66aef08ee5775ea22b27486a948e2202487c7158d95d1ceef"
+          }
+        ]
+      },
+      {
+        "id": "OFF-22",
+        "description": "Absent zero unsupported unavailable disabled distinguished",
+        "acceptance": "PASS",
+        "testExecution": "AUTOMATED_PASS",
+        "reason": "Requirement supported within bounded OFFLINE synthetic/static/compilation scope; not connected acceptance",
+        "evidence": [
+          {
+            "suite": "w01-browser",
+            "sha256": "8f1cad87973573a66aef08ee5775ea22b27486a948e2202487c7158d95d1ceef"
+          }
+        ]
+      },
+      {
+        "id": "OFF-23",
+        "description": "390/768/1440 responsive keyboard reduced motion",
+        "acceptance": "PASS",
+        "testExecution": "AUTOMATED_PASS",
+        "reason": "Requirement supported within bounded OFFLINE synthetic/static/compilation scope; not connected acceptance",
+        "evidence": [
+          {
+            "suite": "w01-browser",
+            "sha256": "8f1cad87973573a66aef08ee5775ea22b27486a948e2202487c7158d95d1ceef"
+          }
+        ]
+      },
+      {
+        "id": "OFF-24",
+        "description": "Existing W1/W2A/W2B and Web3 regressions",
+        "acceptance": "PASS",
+        "testExecution": "AUTOMATED_PASS",
+        "reason": "Requirement supported within bounded OFFLINE synthetic/static/compilation scope; not connected acceptance",
+        "evidence": [
+          {
+            "suite": "all-8-regressions",
+            "ledger": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w01-p1-offline-20261010T014521Z/RUN-LEDGER-V3.json"
+          }
+        ]
+      },
+      {
+        "id": "OFF-25",
+        "description": "Contract metadata official identity drift",
+        "acceptance": "FAIL",
+        "testExecution": "AUTOMATED_PASS",
+        "reason": "No approved name/symbol/decimals baseline available to detect complete official identity drift",
+        "evidence": [
+          {
+            "suite": "w01-unit",
+            "sha256": "91747e65b43cbe578df155e61677242d13afb620286d92ee73fb8bda995d3f84"
+          },
+          {
+            "suite": "w01-browser",
+            "sha256": "8f1cad87973573a66aef08ee5775ea22b27486a948e2202487c7158d95d1ceef"
+          }
+        ]
+      },
+      {
+        "id": "OFF-26",
+        "description": "Customer wallet balances/history absence reported",
+        "acceptance": "PASS",
+        "testExecution": "AUTOMATED_PASS",
+        "reason": "Requirement supported within bounded OFFLINE synthetic/static/compilation scope; not connected acceptance",
+        "evidence": [
+          {
+            "suite": "w01-unit",
+            "sha256": "91747e65b43cbe578df155e61677242d13afb620286d92ee73fb8bda995d3f84"
+          }
+        ]
+      },
+      {
+        "id": "OFF-27",
+        "description": "RHC Points separate from token amounts",
+        "acceptance": "PASS",
+        "testExecution": "AUTOMATED_PASS",
+        "reason": "Requirement supported within bounded OFFLINE synthetic/static/compilation scope; not connected acceptance",
+        "evidence": [
+          {
+            "suite": "w01-unit",
+            "sha256": "91747e65b43cbe578df155e61677242d13afb620286d92ee73fb8bda995d3f84"
+          },
+          {
+            "suite": "w01-browser",
+            "sha256": "8f1cad87973573a66aef08ee5775ea22b27486a948e2202487c7158d95d1ceef"
+          }
+        ]
+      },
+      {
+        "id": "OFF-28",
+        "description": "Exact worktree source/manifest checksum and no Git publication",
+        "acceptance": "PASS",
+        "testExecution": "AUDIT_PASS",
+        "reason": "Requirement supported within bounded OFFLINE synthetic/static/compilation scope; not connected acceptance",
+        "evidence": [
+          {
+            "suite": "source-and-protected-worktree-prepost-audit",
+            "source": "aeff8976f993a75d584d4e7a6b61b008b94ad02a",
+            "checkedDuringSeal": true
+          }
+        ]
+      }
+    ]
+  },
+  "connected": {
+    "planned": 8,
+    "executed": 0,
+    "cases": [
+      {
+        "id": "CON-01",
+        "description": "Named testnet cold read",
+        "acceptance": "BLOCKED_NOT_RUN",
+        "actualCalls": 0,
+        "reason": "No signed chain/contract/ABI/provider/budget/security/connected Auth authorization; W01-P1 offline-only"
+      },
+      {
+        "id": "CON-02",
+        "description": "Independent same-block verification",
+        "acceptance": "BLOCKED_NOT_RUN",
+        "actualCalls": 0,
+        "reason": "No signed chain/contract/ABI/provider/budget/security/connected Auth authorization; W01-P1 offline-only"
+      },
+      {
+        "id": "CON-03",
+        "description": "100 bounded reads and freshness sample",
+        "acceptance": "BLOCKED_NOT_RUN",
+        "actualCalls": 0,
+        "reason": "No signed chain/contract/ABI/provider/budget/security/connected Auth authorization; W01-P1 offline-only"
+      },
+      {
+        "id": "CON-04",
+        "description": "Wrong-chain/missing-code/reorg nonproduction provider error",
+        "acceptance": "BLOCKED_NOT_RUN",
+        "actualCalls": 0,
+        "reason": "No signed chain/contract/ABI/provider/budget/security/connected Auth authorization; W01-P1 offline-only"
+      },
+      {
+        "id": "CON-05",
+        "description": "Actual RHC Auth/Admin browser read",
+        "acceptance": "BLOCKED_NOT_RUN",
+        "actualCalls": 0,
+        "reason": "No signed chain/contract/ABI/provider/budget/security/connected Auth authorization; W01-P1 offline-only"
+      },
+      {
+        "id": "CON-06",
+        "description": "Provider outage/recovery and cache expiry across restart",
+        "acceptance": "BLOCKED_NOT_RUN",
+        "actualCalls": 0,
+        "reason": "No signed chain/contract/ABI/provider/budget/security/connected Auth authorization; W01-P1 offline-only"
+      },
+      {
+        "id": "CON-07",
+        "description": "Official contract provenance/source/roles",
+        "acceptance": "BLOCKED_NOT_RUN",
+        "actualCalls": 0,
+        "reason": "No signed chain/contract/ABI/provider/budget/security/connected Auth authorization; W01-P1 offline-only"
+      },
+      {
+        "id": "CON-08",
+        "description": "Separate APP and TOKEN management GO/NO-GO proof",
+        "acceptance": "BLOCKED_NOT_RUN",
+        "actualCalls": 0,
+        "reason": "No signed chain/contract/ABI/provider/budget/security/connected Auth authorization; W01-P1 offline-only"
+      }
+    ]
+  },
+  "runner": {
+    "stageCount": 8,
+    "runnerEntries": 234,
+    "failed": 0,
+    "skipped": 0,
+    "passed": 234
+  },
+  "interpretation": "OFF-16/OFF-25 automated NEGATIVE tests pass because they demonstrate unmet product requirements. They are FAIL as acceptance, not accepted.",
+  "noLiveCalls": true,
+  "notProductionReady": true,
+  "w02OfficialContractDecision": "OPEN"
+}

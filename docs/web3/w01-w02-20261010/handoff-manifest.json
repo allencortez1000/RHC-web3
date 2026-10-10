@@ -1,0 +1,226 @@
+{
+  "schema": "rhc-w01-p1-offline-checksummed-handoff-v1",
+  "createdUtc": "2026-10-10T02:15:01.378Z",
+  "device": "DESKTOP-5TQ68F9",
+  "owner": "Boss Allen",
+  "branch": "allen/w01-w02-readonly-offline-20261010",
+  "worktree": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w01-w02-readonly-20261010",
+  "baseCommit": "aeff8976f993a75d584d4e7a6b61b008b94ad02a",
+  "baseTree": "40d9b7dd0c3c2b4834dc0a6cd3c6cf93abb0c9d1",
+  "decisionPack": "RHC_W01_W02_Readonly_Decision_Pack_2026-10-10.zip (planning)",
+  "status": "OFFLINE_VERIFICATION_EXECUTED__PARTIAL_ACCEPTANCE_26_OF_28__HUMAN_REVIEW_PENDING",
+  "sourceRecords": [
+    {
+      "path": "apps/customer-web/tests/w01-readonly-browser.cjs",
+      "bytes": 9887,
+      "sha256": "b479a2fc1b8aac1b2e1fd9b9228cb3f2346887db984114a51aa99370e45f2201"
+    },
+    {
+      "path": "docs/web3/w01-w02-20261010/W01-P1-IMPLEMENTATION-RESULT.md",
+      "bytes": 4856,
+      "sha256": "6d5751c8a5c6016cd75119a9cec7de8357ca158e59cf7b137a0d19f2daa2c3bf"
+    },
+    {
+      "path": "docs/web3/w01-w02-20261010/W01-P1-PRESERVATION.md",
+      "bytes": 3527,
+      "sha256": "a0fd9443faccd7628ad2135044811576ddbc877c6d40b366603f0ee82f9af055"
+    },
+    {
+      "path": "docs/web3/w01-w02-20261010/W01-P1-RUN-STATE.md",
+      "bytes": 2201,
+      "sha256": "7405e33e8f7ae431c1f815eb154b97a19ab00cc3b53565fa5b1999efb5a96117"
+    },
+    {
+      "path": "docs/web3/w01-w02-20261010/W01-P1-SECURITY-ISSUES.md",
+      "bytes": 5243,
+      "sha256": "3dd74cc8043357e5a07645e7398d6df2c78d091ef89b454fa051510c7111a123"
+    },
+    {
+      "path": "docs/web3/w01-w02-20261010/W01-P1-TEST-MATRIX.json",
+      "bytes": 17355,
+      "sha256": "1d79207a78456ee3e4f4a8c13967ea4b5678fc72efe50e05544dc54afc1112d2"
+    },
+    {
+      "path": "docs/web3/w01-w02-20261010/W01-P1-VALIDATION.md",
+      "bytes": 4584,
+      "sha256": "fe7a64f8fdf69374630f001c3122420f356c6609a547aaf7e3d8619afea626bd"
+    },
+    {
+      "path": "packages/web3/test/w01-readonly-boundary.cjs",
+      "bytes": 15397,
+      "sha256": "b5169ec12dce0459e380765deef8feca8b0afc82e7a5c197a79fc56d418e3333"
+    }
+  ],
+  "reviewedExistingHashes": [
+    {
+      "path": "packages/web3/src/config.ts",
+      "localSHA256": "6ae29fd65e877cb81dcf9d6ddf64a19206b43e1e8fc4ce86cdbf9fc5533af518",
+      "acceptedW2BWorktreeSHA256": "6ae29fd65e877cb81dcf9d6ddf64a19206b43e1e8fc4ce86cdbf9fc5533af518",
+      "normalizedSHA256": "d7741a39ebed308e26559ceedaceeaa76332cd8eb06d3616b3133e0dc3ad22c6",
+      "gitBlobSha1": "98d4c28d0a34c7b5e941b750c5c657954ac411a7",
+      "sameAcceptedGitObject": true
+    },
+    {
+      "path": "packages/web3/src/index.ts",
+      "localSHA256": "6793873bde213b5c9cc59bc122ee0842cd3a8bac57a2b47099280b2e4ef0bac8",
+      "acceptedW2BWorktreeSHA256": "6793873bde213b5c9cc59bc122ee0842cd3a8bac57a2b47099280b2e4ef0bac8",
+      "normalizedSHA256": "0c2d504592aab9fab980f20e53f087fbfe60fb5c95fba894335b54bfc153bd77",
+      "gitBlobSha1": "6cb1e543669ca26bd89ec3fc172ed17a3abb1fb2",
+      "sameAcceptedGitObject": true
+    },
+    {
+      "path": "packages/web3/src/sdk-snapshot.ts",
+      "localSHA256": "f2726e5188c8b5a388d88aa5a3233d48e850fdb7dc06001b91d1712da3724f3d",
+      "acceptedW2BWorktreeSHA256": "f2726e5188c8b5a388d88aa5a3233d48e850fdb7dc06001b91d1712da3724f3d",
+      "normalizedSHA256": "4dd3b2ab1cfee16b9c8102c594d3f3eea084d10a4a731b2f97abafec0145cf6d",
+      "gitBlobSha1": "3375e0b7605a02840ea25b2cf8cee8423ce13cf5",
+      "sameAcceptedGitObject": true
+    },
+    {
+      "path": "packages/web3/src/thirdweb-read-provider.ts",
+      "localSHA256": "51cd4912e2a1bb383020268826298b9fe6a612be4f894fc07af91a67520af5af",
+      "acceptedW2BWorktreeSHA256": "51cd4912e2a1bb383020268826298b9fe6a612be4f894fc07af91a67520af5af",
+      "normalizedSHA256": "06dd8f3e4da23ce2e54b940a68e2bb406aa1324afb7700dff6283b188d0e9243",
+      "gitBlobSha1": "8f8be24ee0517ab356e0dfe5619a2c6277667c9f",
+      "sameAcceptedGitObject": true
+    },
+    {
+      "path": "packages/web3/src/transport.ts",
+      "localSHA256": "ff24f3a0923b681ae046ee385b5efbec8f3b5aa2f69c9727e8fabe8493a60a5b",
+      "acceptedW2BWorktreeSHA256": "ff24f3a0923b681ae046ee385b5efbec8f3b5aa2f69c9727e8fabe8493a60a5b",
+      "normalizedSHA256": "6db1bf4c8358ce31e570a21cbca01be4006e0fb3457b1372c68812711d6a3de7",
+      "gitBlobSha1": "9865f990ca2ff7d3bf4be54c307b73a30d0b06de",
+      "sameAcceptedGitObject": true
+    },
+    {
+      "path": "packages/web3/src/snapshot.ts",
+      "localSHA256": "56a7e926f046080247c415e8c59cf071cd051b75adfae3195871b1caf9da6434",
+      "acceptedW2BWorktreeSHA256": "56a7e926f046080247c415e8c59cf071cd051b75adfae3195871b1caf9da6434",
+      "normalizedSHA256": "ba3574db566847d8c8c9a6fcef627cbe582e5528d4566d3f000b299fedcfd205",
+      "gitBlobSha1": "f15313483ef157aa456d48e8b5328c488083f670",
+      "sameAcceptedGitObject": true
+    },
+    {
+      "path": "packages/types/src/web3.ts",
+      "localSHA256": "6e36751b97fe1ed7601ee9bcda02895ef391c835a23fd208c90c245989d15109",
+      "acceptedW2BWorktreeSHA256": "6e36751b97fe1ed7601ee9bcda02895ef391c835a23fd208c90c245989d15109",
+      "normalizedSHA256": "3f5872125d9452b1b8c2ba7945d3e355aefd7e2899bb08121d3a98991ba6096d",
+      "gitBlobSha1": "601991f9b662efa45a73163d9540af49d75fe826",
+      "sameAcceptedGitObject": true
+    },
+    {
+      "path": "packages/ui/src/web3-read-panel.tsx",
+      "localSHA256": "72b764efdeef4968fa0538fb4004242b12864ba9dd25a848d7a71371d3d12759",
+      "acceptedW2BWorktreeSHA256": "72b764efdeef4968fa0538fb4004242b12864ba9dd25a848d7a71371d3d12759",
+      "normalizedSHA256": "7d19de389c7b98522775b23f31d28361b0ac6152310f4ffdb5aa7af23bea2635",
+      "gitBlobSha1": "56af86754fc98feb91802c5ddb6fc03eadf2d1a1",
+      "sameAcceptedGitObject": true
+    },
+    {
+      "path": "apps/customer-web/app/components/web3-preview.tsx",
+      "localSHA256": "d4cf04070eec0fe92737e9ad713e955af4e619f269f9254265d2d1d0330cadf5",
+      "acceptedW2BWorktreeSHA256": "d4cf04070eec0fe92737e9ad713e955af4e619f269f9254265d2d1d0330cadf5",
+      "normalizedSHA256": "43beb6e2b2baad49af1ccbf7b1acaaeca3a60210c86cc9ec2d0602465c72ca99",
+      "gitBlobSha1": "4ecce54a583b65e101af579de5b780af90c4fe66",
+      "sameAcceptedGitObject": true
+    },
+    {
+      "path": "apps/admin-web/app/integrations/thirdweb-read-panel.tsx",
+      "localSHA256": "6c096d576a8dda799ae583cfd4cb2c84453b225ff7c06231a53848796cac6c99",
+      "acceptedW2BWorktreeSHA256": "6c096d576a8dda799ae583cfd4cb2c84453b225ff7c06231a53848796cac6c99",
+      "normalizedSHA256": "df8486475f7414853c44e03c1a8c18a78e8323c9f443fe0e3ed78c5103f09dd2",
+      "gitBlobSha1": "8ea97e4eba89d2086e83ec15109ee0efca1f0ce6",
+      "sameAcceptedGitObject": true
+    },
+    {
+      "path": "apps/api/src/modules/web3/web3.controller.ts",
+      "localSHA256": "0a229f761b12e04d3a6bab5ba913c9bc50e28876bcdf11caea82806d6859119e",
+      "acceptedW2BWorktreeSHA256": "0a229f761b12e04d3a6bab5ba913c9bc50e28876bcdf11caea82806d6859119e",
+      "normalizedSHA256": "9a0a0d60c83f7472889f1d240d9cf114929f4972656a174a135334df482be14c",
+      "gitBlobSha1": "b918b79d93b41676340535ff5b7b58b885f031ee",
+      "sameAcceptedGitObject": true
+    },
+    {
+      "path": "contracts/README.md",
+      "localSHA256": "ebd57836ca09516a81230ecf4118308be6b6ec48575447d4605d6f4d15b73c20",
+      "acceptedW2BWorktreeSHA256": "ebd57836ca09516a81230ecf4118308be6b6ec48575447d4605d6f4d15b73c20",
+      "normalizedSHA256": "c130b687e585c495d5c053a5c8131e23a38f772c6f5b69fda2f17c86de827a2b",
+      "gitBlobSha1": "bacc79d371489f452d8ab3c5fce156a14c9e4575",
+      "sameAcceptedGitObject": true
+    },
+    {
+      "path": "docs/wallet/w2b-offline-20261009/handoff-manifest.json",
+      "localSHA256": "1bc56b8b42d68ee2db4f9958b112a3192bc1a93e3fbcf2383b6c1e0cf93b4405",
+      "acceptedW2BWorktreeSHA256": "0ad45bb3d39f1b611af0918e55da33fda2b0ec8a78c4724b487dd8cde28fa275",
+      "normalizedSHA256": "0ad45bb3d39f1b611af0918e55da33fda2b0ec8a78c4724b487dd8cde28fa275",
+      "gitBlobSha1": "37436c2b3314a2430a8fb83345b77473a3853705",
+      "sameAcceptedGitObject": true
+    }
+  ],
+  "testEvidence": {
+    "latest": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w01-p1-offline-20261010T014521Z/RUN-LEDGER-V3.json",
+    "sha256": "b267ea31d0054a9f4d9da32c9f6e5e056f4f55dbf7fbdb8635c6b1c2ed39f2ae",
+    "static": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w01-p1-offline-20261010T014521Z/STATIC-LEDGER-V2.json",
+    "staticSHA256": "318f530945260cdca1d95690c7220a52dac5efa58b8d1429ae34475bd5f05618",
+    "matrix": "docs/web3/w01-w02-20261010/W01-P1-TEST-MATRIX.json",
+    "matrixSHA256": "1d79207a78456ee3e4f4a8c13967ea4b5678fc72efe50e05544dc54afc1112d2",
+    "node": "v22.20.0",
+    "thirdweb": "5.121.6",
+    "newUnitTests": 20,
+    "newBrowserTests": 11,
+    "runnerEntries": 234,
+    "offlinePass": 26,
+    "offlineUnmet": 2,
+    "connectedNotRun": 8
+  },
+  "criticalFindings": [
+    "OFF-16 elapsed UI freshness is not recomputed",
+    "OFF-25 no signed expected token metadata comparison"
+  ],
+  "approvedScopes": {
+    "newCodeTestsAndDocsOnly": true,
+    "liveProvider": false,
+    "secretKeys": false,
+    "walletEnrollment": false,
+    "signer": false,
+    "transactions": false,
+    "contractDeployment": false,
+    "backendChanges": false,
+    "commit": false,
+    "push": false
+  },
+  "acceptance": {
+    "humanOwnerAccepted": false,
+    "readOnlyOfficialContractAccepted": false,
+    "connectedProviderApproved": false,
+    "productionReleaseApproved": false
+  },
+  "protectedBranches": [
+    {
+      "root": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-frontend-web3",
+      "branch": "allen/frontend-web3-stabilization",
+      "sha": "d951c91800f00d31a4ec4bd7b4da14e8a266e01d",
+      "actualHead": "d951c91800f00d31a4ec4bd7b4da14e8a266e01d",
+      "actualBranch": "allen/frontend-web3-stabilization",
+      "status": ""
+    },
+    {
+      "root": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009",
+      "branch": "allen/w2a-thirdweb-wallet",
+      "sha": "dcf2a81aa5158f2e56141dac8a2ebe60d7fd236b",
+      "actualHead": "dcf2a81aa5158f2e56141dac8a2ebe60d7fd236b",
+      "actualBranch": "allen/w2a-thirdweb-wallet",
+      "status": ""
+    },
+    {
+      "root": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w2b-offline-20261009",
+      "branch": "allen/w2b-offline-auth-contract-20261009",
+      "sha": "aeff8976f993a75d584d4e7a6b61b008b94ad02a",
+      "actualHead": "aeff8976f993a75d584d4e7a6b61b008b94ad02a",
+      "actualBranch": "allen/w2b-offline-auth-contract-20261009",
+      "status": ""
+    }
+  ],
+  "artifactsExternal": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w01-p1-offline-20261010T014521Z",
+  "stop": "STOP_FOR_BOSS_ALLEN_REVIEW__NO_COMMIT_PUSH"
+}
