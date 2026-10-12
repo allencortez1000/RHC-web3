@@ -1,0 +1,327 @@
+{
+  "schema": "rhc-w03-wallet-contract-document-review-handoff-v1",
+  "createdUtc": "2026-10-12T03:27:17.301Z",
+  "owner": "Boss Allen",
+  "machine": "DESKTOP-5TQ68F9",
+  "execution": {
+    "thread": "NEW — RHC Allen W03 Offline Wallet Contract Review",
+    "actualModel": "GPT-6",
+    "thinkingLevel": "High requested; runtime selector not independently verifiable",
+    "executor": "ChatGPT direct Remote Desktop Commander — no separate Zed thread started"
+  },
+  "projectRoot": "C:/Users/admin/Desktop/RHBC project",
+  "worktree": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w03-20261012",
+  "branch": "allen/w03-wallet-contract-offline-20261012",
+  "exactBaseCommit": "72f1d68d87a4f0779c028813eb495f6c138cae2c",
+  "exactBaseTree": "01459fbb113e14b2c23536c6f24bdd157dcea3f7",
+  "sourceEvidence": {
+    "snapshot": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-wallet-w2a-20261009-evidence\\w03-contract-review-20261012\\SOURCE-SNAPSHOT.json",
+    "snapshotSHA256": "ab7013f63b8bccff7da3ff838e46fd4f7608d0f3a7e3dc05c0c7e30118a3eb3c",
+    "exactTrackedSourceFiles": [
+      {
+        "path": "apps/customer-web/app/account/page.tsx",
+        "bytes": 393,
+        "sha256": "a6d9e4f8f97d8b82bd49f04efabec25f21438ca7468ee75c3f9178be55956e3b",
+        "gitBlobSha1": "5303469f2a71814bd4ec3d22fbcc94afe7e5789f"
+      },
+      {
+        "path": "apps/customer-web/app/rhc-points/page.tsx",
+        "bytes": 6312,
+        "sha256": "fd8623d72944a198a1b9e62dfcdae5807d58bb157cc5d59806b7765f86340a2b",
+        "gitBlobSha1": "fc1a78e45257195e777d3d09fd278b313a2459d5"
+      },
+      {
+        "path": "apps/customer-web/app/components/demo-records.tsx",
+        "bytes": 29403,
+        "sha256": "ffcffe8a557e68eb358f6bf0842ef794e00a95da62aac271f09be2c0094f3f34",
+        "gitBlobSha1": "c1b4fc54e29bb96e422d3c622d909bba3192ee9b"
+      },
+      {
+        "path": "apps/customer-web/app/components/web3-preview.tsx",
+        "bytes": 1225,
+        "sha256": "d4cf04070eec0fe92737e9ad713e955af4e619f269f9254265d2d1d0330cadf5",
+        "gitBlobSha1": "4ecce54a583b65e101af579de5b780af90c4fe66"
+      },
+      {
+        "path": "apps/customer-web/app/components/wallet-foundation/types.ts",
+        "bytes": 2492,
+        "sha256": "d0faff1f7bb7e5b60f2ecbf8183461e85bb74d36d3a314e987e7f9f249aaa786",
+        "gitBlobSha1": "3f5fa785e5bca77d2f76855f4a6b8557273dc8f9"
+      },
+      {
+        "path": "apps/customer-web/app/components/wallet-foundation/controller.ts",
+        "bytes": 11573,
+        "sha256": "8cbe623cbbf1fe12221ddc2a8374fa49008d064ae3470256a8ffd1ede0b87f58",
+        "gitBlobSha1": "b8a55b393073d07c4b95c00d7f8c8ce138a6df7e"
+      },
+      {
+        "path": "apps/customer-web/app/components/wallet-thirdweb/ThirdwebWalletReadiness.tsx",
+        "bytes": 2926,
+        "sha256": "35deea1743b0f0cc9973b43f70803f96ecc08f73bb6cc41ab552dfdcd5541269",
+        "gitBlobSha1": "44fc33933e6d0028400ecccad19710ff26f3f924"
+      },
+      {
+        "path": "apps/customer-web/app/components/wallet-thirdweb/w2b-offline/types.ts",
+        "bytes": 4720,
+        "sha256": "f119a6c0476063d9cb505630a7e7d26d55ba3d86b2e01e66a9defb3d9241a2ba",
+        "gitBlobSha1": "c945aee634567286d219664645cb7b950fecd989"
+      },
+      {
+        "path": "apps/customer-web/app/components/wallet-thirdweb/w2b-offline/controller.ts",
+        "bytes": 11395,
+        "sha256": "d5e16995f5f71e0fa12afa8eeadf870ffcf41b6a96504849e266f2df1a8ac15d",
+        "gitBlobSha1": "211cb020e25a9230d6417b7da4a849355f12d43f"
+      },
+      {
+        "path": "apps/api/src/modules/web3/web3.controller.ts",
+        "bytes": 1069,
+        "sha256": "0a229f761b12e04d3a6bab5ba913c9bc50e28876bcdf11caea82806d6859119e",
+        "gitBlobSha1": "b918b79d93b41676340535ff5b7b58b885f031ee"
+      },
+      {
+        "path": "apps/api/src/modules/web3/web3.service.ts",
+        "bytes": 803,
+        "sha256": "5e8219574e7d4a50727aa8d431717c806ae550d1c4e0060d2f9010a6664ca03a",
+        "gitBlobSha1": "301f8763f2102133d3471f6549af89017c228295"
+      },
+      {
+        "path": "apps/api/src/modules/auth/auth.controller.ts",
+        "bytes": 1485,
+        "sha256": "1d0e1913300cb4d4e24d93ac2644ea95e61a42cc6937438e47dbb65bae67cc5c",
+        "gitBlobSha1": "36a7ed7b4c3fde906a32187e3f88da97b6befbcd"
+      },
+      {
+        "path": "apps/api/src/modules/customers/me.controller.ts",
+        "bytes": 3658,
+        "sha256": "02480fdb3001209a500c29e04a49aa514ad076d5805f82c5cedd361c37800a85",
+        "gitBlobSha1": "fc81474a9ab1a1e34a880ff956f42b98d39f8994"
+      },
+      {
+        "path": "packages/types/src/web3.ts",
+        "bytes": 1346,
+        "sha256": "6e36751b97fe1ed7601ee9bcda02895ef391c835a23fd208c90c245989d15109",
+        "gitBlobSha1": "601991f9b662efa45a73163d9540af49d75fe826"
+      },
+      {
+        "path": "packages/ui/src/runtime.tsx",
+        "bytes": 45830,
+        "sha256": "a696d4618393c8e82fda552e30d7462157d07d9f850b027d71507450cc178fff",
+        "gitBlobSha1": "d3ee3221824284578167713156735712fdee156e"
+      },
+      {
+        "path": "packages/database/prisma/schema.prisma",
+        "bytes": 55861,
+        "sha256": "d395743b5dfda0c367dfbfd473c547a2ad5e964dcf034654118562d70e6d09f1",
+        "gitBlobSha1": "c2483471cc0672914f21bdb561d8046cb9e7fb75"
+      },
+      {
+        "path": "packages/web3/src/config.ts",
+        "bytes": 4609,
+        "sha256": "6ae29fd65e877cb81dcf9d6ddf64a19206b43e1e8fc4ce86cdbf9fc5533af518",
+        "gitBlobSha1": "98d4c28d0a34c7b5e941b750c5c657954ac411a7"
+      },
+      {
+        "path": "packages/web3/src/off25-synthetic-identity.ts",
+        "bytes": 5269,
+        "sha256": "3b864dd0e8c33cb64a9403a41ad986f35b9b08f584c8153b512a8a06c7c549a8",
+        "gitBlobSha1": "871bdc6be6916989ffc01ad08f5ff509821730df"
+      },
+      {
+        "path": "docs/wallet/w2b-offline-20261009/AUTH-CONTRACT-DECISIONS.md",
+        "bytes": 5695,
+        "sha256": "381a4713cd9f25cc8622a6edaf1d806318db6ff538fe4e67e533b2cdfb33420d",
+        "gitBlobSha1": "15b77503efbac10ce227376286335b10cfa7e492"
+      },
+      {
+        "path": "docs/wallet/w2a-20261009/BACKEND-DECISIONS.md",
+        "bytes": 3477,
+        "sha256": "a601e0439c0892d76e72893e155decafc29a00e3798ae3394ed515ed8379eb78",
+        "gitBlobSha1": "eb9d0cd94b9cb997a8564a791498f3de2049f5f9"
+      }
+    ],
+    "readOnlySourceAssertionsPassed": 12,
+    "readOnlySourceAssertions": [
+      {
+        "id": "S01-WALLET_OFFLINE_RELEASE",
+        "passed": true
+      },
+      {
+        "id": "S02-W1_NEVER_VERIFIES_BACKEND_LINK",
+        "passed": true
+      },
+      {
+        "id": "S03_THIRDWEB_READINESS_DISABLED",
+        "passed": true
+      },
+      {
+        "id": "S04_NO_WALLET_ACCOUNT_BALANCE_IN_WEB3_DTO",
+        "passed": true
+      },
+      {
+        "id": "S05_EXISTING_WEB3_ENDPOINT_CONTRACT_METADATA_ONLY",
+        "passed": true
+      },
+      {
+        "id": "S06_DEMO_ACCOUNT_WALLET_READINESS",
+        "passed": true
+      },
+      {
+        "id": "S07_CENTRALIZED_POINTS_DEMO_REDEEM_ACTION",
+        "passed": true
+      },
+      {
+        "id": "S08_SCHEMA_HAS_REWARD_LEDGER_NOT_WALLET_LINK",
+        "passed": true
+      },
+      {
+        "id": "S09_APPROVED_TESTNETS_EMPTY",
+        "passed": true
+      },
+      {
+        "id": "S10_FRONTEND_REQUEST_SCOPING_PRESENT",
+        "passed": true
+      },
+      {
+        "id": "S11_W2B_BACKEND_DECISIONS_OPEN",
+        "passed": true
+      },
+      {
+        "id": "S12_POINTS_DISTINCT_FROM_WALLET",
+        "passed": true
+      }
+    ],
+    "scope": "Existing worktree code at the accepted commit; not the latest private Boss Gal backend"
+  },
+  "documentation": [
+    {
+      "path": "docs/wallet/w03-contract-20261012/00-RUN-STATE.md",
+      "bytes": 3183,
+      "sha256": "ab3d63109a0a8a7b6422fde47053d1f1007e0d6ae599686826dff20347e36671"
+    },
+    {
+      "path": "docs/wallet/w03-contract-20261012/01-AS-IS-GAPS.md",
+      "bytes": 5419,
+      "sha256": "cbb002ecda8dd64ac79a9b36385d6b2babbd15f7cb8d906d42291b55a9055738"
+    },
+    {
+      "path": "docs/wallet/w03-contract-20261012/02-PROPOSED-DATA-API-CONTRACT.md",
+      "bytes": 8538,
+      "sha256": "897af4f68dbde18e3e1369a1a3e3abf77f55e303b099ebe08e62374bfc4474be"
+    },
+    {
+      "path": "docs/wallet/w03-contract-20261012/03-IDENTITY-AND-STATE-RULES.md",
+      "bytes": 4883,
+      "sha256": "5f8596d95c3455e04166442dfb0b8a0f5a9e097c6dfb301fc7eadb84a6b60067"
+    },
+    {
+      "path": "docs/wallet/w03-contract-20261012/04-BOSS-GAL-DECISION-REQUEST.md",
+      "bytes": 3887,
+      "sha256": "34ff31f9b53798431ad81d64a9a135bfa9e3ca7b813237dc8cfb0cf12dfdf7fc"
+    },
+    {
+      "path": "docs/wallet/w03-contract-20261012/05-W03-OFFLINE-ACCEPTANCE-MATRIX.json",
+      "bytes": 20972,
+      "sha256": "6fa4b6b902f8c8b0e0a508a60d1037fefd4a1c4fa9e5c38dddc1e6d02ac6f039"
+    },
+    {
+      "path": "docs/wallet/w03-contract-20261012/06-IMPLEMENTATION-AND-RELEASE-GATES.md",
+      "bytes": 4618,
+      "sha256": "1dd83ed96b357ac790736e96bb58195bb74ff567b58277f396deee1dbba75c7b"
+    },
+    {
+      "path": "docs/wallet/w03-contract-20261012/07-SECURITY-AND-SCOPE-ISSUES.md",
+      "bytes": 4365,
+      "sha256": "997d172c854eb001d68c2702db750ada74efb5c6be76ec288fd44d0af78da707"
+    },
+    {
+      "path": "docs/wallet/w03-contract-20261012/08-SOURCE-AND-PRESERVATION.md",
+      "bytes": 2681,
+      "sha256": "22b2a910080039a97ac1116a3629a3e978daf644c726016cef3ccde4e2a06595"
+    },
+    {
+      "path": "docs/wallet/w03-contract-20261012/09-OWNER-REVIEW-SUMMARY.md",
+      "bytes": 1900,
+      "sha256": "6b781c8bb7689da9a85abdb2b26c2be7cdb5eb303a4ead99ef0ed353eb7b0db6"
+    }
+  ],
+  "plan": {
+    "path": "docs/wallet/w03-contract-20261012/05-W03-OFFLINE-ACCEPTANCE-MATRIX.json",
+    "planned": 50,
+    "executed": 0,
+    "passed": 0,
+    "failed": 0,
+    "classification": "DESIGN_TEST_PLAN_NOT_RUN",
+    "acceptedWalletImplementation": false
+  },
+  "latestControlSources": {
+    "clickupAsOfReview": {
+      "walletInterface": "TESTING",
+      "propertiesServicesToWallet": "TESTING",
+      "rewardsBalanceHistory": "IN PROGRESS",
+      "walletTokenIntegration": "BACKLOG"
+    },
+    "projectDecisions": "Oct10 state: Nov10 view-only synthetic points/history; token issuer/chain signed details unresolved",
+    "githubAcceptedSourceBranch": "allen/off25-synthetic-identity-offline-20261012",
+    "acceptedSourceSHA": "72f1d68d87a4f0779c028813eb495f6c138cae2c"
+  },
+  "releaseStatus": {
+    "W1_W2A_W2B_offline": "PRESERVED",
+    "W01_OFF16": "ACCEPTED_OFFLINE_ONLY",
+    "OFF25_official": "FAIL_BLOCKED",
+    "W01_P2_connected": "NOT_RUN",
+    "customerWalletFeature": "TESTING_NOT_DONE",
+    "pointsRevenueFeatures": "NOT_AUTHORIZED",
+    "publicContract": "NOT_VERIFIED_OR_DEPLOYED_BY_THIS_TASK",
+    "integratedCustomerBalanceHistory": "NOT_IMPLEMENTED_BY_W03",
+    "humanW03Acceptance": "PENDING",
+    "deploymentApproval": false
+  },
+  "preservation": {
+    "protectedWorktrees": [
+      {
+        "name": "OFF25",
+        "branch": "allen/off25-synthetic-identity-offline-20261012",
+        "head": "72f1d68d87a4f0779c028813eb495f6c138cae2c",
+        "clean": true
+      },
+      {
+        "name": "OFF16",
+        "branch": "allen/w01-off16-freshness-offline-20261010",
+        "head": "10e902e2af0912044739d6982dd93e789105f0e6",
+        "clean": true
+      },
+      {
+        "name": "W01",
+        "branch": "allen/w01-w02-readonly-offline-20261010",
+        "head": "7b142c726520373a28932d57acd600aedabca62c",
+        "clean": true
+      },
+      {
+        "name": "W2B",
+        "branch": "allen/w2b-offline-auth-contract-20261009",
+        "head": "aeff8976f993a75d584d4e7a6b61b008b94ad02a",
+        "clean": true
+      },
+      {
+        "name": "W2A",
+        "branch": "allen/w2a-thirdweb-wallet",
+        "head": "dcf2a81aa5158f2e56141dac8a2ebe60d7fd236b",
+        "clean": true
+      },
+      {
+        "name": "W1",
+        "branch": "allen/frontend-web3-stabilization",
+        "head": "d951c91800f00d31a4ec4bd7b4da14e8a266e01d",
+        "clean": true
+      }
+    ],
+    "existingTrackedCodeEdited": false,
+    "newFilesOnlyUnderDocs": true,
+    "sourceChanges": 0,
+    "noGitCommitPushMerge": true,
+    "noProviderOrRPC": true,
+    "noWalletSigningTransactions": true,
+    "noBackendOrSchemaChanges": true
+  },
+  "stop": "STOP_FOR_BOSS_ALLEN_REVIEW__NO_SOURCE_IMPLEMENTATION_GIT_PUBLICATION_OR_CONNECTED_TEST"
+}
