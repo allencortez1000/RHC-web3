@@ -1,0 +1,183 @@
+{
+  "schema": "rhc-allen-w03-2b-offline-react-validation-v1",
+  "atUtc": "2026-10-12T08:50:15.558Z",
+  "executor": "ChatGPT GPT-6 via Remote Desktop Commander; no Zed/Codex process",
+  "machine": "DESKTOP-5TQ68F9",
+  "owner": "Boss Allen",
+  "baseCommit": "8407e0588cc07a7039f9369188ebe16f5cdf6325",
+  "branch": "allen/w03-2b-wallet-react-offline-20261012",
+  "executions": [
+    {
+      "stage": "react_ssr",
+      "exitCode": 0,
+      "expectedPass": 37,
+      "durationMs": 810,
+      "logPath": "NODE-REACT-VERIFIED.log",
+      "logSHA256": "89ab6223b6f42fab341fad0d982a6257d287e06c378675a578ce4ded9fdf9b7a"
+    },
+    {
+      "stage": "inherited_w03",
+      "exitCode": 0,
+      "expectedPass": 54,
+      "durationMs": 532,
+      "logPath": "INHERITED-W03-VERIFIED.log",
+      "logSHA256": "1ebc80b5e22c3b520482f9f412f7f33d8c555329c822ac76242260eb0b2e142d"
+    },
+    {
+      "stage": "customer_full_typecheck",
+      "exitCode": 0,
+      "expectedPass": null,
+      "durationMs": 4089,
+      "logPath": "CUSTOMER-TYPECHECK-VERIFIED.log",
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "stage": "eslint_new_sources",
+      "exitCode": 0,
+      "expectedPass": null,
+      "durationMs": 4402,
+      "logPath": "ESLINT-VERIFIED.log",
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "stage": "react_isolated_typecheck",
+      "exitCode": 0,
+      "expectedPass": null,
+      "durationMs": 1658,
+      "logPath": "REACT-TYPECHECK-VERIFIED.log",
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "chromeBrowser": {
+    "passedAssertions": 61,
+    "failedAssertions": 0,
+    "profiles": 6,
+    "axeIncomplete": [
+      {
+        "profile": "points-desktop",
+        "incomplete": []
+      },
+      {
+        "profile": "points-mobile",
+        "incomplete": []
+      },
+      {
+        "profile": "points-small-mobile",
+        "incomplete": []
+      },
+      {
+        "profile": "unauthenticated-desktop",
+        "incomplete": []
+      },
+      {
+        "profile": "unauthenticated-mobile",
+        "incomplete": []
+      },
+      {
+        "profile": "unauthenticated-small-mobile",
+        "incomplete": []
+      }
+    ],
+    "localOnly": true,
+    "networkRequests": 0,
+    "apiRequests": 0,
+    "providerRequests": 0
+  },
+  "inheritedW03": {
+    "planned": 50,
+    "executed": 0,
+    "status": "NOT_RUN"
+  },
+  "officialOFF25": "FAIL_BLOCKED",
+  "connectedW01": "NOT_RUN",
+  "apiContractBG01toBG12": "PENDING",
+  "fullWcagAcceptance": "NOT_CLAIMED",
+  "backendChanges": 0,
+  "productionDeployment": false,
+  "preservation": [
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\PHC WEB3 DEVELOPMENT",
+      "head": "04a726281c2ba153e2931201fb7a86af75bd6eb3",
+      "initialStatusCount": 1,
+      "currentStatusCount": 1,
+      "statusHash": "cd8144359a4fa5db11f939259631e764287ae90ecd4f03d8cf86cb12eeeed6df"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3",
+      "head": "d951c91800f00d31a4ec4bd7b4da14e8a266e01d",
+      "initialStatusCount": 0,
+      "currentStatusCount": 0,
+      "statusHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-off25-offline-20261012",
+      "head": "72f1d68d87a4f0779c028813eb495f6c138cae2c",
+      "initialStatusCount": 0,
+      "currentStatusCount": 0,
+      "statusHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-vercel-diagnostic-20261012",
+      "head": "fe00106def73300d96c362685cce8e8217adeba8",
+      "initialStatusCount": 0,
+      "currentStatusCount": 0,
+      "statusHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-w01-off16-20261010",
+      "head": "10e902e2af0912044739d6982dd93e789105f0e6",
+      "initialStatusCount": 0,
+      "currentStatusCount": 0,
+      "statusHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-w01-w02-readonly-20261010",
+      "head": "7b142c726520373a28932d57acd600aedabca62c",
+      "initialStatusCount": 0,
+      "currentStatusCount": 0,
+      "statusHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-w03-2-offline-wallet-view-20261013",
+      "head": "fe00106def73300d96c362685cce8e8217adeba8",
+      "initialStatusCount": 10,
+      "currentStatusCount": 10,
+      "statusHash": "ce207b82957fa43eec505e19b961f61e5f03859e211e49d153ce120d6e6b89d5"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-w03-20261012",
+      "head": "fe00106def73300d96c362685cce8e8217adeba8",
+      "initialStatusCount": 0,
+      "currentStatusCount": 0,
+      "statusHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-w03-2a-a11y-offline-20261012",
+      "head": "8407e0588cc07a7039f9369188ebe16f5cdf6325",
+      "initialStatusCount": 0,
+      "currentStatusCount": 0,
+      "statusHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-w2b-offline-20261009",
+      "head": "aeff8976f993a75d584d4e7a6b61b008b94ad02a",
+      "initialStatusCount": 0,
+      "currentStatusCount": 0,
+      "statusHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-wallet-w2a-20261009",
+      "head": "dcf2a81aa5158f2e56141dac8a2ebe60d7fd236b",
+      "initialStatusCount": 0,
+      "currentStatusCount": 0,
+      "statusHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-combined-1.0",
+      "head": "579a007bb56e247836d97d7c9adcc157f848071f",
+      "initialStatusCount": 0,
+      "currentStatusCount": 0,
+      "statusHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}
