@@ -1,0 +1,113 @@
+{
+  "schema": "rhc-w03-2a-handoff-manifest-v1",
+  "utc": "2026-10-12T06:49:24.588Z",
+  "owner": "Boss Allen",
+  "machine": "DESKTOP-5TQ68F9",
+  "projectRoot": "C:/Users/admin/Desktop/RHBC project",
+  "worktree": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-w03-2a-a11y-offline-20261012",
+  "branch": "allen/w03-2a-a11y-offline-20261012",
+  "exactBaseCommit": "fe00106def73300d96c362685cce8e8217adeba8",
+  "originalW03_2ManifestSHA256": "b075a08680b063c465d171b496f9bded02f258b126a763d71e42fed0fd50f42d",
+  "files": [
+    {
+      "path": "apps/customer-web/app/components/wallet-thirdweb/w03-offline-view/model.ts",
+      "bytes": 6335,
+      "sha256": "6b9982e61b745a0bd0160b1afb525eb8d260e168b7321927e8198468a4c3917c"
+    },
+    {
+      "path": "apps/customer-web/app/components/wallet-thirdweb/w03-offline-view/render.ts",
+      "bytes": 3781,
+      "sha256": "eaf2dfe4e2c2892acd1541a9e0742903119c97fcd957526681652f3f72c7d316"
+    },
+    {
+      "path": "apps/customer-web/app/components/wallet-thirdweb/w03-offline-view/model.test.mjs",
+      "bytes": 9079,
+      "sha256": "eb49337186b0c7417a1dd522f764ef900303b550a68ca9144b9efe86dee4199c"
+    },
+    {
+      "path": "apps/customer-web/app/components/wallet-thirdweb/w03-offline-view/preview.mjs",
+      "bytes": 1128,
+      "sha256": "b3f3f8977a4464087f018c5b879ceb39d094c3277d9a699bc5a0d6b0d1eb1d90"
+    },
+    {
+      "path": "apps/customer-web/app/components/wallet-thirdweb/w03-offline-view/preview.html",
+      "bytes": 3623,
+      "sha256": "7abf21f091432e51f2403030f9133725f8d8777ff33bc14d62ec04483d7ba66d"
+    },
+    {
+      "path": "docs/wallet/w03-2a-a11y-offline-20261012/IMPLEMENTATION-RESULT.md",
+      "bytes": 3413,
+      "sha256": "1bb34c1c72c7e23ba9239a0980a88b07a354a4c7e98f1362304b7f6545d9805a"
+    },
+    {
+      "path": "docs/wallet/w03-2a-a11y-offline-20261012/SECURITY-AND-ACCESSIBILITY.md",
+      "bytes": 2014,
+      "sha256": "c22c10dae775a6aacf4f08aa31909e10c76b51868dc2e64d7f89baafbeabf8a1"
+    },
+    {
+      "path": "docs/wallet/w03-2a-a11y-offline-20261012/PRESERVATION-AND-NEXT-GATE.md",
+      "bytes": 1453,
+      "sha256": "818ab0c7d2331878fec4163f2e879c9ee4bd05b9655c4e8203df8e0207230c28"
+    },
+    {
+      "path": "docs/wallet/w03-2a-a11y-offline-20261012/VALIDATION-LEDGER.json",
+      "bytes": 1345,
+      "sha256": "63e54560329922c0773c8c3350ef366095c9ff909640474488e92a508c8287b7"
+    }
+  ],
+  "protectedSix": [
+    {
+      "name": "OFF25",
+      "branch": "allen/off25-synthetic-identity-offline-20261012",
+      "head": "72f1d68d87a4f0779c028813eb495f6c138cae2c",
+      "clean": true
+    },
+    {
+      "name": "OFF16",
+      "branch": "allen/w01-off16-freshness-offline-20261010",
+      "head": "10e902e2af0912044739d6982dd93e789105f0e6",
+      "clean": true
+    },
+    {
+      "name": "W01",
+      "branch": "allen/w01-w02-readonly-offline-20261010",
+      "head": "7b142c726520373a28932d57acd600aedabca62c",
+      "clean": true
+    },
+    {
+      "name": "W2B",
+      "branch": "allen/w2b-offline-auth-contract-20261009",
+      "head": "aeff8976f993a75d584d4e7a6b61b008b94ad02a",
+      "clean": true
+    },
+    {
+      "name": "W2A",
+      "branch": "allen/w2a-thirdweb-wallet",
+      "head": "dcf2a81aa5158f2e56141dac8a2ebe60d7fd236b",
+      "clean": true
+    },
+    {
+      "name": "W1",
+      "branch": "allen/frontend-web3-stabilization",
+      "head": "d951c91800f00d31a4ec4bd7b4da14e8a266e01d",
+      "clean": true
+    }
+  ],
+  "priorW03DocsPreserved": true,
+  "priorW03_2Preserved": true,
+  "tests": {
+    "unitPass": 54,
+    "unitFail": 0,
+    "browserPass": 23,
+    "browserFail": 0,
+    "gradientIncomplete": 3,
+    "typescript": "PASS"
+  },
+  "historicalW03": {
+    "planned": 50,
+    "executed": 0
+  },
+  "officialOFF25": "FAIL_BLOCKED",
+  "connectedW01": "NOT_RUN",
+  "status": "LOCAL_TESTED_NOT_DONE_OWNER_REVIEW"
+}

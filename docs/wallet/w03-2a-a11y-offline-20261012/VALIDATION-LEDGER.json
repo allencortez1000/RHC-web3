@@ -1,0 +1,44 @@
+{
+  "schema": "rhc-w03-2a-local-validation-ledger-v1",
+  "utc": "2026-10-12T06:49:24.580Z",
+  "owner": "Boss Allen",
+  "machine": "DESKTOP-5TQ68F9",
+  "branch": "allen/w03-2a-a11y-offline-20261012",
+  "baseCommit": "fe00106def73300d96c362685cce8e8217adeba8",
+  "tests": [
+    {
+      "name": "Node 24 pure synthetic model/render tests",
+      "passed": 54,
+      "failed": 0,
+      "logSHA256": "dfc21be33a042244a2df50fd3ed5f3abac205f3b82e6a01e6955b4768a42d11a"
+    },
+    {
+      "name": "Strict isolated TypeScript noEmit",
+      "status": "PASS",
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "Chrome offline responsive browser + axe-core",
+      "passed": 23,
+      "failed": 0,
+      "unresolvedGradient": 3,
+      "logSHA256": "a21255e4f606d8f7f830efdfe94c204275b27bdaa2af0a7ef5ec885c467e738e"
+    }
+  ],
+  "fixes": [
+    "footer #668095 -> #536a79",
+    "removed plain div.lock aria-label"
+  ],
+  "sourceIntegrity": "Original W03-2 preserved; only two replacements in copied renderer; preview regenerated",
+  "historicW03": {
+    "planned": 50,
+    "executed": 0
+  },
+  "officialOFF25": "FAIL_BLOCKED",
+  "connectedW01": "NOT_RUN",
+  "connectedBackend": "NOT_RUN",
+  "thirdweb": "NOT_RUN",
+  "browserUAT": "NOT_RUN",
+  "publicRelease": false,
+  "acceptance": "PENDING"
+}
