@@ -1,0 +1,115 @@
+{
+  "schema": "rhc-off25-synthetic-identity-prep-v1",
+  "createdUtc": "2026-10-12T02:44:18.745Z",
+  "device": "DESKTOP-5TQ68F9",
+  "owner": "Boss Allen",
+  "developmentThread": "CONTINUE RHC-BossAllen-OFF25-offline-prep",
+  "aiModel": "GPT-6",
+  "thinkingLevel": "Not independently observable",
+  "projectRoot": "C:/Users/admin/Desktop/RHBC project",
+  "worktree": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-off25-offline-20261012",
+  "branch": "allen/off25-synthetic-identity-offline-20261012",
+  "baseCommit": "10e902e2af0912044739d6982dd93e789105f0e6",
+  "baseTree": "8fc928e22b51ca90474f4e5f94236666e147fe8b",
+  "sourceRecords": [
+    {
+      "path": "packages/web3/src/off25-synthetic-identity.ts",
+      "bytes": 5140,
+      "sha256": "5e51aa6b43d7669b302af43384289899d89712733712767844415187ab001bf2"
+    },
+    {
+      "path": "packages/web3/test/off25-synthetic-identity.offline.cjs",
+      "bytes": 10144,
+      "sha256": "8022518e35c0367b917b576f7fdcc0922156bf3d7d43ec25a78e68d4b05e0713"
+    }
+  ],
+  "documentRecords": [
+    {
+      "path": "docs/web3/off25-prep-20261012/IMPLEMENTATION-RESULT.md",
+      "bytes": 3023,
+      "sha256": "21d20c47a279be83d51d224aeff15a875aadd6147eb393d81fa487bdc5a42539"
+    },
+    {
+      "path": "docs/web3/off25-prep-20261012/ISSUER-DECISIONS.md",
+      "bytes": 3264,
+      "sha256": "3ebabd6a61ad5960d2fb80bb3236d7da13a0a379d4d0bcf4ef8e5e319ea8e0cd"
+    },
+    {
+      "path": "docs/web3/off25-prep-20261012/PRESERVATION-RESULT.md",
+      "bytes": 1822,
+      "sha256": "8d144032432f811bd45783782ae7bfe3bb7290761273cf48af66a9aa2e246be3"
+    },
+    {
+      "path": "docs/web3/off25-prep-20261012/SECURITY-ISSUES.md",
+      "bytes": 3055,
+      "sha256": "6af5bf972070adedbbf8aa6961f022caf65fb4b1a5a237898b6c4f7bf03ecdb2"
+    },
+    {
+      "path": "docs/web3/off25-prep-20261012/VALIDATION-RESULT.md",
+      "bytes": 2727,
+      "sha256": "4e467e7f7763f8a7ab6e95154800e86463a45a4b5f7f096468ccc879938f6fc4"
+    }
+  ],
+  "validation": {
+    "node": "v22.20.0",
+    "testEnvironment": "synthetic/offline guard; disabled provider; sanitized env",
+    "newSuite": 24,
+    "existingCoreSuite": 46,
+    "existingInterceptedSDKSuite": 18,
+    "reportedRunnerEntriesPassed": 88,
+    "buildTypeLintStagesPassed": 4,
+    "allSevenStagesPass": true,
+    "validationLedger": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-wallet-w2a-20261009-evidence\\off25-offline-20261012\\VALIDATION-LEDGER.json",
+    "ledgerSHA256": "d03d3c48b878f1800bb7bca10cc8496e75463453775b0b3d05b8c6e8bd01a29d",
+    "logHashesVerified": true
+  },
+  "risks": {
+    "OFF25": "FAIL_BLOCKED_NEEDS_ISSUER_SIGNED_SPEC",
+    "officialTokenVerified": false,
+    "issuerApproval": false,
+    "tokenReleaseAuthorized": false,
+    "connectedThirdweb": "NOT_RUN",
+    "smartContractDeployment": "NOT_AUTHORIZED",
+    "mainnet": "NOT_AUTHORIZED",
+    "walletCreation": "NOT_RUN",
+    "fullCustomerWalletTask": "TESTING_NOT_DONE",
+    "noProductionExports": true
+  },
+  "controls": {
+    "approvedNetworkRegistryUnchanged": true,
+    "existingIndexAndConfigUnchanged": true,
+    "backendUntouched": true,
+    "protectedWorktrees": [
+      {
+        "branch": "allen/w01-off16-freshness-offline-20261010",
+        "head": "10e902e2af0912044739d6982dd93e789105f0e6",
+        "status": "CLEAN"
+      },
+      {
+        "branch": "allen/w01-w02-readonly-offline-20261010",
+        "head": "7b142c726520373a28932d57acd600aedabca62c",
+        "status": "CLEAN"
+      },
+      {
+        "branch": "allen/w2b-offline-auth-contract-20261009",
+        "head": "aeff8976f993a75d584d4e7a6b61b008b94ad02a",
+        "status": "CLEAN"
+      },
+      {
+        "branch": "allen/w2a-thirdweb-wallet",
+        "head": "dcf2a81aa5158f2e56141dac8a2ebe60d7fd236b",
+        "status": "CLEAN"
+      },
+      {
+        "branch": "allen/frontend-web3-stabilization",
+        "head": "d951c91800f00d31a4ec4bd7b4da14e8a266e01d",
+        "status": "CLEAN"
+      }
+    ],
+    "noNewRuntimeDependencies": true,
+    "existingDepsReadOnlyJunction": true,
+    "noGitCommitPushMerge": true,
+    "sourceOnlyNewFiles": true
+  },
+  "stop": "STOP_FOR_BOSS_ALLEN_REVIEW__NO_PUBLICATION_OR_CONNECTED_WORK"
+}
