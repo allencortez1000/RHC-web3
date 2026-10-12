@@ -472,7 +472,7 @@ test('isolated read-only Web3 browser coverage', { timeout: 60000 }, async (t) =
     });
 
     for (const snapshot of ['fresh', 'partial']) {
-      await t.test(snapshot + ' is explicitly last-response state after elapsed time and tab resume', async () => {
+      await t.test(snapshot + ' is downgraded locally after elapsed time and tab resume', async () => {
         const result = { ...explorerFixture, snapshot, connection: snapshot === 'fresh' ? 'ready' : 'degraded', lastSuccessAt: synthetic.observedAt };
         const view = await visit({ authenticated: true, result });
         try {
@@ -492,9 +492,15 @@ test('isolated read-only Web3 browser coverage', { timeout: 60000 }, async (t) =
             window.dispatchEvent(new Event('focus'));
             window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }));
           });
-          assert.equal(await panel.getByText('Snapshot', { exact: true }).locator('..').locator('dd').textContent(), snapshot + ' (at last response)');
-          assert.equal(await panel.getByText('Connection', { exact: true }).locator('..').locator('dd').textContent(), result.connection + ' (at last response)');
-          assert.match(await panel.textContent(), /does not automatically recheck freshness, including after returning to this tab/);
+          const snapshotField = panel.getByText('Snapshot', { exact: true }).locator('..').locator('dd');
+          await expect(snapshotField).toHaveText('stale (browser view of last response)');
+          assert.equal(await panel.getByText('Connection', { exact: true }).locator('..').locator('dd').textContent(),
+            'degraded (last response; browser guard applied)');
+          assert.match(await panel.textContent(), /Browser freshness is downgraded conservatively as time elapses/);
+          assert.match(await panel.textContent(), /Browser freshness expired or cannot be verified/);
+          if (snapshot === 'partial') {
+            assert.match(await panel.textContent(), /Partial snapshot — some token fields were not observed/);
+          }
           await expect(panel.getByText('Last successful read', { exact: true }).locator('..')).toContainText(synthetic.observedAt);
           await expect(view.page.getByRole('heading', { name: 'Public roadmap', exact: true })).toBeVisible();
           assert.equal(view.requests.length, before, 'Resume must not initiate API or provider traffic');

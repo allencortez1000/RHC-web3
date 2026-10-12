@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import type { Web3Field, Web3ReadResult } from '@rhc/types';
 
 const sourceLabels: Record<Web3ReadResult['source'], string> = {
@@ -8,6 +8,65 @@ const sourceLabels: Record<Web3ReadResult['source'], string> = {
   synthetic: 'SYNTHETIC DEMO — No live blockchain connection.',
   thirdweb_testnet: 'TESTNET PREVIEW — Development only; not the production RHC token.',
 };
+
+// The current server TTL can be configured as low as one second. Its exact
+// deadline is not supplied to the browser. A longer locally claimed "fresh"
+// period would be unsafe. This is display-only: never fetch or change the DTO.
+const MIN_SUPPORTED_SERVER_TTL_MS = 1000;
+
+function isRecentObservation(
+  lastSuccessAt: string | null, hasData: boolean, nowMs: number,
+): boolean {
+  if (!hasData || !lastSuccessAt || !Number.isFinite(nowMs)) return false;
+  const at = Date.parse(lastSuccessAt);
+  return Number.isFinite(at) && nowMs >= at &&
+    nowMs - at < MIN_SUPPORTED_SERVER_TTL_MS;
+}
+
+function useExpiredBrowserObservation(result: Web3ReadResult): boolean {
+  const applicable = result.source === 'thirdweb_testnet' &&
+    (result.snapshot === 'fresh' || result.snapshot === 'partial');
+  const observationKey = JSON.stringify([
+    result.source, result.snapshot, result.lastSuccessAt, result.observedAt,
+    result.lastAttemptAt, result.chain?.id, result.contractAddress,
+    result.block?.hash,
+  ]);
+  const hasData = result.data !== null;
+  const lastSuccessAt = result.lastSuccessAt;
+  // On SSR and first hydration, freshness is unverified until a client tick.
+  const [checked, setChecked] = useState<{
+    key: string; expired: boolean;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!applicable) return;
+    const recheck = () => {
+      const now = Date.now();
+      setChecked(previous => {
+        // A system-clock rollback cannot turn the SAME expired observation
+        // fresh again. Only a new response identity may reset the latch.
+        const expired = (previous?.key === observationKey && previous.expired) ||
+          !isRecentObservation(lastSuccessAt, hasData, now);
+        if (previous?.key === observationKey && previous.expired === expired) {
+          return previous;
+        }
+        return { key: observationKey, expired };
+      });
+    };
+    recheck();
+    // Background timers can be throttled; recheck immediately on return.
+    const interval = window.setInterval(recheck, 250);
+    window.addEventListener('focus', recheck);
+    document.addEventListener('visibilitychange', recheck);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener('focus', recheck);
+      document.removeEventListener('visibilitychange', recheck);
+    };
+  }, [applicable, observationKey, lastSuccessAt, hasData]);
+
+  return applicable && !(checked?.key === observationKey && !checked.expired);
+}
 
 function Metadata({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -50,6 +109,10 @@ function testnetExplorerHref(result: Web3ReadResult): string | null {
 
 export function Web3ReadPanel({ result }: { result: Web3ReadResult }) {
   const explorerHref = testnetExplorerHref(result);
+  const browserExpired = useExpiredBrowserObservation(result);
+  const displaySnapshot = browserExpired ? 'stale' : result.snapshot;
+  const displayConnection = browserExpired && result.connection === 'ready'
+    ? 'degraded' : result.connection;
   return (
     <section aria-label="Read-only Web3 result" className="space-y-4">
       <p className="font-bold text-[var(--rhc-heading)]">{sourceLabels[result.source]}</p>
@@ -67,14 +130,17 @@ export function Web3ReadPanel({ result }: { result: Web3ReadResult }) {
       {result.source === 'thirdweb_testnet' && (
         <p className="text-sm text-[var(--rhc-muted)]">
           Connection and snapshot describe the last server response, not current provider health.
-          This view does not automatically recheck freshness, including after returning to this tab.
-          Reload the page to request updated status; diagnostics alone do not initiate a blockchain read.
+          Browser freshness is downgraded conservatively as time elapses, including when returning to this tab.
+          The UI never automatically contacts the provider. Reload the page to request updated status.
         </p>
       )}
       {result.snapshot === 'absent' && <p role="status">No snapshot is available. Missing observations are not zero balances or successful reads.</p>}
-      {result.snapshot === 'stale' && (
+      {displaySnapshot === 'stale' && (
         <p role="status">
           Stale snapshot — retained observations are not a current successful read.{' '}
+          {browserExpired
+            ? 'Browser freshness expired or cannot be verified from the last response. '
+            : ''}
           Refresh is required to obtain a current observation.
         </p>
       )}
@@ -82,10 +148,17 @@ export function Web3ReadPanel({ result }: { result: Web3ReadResult }) {
       <dl className="grid gap-3 sm:grid-cols-2">
         <Metadata label="Source">{result.source}</Metadata>
         <Metadata label="Capability">{result.capability}</Metadata>
-        <Metadata label="Connection">{result.connection}{result.source === 'thirdweb_testnet' && ' (at last response)'}</Metadata>
+        <Metadata label="Connection">{displayConnection}{result.source === 'thirdweb_testnet' && ' (last response; browser guard applied)'}</Metadata>
         <Metadata label="Configuration">{result.configuration}</Metadata>
-        <Metadata label="Snapshot">{result.snapshot}{result.source === 'thirdweb_testnet' && ' (at last response)'}</Metadata>
+        <Metadata label="Snapshot">{displaySnapshot}{result.source === 'thirdweb_testnet' && ' (browser view of last response)'}</Metadata>
         <Metadata label="Diagnostic code">{result.diagnosticCode ?? 'None reported'}</Metadata>
+        {result.source === 'thirdweb_testnet' && (
+          <Metadata label="Browser freshness">
+            {browserExpired
+              ? 'Expired or unverified locally — not a fresh blockchain read'
+              : 'Within the conservative one-second freshness window of the last response'}
+          </Metadata>
+        )}
         <Metadata label="Restriction assessment">{result.restrictionAssessment}</Metadata>
         <Metadata label="Chain">{result.chain ? `${result.chain.name} (${result.chain.id})` : 'Not available'}</Metadata>
         <Metadata label="Contract address">{result.contractAddress ?? 'Not available'}</Metadata>
@@ -100,7 +173,7 @@ export function Web3ReadPanel({ result }: { result: Web3ReadResult }) {
         <Metadata label="Last successful read">{result.lastSuccessAt ?? 'No successful read recorded'}</Metadata>
         <Metadata label="Last attempted read">{result.lastAttemptAt ?? 'No attempt recorded'}</Metadata>
       </dl>
-      {result.data && result.snapshot !== 'absent' && (
+      {result.data && displaySnapshot !== 'absent' && (
         <div>
           <h3 className="mb-3 text-sm font-bold text-[var(--rhc-heading)]">Token field observations</h3>
           <dl className="grid gap-3 sm:grid-cols-2">

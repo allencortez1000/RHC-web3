@@ -1,0 +1,139 @@
+{
+  "schema": "rhc-w01-off16-evidence-only-handoff-v1",
+  "preparedUtc": "2026-10-12T01:55:04.724Z",
+  "owner": "Boss Allen",
+  "workstream": "W01 / OFF-16 browser freshness correction",
+  "operation": "CONTINUE_EXISTING_THREAD_EVIDENCE_ONLY",
+  "aiModel": "GPT-6",
+  "thinkingLevel": "High requested by user; runtime setting not independently verifiable",
+  "machine": "DESKTOP-5TQ68F9",
+  "projectRoot": "C:/Users/admin/Desktop/RHBC project",
+  "branch": "allen/w01-off16-freshness-offline-20261010",
+  "worktree": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w01-off16-20261010",
+  "exactBaseCommit": "7b142c726520373a28932d57acd600aedabca62c",
+  "exactBaseTree": "1f87b973629c0ebbc7e901b854b59621647c961c",
+  "currentGitHEADRemainsBase": true,
+  "noStageCommitPushMerge": true,
+  "reviewedSourceFiles": [
+    {
+      "path": "packages/ui/src/web3-read-panel.tsx",
+      "gitStatus": "TRACKED_MODIFIED",
+      "bytes": 11474,
+      "sha256": "84546439f751d7bc6f1d14789e71e6ef710f1b4881cb9d47b78d1f2ada922dc6",
+      "lastModifiedUtc": "2026-10-10T08:00:43.181Z",
+      "baseGitBlob": "56af86754fc98feb91802c5ddb6fc03eadf2d1a1"
+    },
+    {
+      "path": "scripts/web3-browser-test.mjs",
+      "gitStatus": "TRACKED_MODIFIED",
+      "bytes": 40551,
+      "sha256": "7ba037dae488c6d14fcbdaa0d22e80fcdce9b69e2feddf2316edfec923ff4a5f",
+      "lastModifiedUtc": "2026-10-10T08:22:21.513Z",
+      "baseGitBlob": "7326e066e549d17cda29f17e0440c1d8ce9ddf2b"
+    },
+    {
+      "path": "apps/customer-web/tests/w01-off16-freshness.browser.cjs",
+      "gitStatus": "UNTRACKED_NEW",
+      "bytes": 13109,
+      "sha256": "4fa9c4865f22c3414a9b077aada26c8680b35624f757037aea459f4ef190e369",
+      "lastModifiedUtc": "2026-10-10T08:13:12.885Z",
+      "baseGitBlob": null
+    }
+  ],
+  "documents": [
+    {
+      "path": "docs/web3/w01-off16-20261010/IMPLEMENTATION-RESULT.md",
+      "bytes": 4061,
+      "sha256": "54c9579a76fc85484e9a6602fce6d1207472c26480512b475eefe62882619c19"
+    },
+    {
+      "path": "docs/web3/w01-off16-20261010/PRESERVATION-RESULT.md",
+      "bytes": 2977,
+      "sha256": "98efb6bd3ed16f85b93a28527d2aaa27c696de32a8ae9b3073c865fd8a2116a2"
+    },
+    {
+      "path": "docs/web3/w01-off16-20261010/SECURITY-ISSUES.md",
+      "bytes": 4112,
+      "sha256": "23d6e5b1652b94298a91c46300ccecaef0eeae1951fd2faedc0dec25c28ac08b"
+    },
+    {
+      "path": "docs/web3/w01-off16-20261010/VALIDATION-RESULT.md",
+      "bytes": 3534,
+      "sha256": "267d3b8fdeac74d13c85033ce2f0379767982083b2f0c046272acdc9911e7b4e"
+    }
+  ],
+  "originalEvidence": {
+    "v6Ledger": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-wallet-w2a-20261009-evidence\\w01-off16-correction-20261010\\FINAL-REGRESSION-LEDGER-V6.json",
+    "v6SHA256": "f84edbf7810a177389cf11ac5f83847a0391efa6dabaea8fca6c90fd1f3d9c8a",
+    "staticLedger": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-wallet-w2a-20261009-evidence\\w01-off16-correction-20261010\\STATIC-LEDGER.json",
+    "staticSHA256": "783e12a6bf63d92e460257df72b6247f9be86b58ac4b67025d0bbb076f9678ba",
+    "externallySealedTestChecks": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009-evidence/w01-off16-evidence-final-20261012/TEST-LOG-VERIFICATION.json",
+    "testRunUtc": "2026-10-10T08:23:57.237Z",
+    "finalizationDateUtc": "2026-10-12T01:55:04.724Z",
+    "offlineStages": 11,
+    "offlineTestStageCount": 9,
+    "reportedEntriesPASS": 247,
+    "dedicatedOFF16BrowserPASS": 15,
+    "runOnFinalizationDate": false,
+    "allLogsSHA256Matched": true
+  },
+  "acceptance": {
+    "OFF16": "CORRECTION_OFFLINE_TESTS_PASS__HUMAN_REVIEW_PENDING",
+    "OFF25": "FAIL__UNAPPROVED_OFFICIAL_TOKEN_METADATA",
+    "originalW01P1": {
+      "offlinePASS": 26,
+      "offlineFAIL": 2,
+      "failedCaseIDs": [
+        "OFF-16",
+        "OFF-25"
+      ]
+    },
+    "connected": "NOT_RUN__NO_AUTHORIZATION",
+    "walletIntegration": "NOT_ACCEPTED",
+    "officialToken": "NOT_ACCEPTED",
+    "production": "NOT_ACCEPTED",
+    "status": "TESTING_REVIEW_PENDING_NOT_DONE"
+  },
+  "reviewerCaveats": [
+    "V6 reuses nested parent/subtest runner-reported entries; 247 is not 247 unique business scenarios",
+    "Original negative OFF-16 browser assertion was filtered and replaced by fifteen dedicated correction checks",
+    "One inherited W2A version-check case was filtered in a re-based fixture",
+    "Browser clock local and maximum one-second freshness window are conservative rather than actual server TTL",
+    "Historical W01-P1 matrix not retroactively modified; OFF-25 remains FAIL",
+    "No live chain, actual Auth/Redis, hosted browser UAT, regulatory or production test executed"
+  ],
+  "protectedWorktrees": [
+    {
+      "root": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-frontend-web3",
+      "branch": "allen/frontend-web3-stabilization",
+      "head": "d951c91800f00d31a4ec4bd7b4da14e8a266e01d",
+      "clean": true
+    },
+    {
+      "root": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009",
+      "branch": "allen/w2a-thirdweb-wallet",
+      "head": "dcf2a81aa5158f2e56141dac8a2ebe60d7fd236b",
+      "clean": true
+    },
+    {
+      "root": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w2b-offline-20261009",
+      "branch": "allen/w2b-offline-auth-contract-20261009",
+      "head": "aeff8976f993a75d584d4e7a6b61b008b94ad02a",
+      "clean": true
+    },
+    {
+      "root": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w01-w02-readonly-20261010",
+      "branch": "allen/w01-w02-readonly-offline-20261010",
+      "head": "7b142c726520373a28932d57acd600aedabca62c",
+      "clean": true
+    }
+  ],
+  "allowedNewFiles": [
+    "docs/web3/w01-off16-20261010/IMPLEMENTATION-RESULT.md",
+    "docs/web3/w01-off16-20261010/PRESERVATION-RESULT.md",
+    "docs/web3/w01-off16-20261010/SECURITY-ISSUES.md",
+    "docs/web3/w01-off16-20261010/VALIDATION-RESULT.md",
+    "docs/web3/w01-off16-20261010/handoff-manifest.json"
+  ],
+  "stop": "STOP_FOR_BOSS_ALLEN_REVIEW__NO_COMMIT_PUSH_CORRECTIVE_DEVELOPMENT"
+}
