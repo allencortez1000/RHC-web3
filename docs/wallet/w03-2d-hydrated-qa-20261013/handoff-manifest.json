@@ -1,0 +1,155 @@
+{
+  "schema": "rhc-w03-2d-synthetic-hydrated-browser-handoff-v1",
+  "createdUtc": "2026-10-13T04:17:50.463Z",
+  "owner": "Boss Allen",
+  "root": "C:/Users/admin/Desktop/RHBC project",
+  "worktree": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-w03-2d-hydrated-qa-20261013",
+  "branch": "allen/w03-2d-hydrated-wallet-qa-20261013",
+  "baseCommit": "a5bb6d3163695d9158d9b6ac7bdec2f63c915cfd",
+  "files": [
+    {
+      "path": "apps/customer-web/app/components/wallet-thirdweb/w03-2d-hydrated-qa/hydrated-probe.tsx",
+      "bytes": 8990,
+      "sha256": "eabd40d542042779e397f74b583718097dca034e0756caba1fb666edfec6bfb1"
+    },
+    {
+      "path": "apps/customer-web/app/components/wallet-thirdweb/w03-2d-hydrated-qa/build-harness.mjs",
+      "bytes": 3347,
+      "sha256": "32d01ac2bcb622c71b9599ba75dd8e1654875d6dec74c70d61a1fdd502fdcdee"
+    },
+    {
+      "path": "apps/customer-web/app/components/wallet-thirdweb/w03-2d-hydrated-qa/hydrated-browser-qa.cjs",
+      "bytes": 12596,
+      "sha256": "f5ed3edaa04b9752c794205f144e0f7dc7f9f863b42770fdf3c8db23a44c3d95"
+    },
+    {
+      "path": "apps/customer-web/app/components/wallet-thirdweb/w03-2d-hydrated-qa/README.md",
+      "bytes": 2745,
+      "sha256": "f27698c0dcabadd5223e22523719433f9ee9c26f02a5e88e22ddc82945bfb323"
+    },
+    {
+      "path": "docs/wallet/w03-2d-hydrated-qa-20261013/IMPLEMENTATION-RESULT.md",
+      "bytes": 4245,
+      "sha256": "b4ce59f2e53c94105d747c67d1de96dab3e4fd150587c3ae3eb843b932b5fdb6"
+    },
+    {
+      "path": "docs/wallet/w03-2d-hydrated-qa-20261013/SECURITY-AND-LIMITATIONS.md",
+      "bytes": 3236,
+      "sha256": "a39af7d8c55158d3141f8bc5363f3b8cf7f8a8aba066b4d4af44c78da204001d"
+    },
+    {
+      "path": "docs/wallet/w03-2d-hydrated-qa-20261013/HANDOFF-AND-NEXT-GATES.md",
+      "bytes": 2890,
+      "sha256": "3c619ba1f932ce559695a85dfa94000f8d1e5ffcff985dd64a4e031818f29ede"
+    },
+    {
+      "path": "docs/wallet/w03-2d-hydrated-qa-20261013/VALIDATION-LEDGER.json",
+      "bytes": 6167,
+      "sha256": "21bda930b87c15c6ed20b6552e2b4cdad7a79aa7389f5a3e46b65eb98619cb72"
+    }
+  ],
+  "priorWorktrees": [
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\PHC WEB3 DEVELOPMENT",
+      "head": "04a726281c2ba153e2931201fb7a86af75bd6eb3",
+      "statusCount": 1,
+      "statusSHA256": "cd8144359a4fa5db11f939259631e764287ae90ecd4f03d8cf86cb12eeeed6df"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3",
+      "head": "d951c91800f00d31a4ec4bd7b4da14e8a266e01d",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-off25-offline-20261012",
+      "head": "72f1d68d87a4f0779c028813eb495f6c138cae2c",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-vercel-diagnostic-20261012",
+      "head": "fe00106def73300d96c362685cce8e8217adeba8",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-w01-off16-20261010",
+      "head": "10e902e2af0912044739d6982dd93e789105f0e6",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-w01-w02-readonly-20261010",
+      "head": "7b142c726520373a28932d57acd600aedabca62c",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-w03-2-offline-wallet-view-20261013",
+      "head": "fe00106def73300d96c362685cce8e8217adeba8",
+      "statusCount": 10,
+      "statusSHA256": "ce207b82957fa43eec505e19b961f61e5f03859e211e49d153ce120d6e6b89d5"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-w03-20261012",
+      "head": "fe00106def73300d96c362685cce8e8217adeba8",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-w03-2a-a11y-offline-20261012",
+      "head": "8407e0588cc07a7039f9369188ebe16f5cdf6325",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-w03-2b-react-offline-20261012",
+      "head": "d0013612af6ce215dc0b07848819905e4c5164c9",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-w2b-offline-20261009",
+      "head": "aeff8976f993a75d584d4e7a6b61b008b94ad02a",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-wallet-w2a-20261009",
+      "head": "dcf2a81aa5158f2e56141dac8a2ebe60d7fd236b",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-combined-1.0",
+      "head": "579a007bb56e247836d97d7c9adcc157f848071f",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-w03-2c-contract-ready-offline-20261013",
+      "head": "a5bb6d3163695d9158d9b6ac7bdec2f63c915cfd",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "reviewedScope": {
+    "onlyNewQaAndDocs": true,
+    "customerRoutesChanged": false,
+    "backendFilesChanged": false,
+    "realWalletOrThirdwebUsed": false,
+    "liveProvidersCalled": false,
+    "productionDeployed": false
+  },
+  "externalEvidence": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-wallet-w2a-20261009-evidence\\w03-2d-hydrated-qa-20261013",
+  "finalCheck": {
+    "hydratedBrowser": "58+58_PASS",
+    "inheritedW03_2C": "95_PASS",
+    "inheritedW03_2B": "37_PASS",
+    "inheritedW03": "54_PASS",
+    "fullTypecheck": "PASS",
+    "eslint": "PASS"
+  },
+  "stoppingPoint": "Owner acceptance of test-only scope; no connected API or live token actions without BG approvals"
+}

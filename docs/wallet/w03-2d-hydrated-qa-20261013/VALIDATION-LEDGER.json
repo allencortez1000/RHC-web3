@@ -1,0 +1,161 @@
+{
+  "schema": "rhc-w03-2d-hydrated-browser-wallet-validation-v1",
+  "createdUtc": "2026-10-13T04:17:50.455Z",
+  "owner": "Boss Allen",
+  "machine": "DESKTOP-5TQ68F9",
+  "workingBranch": "allen/w03-2d-hydrated-wallet-qa-20261013",
+  "exactBaseCommit": "a5bb6d3163695d9158d9b6ac7bdec2f63c915cfd",
+  "sourceStatus": "TEST_ONLY_REVIEW_NOT_CONNECTED_NOT_DONE",
+  "tests": [
+    {
+      "name": "W03_2C_95-FINAL.log",
+      "passed": 95,
+      "exitCode": 0,
+      "sha256": "dc9a18443c80b10f94702bf1f77c1728b718a744b01ef51c04f7bb2868f8a825"
+    },
+    {
+      "name": "W03_2B_37-FINAL.log",
+      "passed": 37,
+      "exitCode": 0,
+      "sha256": "5775111e0e3d9675b739e4a0118bd1918adbe9be161f474150cbe13a651a3151"
+    },
+    {
+      "name": "W03_2A_54-FINAL.log",
+      "passed": 54,
+      "exitCode": 0,
+      "sha256": "d1a3a097807bd5aaefd933f4d8d01e8f1fde65105b0866f74dcc7faf0199e177"
+    },
+    {
+      "name": "CUSTOMER_TYPECHECK-FINAL.log",
+      "passed": null,
+      "exitCode": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "SOURCE_ESLINT-FINAL.log",
+      "passed": null,
+      "exitCode": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "hydratedBrowser": {
+    "firstCompletedPass": 58,
+    "reproducibleCompletedPass": 58,
+    "failed": 0,
+    "originalCSPAuditInjectionFailure": {
+      "passed": 55,
+      "failed": 2,
+      "archived": true
+    },
+    "qaOnlyAuditContextBypassedCSP": true,
+    "normalFunctionalCSPIntact": true,
+    "zeroExternalRequests": true,
+    "zeroRuntimeErrors": true,
+    "browserAxe": {
+      "violations": 0,
+      "manualWCAG22AA": "NOT_ACCEPTED"
+    },
+    "originalResultsHash": "f0300855034656c780429dc9a6ae3c351cb9f500602582bdb509d29f9698270a",
+    "reproducibleResultsHash": "77777e1fc7fb2d53740bd9c6e44775f2b7d8a449a4fd84c5c0bc13bd911a82a4"
+  },
+  "networkAndWallet": {
+    "realAPI": 0,
+    "thirdwebSDK": 0,
+    "RPC": 0,
+    "walletSignatures": 0,
+    "transactions": 0
+  },
+  "priorWorktrees": [
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\PHC WEB3 DEVELOPMENT",
+      "head": "04a726281c2ba153e2931201fb7a86af75bd6eb3",
+      "statusCount": 1,
+      "statusSHA256": "cd8144359a4fa5db11f939259631e764287ae90ecd4f03d8cf86cb12eeeed6df"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3",
+      "head": "d951c91800f00d31a4ec4bd7b4da14e8a266e01d",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-off25-offline-20261012",
+      "head": "72f1d68d87a4f0779c028813eb495f6c138cae2c",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-vercel-diagnostic-20261012",
+      "head": "fe00106def73300d96c362685cce8e8217adeba8",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-w01-off16-20261010",
+      "head": "10e902e2af0912044739d6982dd93e789105f0e6",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-w01-w02-readonly-20261010",
+      "head": "7b142c726520373a28932d57acd600aedabca62c",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-w03-2-offline-wallet-view-20261013",
+      "head": "fe00106def73300d96c362685cce8e8217adeba8",
+      "statusCount": 10,
+      "statusSHA256": "ce207b82957fa43eec505e19b961f61e5f03859e211e49d153ce120d6e6b89d5"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-w03-20261012",
+      "head": "fe00106def73300d96c362685cce8e8217adeba8",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-w03-2a-a11y-offline-20261012",
+      "head": "8407e0588cc07a7039f9369188ebe16f5cdf6325",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-w03-2b-react-offline-20261012",
+      "head": "d0013612af6ce215dc0b07848819905e4c5164c9",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-w2b-offline-20261009",
+      "head": "aeff8976f993a75d584d4e7a6b61b008b94ad02a",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-wallet-w2a-20261009",
+      "head": "dcf2a81aa5158f2e56141dac8a2ebe60d7fd236b",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-combined-1.0",
+      "head": "579a007bb56e247836d97d7c9adcc157f848071f",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-w03-2c-contract-ready-offline-20261013",
+      "head": "a5bb6d3163695d9158d9b6ac7bdec2f63c915cfd",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "gates": {
+    "bg01toBG12": "PENDING",
+    "OFF25": "FAIL_BLOCKED",
+    "W01Connected": "NOT_RUN",
+    "originalW03": "50_PLANNED_ZERO_RUN",
+    "customerWalletClickUp": "TESTING"
+  }
+}
