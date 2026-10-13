@@ -1,0 +1,163 @@
+{
+  "schema": "rhc-w03-2e-controller-identity-privacy-fence-v1",
+  "atUtc": "2026-10-13T04:55:31.265Z",
+  "owner": "Boss Allen",
+  "baseCommit": "5fe08964a44f47f5be238ac5f2f14ef35b2a5513",
+  "branch": "allen/w03-2e-controller-identity-fence-20261013",
+  "implementation": "ONE_EXISTING_WALLET_VIEW_CONTROLLER_IDENTITY_FENCE",
+  "baseline": {
+    "passed": 12,
+    "failed": 2,
+    "expectedPrivacyFailures": 2
+  },
+  "fixed": {
+    "passed": 14,
+    "failed": 0
+  },
+  "inheritedHydrated": {
+    "passed": 58,
+    "failed": 0,
+    "apiCalls": 0,
+    "rpcCalls": 0
+  },
+  "tests": [
+    {
+      "name": "W03_2C_95",
+      "pass": 95,
+      "exitCode": 0,
+      "logSHA256": "96f7c6890c50d7d483a64adb6785a43abf9dd9a8385eba8755734a30c23390da"
+    },
+    {
+      "name": "W03_2B_37",
+      "pass": 37,
+      "exitCode": 0,
+      "logSHA256": "eb4a402f0373903daaa0e14921e19c8195edb4b037264f0586c2ce44e6f913be"
+    },
+    {
+      "name": "W03_MODEL_54",
+      "pass": 54,
+      "exitCode": 0,
+      "logSHA256": "f0a2b97f6e5e01ec76492af5d1acd727acaf935471a7a0626788adb8611b3702"
+    },
+    {
+      "name": "CUSTOMER_TSC",
+      "pass": null,
+      "exitCode": 0,
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "SOURCE_LINT",
+      "pass": null,
+      "exitCode": 0,
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "sourcePatchSHA256": "fbe27edac6ffa2303bbd16d76390fce3413b1a1667c9870e21855472c619ac5d",
+  "priorWorktrees": [
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/PHC WEB3 DEVELOPMENT",
+      "head": "04a726281c2ba153e2931201fb7a86af75bd6eb3",
+      "statusCount": 1,
+      "statusSHA256": "cd8144359a4fa5db11f939259631e764287ae90ecd4f03d8cf86cb12eeeed6df"
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-frontend-web3",
+      "head": "d951c91800f00d31a4ec4bd7b4da14e8a266e01d",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-off25-offline-20261012",
+      "head": "72f1d68d87a4f0779c028813eb495f6c138cae2c",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-vercel-diagnostic-20261012",
+      "head": "fe00106def73300d96c362685cce8e8217adeba8",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w01-off16-20261010",
+      "head": "10e902e2af0912044739d6982dd93e789105f0e6",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w01-w02-readonly-20261010",
+      "head": "7b142c726520373a28932d57acd600aedabca62c",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w03-2-offline-wallet-view-20261013",
+      "head": "fe00106def73300d96c362685cce8e8217adeba8",
+      "statusCount": 10,
+      "statusSHA256": "ce207b82957fa43eec505e19b961f61e5f03859e211e49d153ce120d6e6b89d5"
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w03-20261012",
+      "head": "fe00106def73300d96c362685cce8e8217adeba8",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w03-2a-a11y-offline-20261012",
+      "head": "8407e0588cc07a7039f9369188ebe16f5cdf6325",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w03-2b-react-offline-20261012",
+      "head": "d0013612af6ce215dc0b07848819905e4c5164c9",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w03-2c-contract-ready-offline-20261013",
+      "head": "a5bb6d3163695d9158d9b6ac7bdec2f63c915cfd",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w03-2d-hydrated-qa-20261013",
+      "head": "5fe08964a44f47f5be238ac5f2f14ef35b2a5513",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w2b-offline-20261009",
+      "head": "aeff8976f993a75d584d4e7a6b61b008b94ad02a",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009",
+      "head": "dcf2a81aa5158f2e56141dac8a2ebe60d7fd236b",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-combined-1.0",
+      "head": "579a007bb56e247836d97d7c9adcc157f848071f",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "blocked": {
+    "BG01toBG12": "PENDING",
+    "OFF25": "FAIL_BLOCKED",
+    "W01": "NOT_RUN",
+    "historicalW03": "50_PLANNED_ZERO_RUN"
+  },
+  "scope": {
+    "backendModified": false,
+    "realThirdweb": false,
+    "signatures": 0,
+    "transactions": 0,
+    "routeMounted": false,
+    "productionDeployment": false,
+    "manualWCAGAcceptance": false
+  }
+}

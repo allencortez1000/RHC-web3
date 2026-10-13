@@ -1,0 +1,167 @@
+{
+  "schema": "rhc-w03-2e-source-handoff-v1",
+  "owner": "Boss Allen",
+  "atUtc": "2026-10-13T04:55:31.274Z",
+  "branch": "allen/w03-2e-controller-identity-fence-20261013",
+  "baseCommit": "5fe08964a44f47f5be238ac5f2f14ef35b2a5513",
+  "modifiedFiles": [
+    "apps/customer-web/app/components/wallet-thirdweb/w03-contract-ready-offline/ContractReadyWalletLab.tsx"
+  ],
+  "newFiles": [
+    "apps/customer-web/app/components/wallet-thirdweb/w03-2e-controller-fence/controller-swap-probe.tsx",
+    "apps/customer-web/app/components/wallet-thirdweb/w03-2e-controller-fence/build-swap-probe.mjs",
+    "apps/customer-web/app/components/wallet-thirdweb/w03-2e-controller-fence/controller-swap-qa.cjs",
+    "apps/customer-web/app/components/wallet-thirdweb/w03-2e-controller-fence/build-inherited-harness.mjs",
+    "apps/customer-web/app/components/wallet-thirdweb/w03-2e-controller-fence/inherited-hydrated-qa.cjs",
+    "docs/wallet/w03-2e-controller-fence-20261013/IMPLEMENTATION-RESULT.md",
+    "docs/wallet/w03-2e-controller-fence-20261013/SECURITY-REVIEW.md",
+    "docs/wallet/w03-2e-controller-fence-20261013/HANDOFF-AND-NEXT-GATES.md"
+  ],
+  "records": [
+    {
+      "path": "apps/customer-web/app/components/wallet-thirdweb/w03-contract-ready-offline/ContractReadyWalletLab.tsx",
+      "bytes": 3339,
+      "sha256": "d5d2d42d44e634196b808b295c93d5c572e1d94f2cc264ecc7726f12ba000fde"
+    },
+    {
+      "path": "apps/customer-web/app/components/wallet-thirdweb/w03-2e-controller-fence/controller-swap-probe.tsx",
+      "bytes": 2401,
+      "sha256": "98f2392b09419a704dcf0bcd830b5963dc70004860ea3293f7641166448ee933"
+    },
+    {
+      "path": "apps/customer-web/app/components/wallet-thirdweb/w03-2e-controller-fence/build-swap-probe.mjs",
+      "bytes": 3152,
+      "sha256": "6f08af77436a8b00ae682e5c781c15b3837e09fe1f8faf0c72da11d877fcdbd2"
+    },
+    {
+      "path": "apps/customer-web/app/components/wallet-thirdweb/w03-2e-controller-fence/controller-swap-qa.cjs",
+      "bytes": 4425,
+      "sha256": "09326268919f671e0f5bb209399ccff97b88a8e735c3fe329c042c2ae41feb32"
+    },
+    {
+      "path": "apps/customer-web/app/components/wallet-thirdweb/w03-2e-controller-fence/build-inherited-harness.mjs",
+      "bytes": 3451,
+      "sha256": "330836758cc44f6515e937f4d9fdfc4bd4f31335be8ca6459f7e7c8245215a66"
+    },
+    {
+      "path": "apps/customer-web/app/components/wallet-thirdweb/w03-2e-controller-fence/inherited-hydrated-qa.cjs",
+      "bytes": 12822,
+      "sha256": "fcb6389f3b5028adc81fca372732297538ed6ed2f069f8bede434804bf2d55bd"
+    },
+    {
+      "path": "docs/wallet/w03-2e-controller-fence-20261013/IMPLEMENTATION-RESULT.md",
+      "bytes": 3998,
+      "sha256": "a64899336862ed869e627dfebbb7aff6f9f36537567d13aef422e0b1ab369b28"
+    },
+    {
+      "path": "docs/wallet/w03-2e-controller-fence-20261013/SECURITY-REVIEW.md",
+      "bytes": 3018,
+      "sha256": "8cf59b6d81f6d4704069fbd1ce704cfe4901330ad44412a560cd1ff6f173d138"
+    },
+    {
+      "path": "docs/wallet/w03-2e-controller-fence-20261013/HANDOFF-AND-NEXT-GATES.md",
+      "bytes": 2560,
+      "sha256": "fa90c0ed49f6cf1a46a6bf44ace404207f757eb6d3295ef56326197a0896d965"
+    },
+    {
+      "path": "docs/wallet/w03-2e-controller-fence-20261013/VALIDATION-LEDGER.json",
+      "bytes": 6017,
+      "sha256": "0485a430f8ff93df4f9339147712e2e998f95599b0ac26cae54adf416e51428c"
+    }
+  ],
+  "sourcePatchSHA256": "fbe27edac6ffa2303bbd16d76390fce3413b1a1667c9870e21855472c619ac5d",
+  "testEvidence": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-wallet-w2a-20261009-evidence\\w03-2e-controller-fence-20261013",
+  "preservation": [
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/PHC WEB3 DEVELOPMENT",
+      "head": "04a726281c2ba153e2931201fb7a86af75bd6eb3",
+      "statusCount": 1,
+      "statusSHA256": "cd8144359a4fa5db11f939259631e764287ae90ecd4f03d8cf86cb12eeeed6df"
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-frontend-web3",
+      "head": "d951c91800f00d31a4ec4bd7b4da14e8a266e01d",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-off25-offline-20261012",
+      "head": "72f1d68d87a4f0779c028813eb495f6c138cae2c",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-vercel-diagnostic-20261012",
+      "head": "fe00106def73300d96c362685cce8e8217adeba8",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w01-off16-20261010",
+      "head": "10e902e2af0912044739d6982dd93e789105f0e6",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w01-w02-readonly-20261010",
+      "head": "7b142c726520373a28932d57acd600aedabca62c",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w03-2-offline-wallet-view-20261013",
+      "head": "fe00106def73300d96c362685cce8e8217adeba8",
+      "statusCount": 10,
+      "statusSHA256": "ce207b82957fa43eec505e19b961f61e5f03859e211e49d153ce120d6e6b89d5"
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w03-20261012",
+      "head": "fe00106def73300d96c362685cce8e8217adeba8",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w03-2a-a11y-offline-20261012",
+      "head": "8407e0588cc07a7039f9369188ebe16f5cdf6325",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w03-2b-react-offline-20261012",
+      "head": "d0013612af6ce215dc0b07848819905e4c5164c9",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w03-2c-contract-ready-offline-20261013",
+      "head": "a5bb6d3163695d9158d9b6ac7bdec2f63c915cfd",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w03-2d-hydrated-qa-20261013",
+      "head": "5fe08964a44f47f5be238ac5f2f14ef35b2a5513",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w2b-offline-20261009",
+      "head": "aeff8976f993a75d584d4e7a6b61b008b94ad02a",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009",
+      "head": "dcf2a81aa5158f2e56141dac8a2ebe60d7fd236b",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-combined-1.0",
+      "head": "579a007bb56e247836d97d7c9adcc157f848071f",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "stop": "PUBLISH_BOUNDED_BRANCH_ONLY_NEVER_MERGE_OR_ENABLE_PROVIDER_WITHOUT_BG_APPROVAL"
+}

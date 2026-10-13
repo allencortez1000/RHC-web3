@@ -30,22 +30,25 @@ export function ContractReadyWalletLab({
   }),[rhcUserId,sessionEpoch,linkRevision,chainId,contractAddress,sourceRevision]);
   const key=keyOf(stableScope);
   const signature=mode+"|"+key;
-  const [presentation,setPresentation]=useState<Readonly<{signature:string;view:OfflinePanelState}>>({
-    signature,view:LOADING,
+  const [presentation,setPresentation]=useState<Readonly<{signature:string;controller:OfflineContractController;view:OfflinePanelState}>>({
+    signature,controller,view:LOADING,
   });
-  const view=presentation.signature===signature ? presentation.view : UNAVAILABLE;
+  // Account/session fingerprints can match while the data source changes.
+  // Fence the previous source synchronously DURING render, before useEffect runs.
+  const view=presentation.signature===signature && presentation.controller===controller
+    ? presentation.view : UNAVAILABLE;
   useEffect(()=>{
     let active=true;
     controller.clear("account_switched"); // clear prior-user value before new read
     if(mode!=="synthetic"||key==="invalid_scope"){
-      setPresentation({signature,view:mode==="backend_pending"?refuseConnectedBackend():UNAVAILABLE});
+      setPresentation({signature,controller,view:mode==="backend_pending"?refuseConnectedBackend():UNAVAILABLE});
       return ()=>{active=false;controller.clear("account_switched")};
     }
-    setPresentation({signature,view:LOADING});
+    setPresentation({signature,controller,view:LOADING});
     void controller.load(stableScope).then(result=>{
-      if(active)setPresentation({signature,view:result});
+      if(active)setPresentation({signature,controller,view:result});
     }).catch(()=>{
-      if(active)setPresentation({signature,view:{kind:"unavailable",reason:"service_unavailable"}});
+      if(active)setPresentation({signature,controller,view:{kind:"unavailable",reason:"service_unavailable"}});
     });
     return ()=>{active=false;controller.clear("account_switched")};
   },[controller,key,mode,signature,stableScope]);
