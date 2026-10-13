@@ -1,0 +1,248 @@
+{
+  "schema": "rhc-allen-w03-2c-local-validation-v1",
+  "createdUtc": "2026-10-13T03:25:00.284Z",
+  "owner": "Boss Allen",
+  "machine": "DESKTOP-5TQ68F9",
+  "branch": "allen/w03-2c-contract-ready-offline-20261013",
+  "baseCommit": "d0013612af6ce215dc0b07848819905e4c5164c9",
+  "sourceStatus": "LOCAL_SYNTHETIC_UNMOUNTED_NOT_DONE",
+  "tests": [
+    {
+      "stage": "NEW_2C_CONTRACT_TESTS",
+      "exitCode": 0,
+      "passed": 95,
+      "logFile": "SEAL-NEW_2C_CONTRACT_TESTS.log",
+      "logSHA256": "4b1f161c32b3dd96efc6dae11c864574bf02ede2c5b2d6eb1907dad114d2c65f"
+    },
+    {
+      "stage": "INHERITED_W03_MODEL",
+      "exitCode": 0,
+      "passed": 54,
+      "logFile": "SEAL-INHERITED_W03_MODEL.log",
+      "logSHA256": "f6946158cdaf8acd7703d4dce78396cf80ce5eb78f4391bf2b741efa62dee9eb"
+    },
+    {
+      "stage": "INHERITED_W03_2B_REACT",
+      "exitCode": 0,
+      "passed": 37,
+      "logFile": "SEAL-INHERITED_W03_2B_REACT.log",
+      "logSHA256": "a9fe4b21a786ccc27d97691d6204a5143057c0b8c2d9651e52203eb1865ad7ab"
+    },
+    {
+      "stage": "FULL_CUSTOMER_TYPESCRIPT",
+      "exitCode": 0,
+      "passed": null,
+      "logFile": "SEAL-FULL_CUSTOMER_TYPESCRIPT.log",
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "stage": "NEW_SOURCE_ESLINT",
+      "exitCode": 0,
+      "passed": null,
+      "logFile": "SEAL-NEW_SOURCE_ESLINT.log",
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "browser": {
+    "passed": 235,
+    "failed": 0,
+    "profiles": 18,
+    "offMachineNetworkRequests": 0,
+    "automatedReview": [
+      {
+        "key": "points-desktop",
+        "screenshotSHA256": "619648060a45c0892e3e863f3a0857f6e69454d4f2a04b04710ec99460f15d5e",
+        "inconclusive": []
+      },
+      {
+        "key": "points-mobile",
+        "screenshotSHA256": "a836cd3530d9b32f946f6ada7fb469dde91c7d23b7df1d8f7478ccd847b08c76",
+        "inconclusive": []
+      },
+      {
+        "key": "points-small",
+        "screenshotSHA256": "376a6118df426b96cdb2a82490185e3198be36efddfe219df04c218d4d13518b",
+        "inconclusive": []
+      },
+      {
+        "key": "zero-desktop",
+        "screenshotSHA256": "9b6f17c0f0ed38eff0c20d8f16d1708a31f766013065f4b34703d9978e5d2d32",
+        "inconclusive": []
+      },
+      {
+        "key": "zero-mobile",
+        "screenshotSHA256": "780fb272ddfe3601dc227270df7bd3130576c0ff843b970d7154443d588bee30",
+        "inconclusive": []
+      },
+      {
+        "key": "zero-small",
+        "screenshotSHA256": "74e960c1986260bbb05dcc0308787f5dbb26c190576b584c743bcf2046cf506b",
+        "inconclusive": []
+      },
+      {
+        "key": "stale-desktop",
+        "screenshotSHA256": "1059d10557ad0f674a154fb0c3671566bffa00e48fea17d89ed14ce43e931839",
+        "inconclusive": []
+      },
+      {
+        "key": "stale-mobile",
+        "screenshotSHA256": "0dca1a02ccd4a3b45f06978c72a462c7f8dbdcb885a83bf36181a6bc5f756f6a",
+        "inconclusive": []
+      },
+      {
+        "key": "stale-small",
+        "screenshotSHA256": "c1a477e87dd7710561e279eaa3d94d844e3ae2828045ececa87be875fdd0d3c1",
+        "inconclusive": []
+      },
+      {
+        "key": "linked-desktop",
+        "screenshotSHA256": "daab4079403504f75ec4bfc62d9a918897dc865655bb12157c12a5b422a808f6",
+        "inconclusive": []
+      },
+      {
+        "key": "linked-mobile",
+        "screenshotSHA256": "8d5cce391e09c2a9b430b2b56d5de0a708e2497026e71371c3fb74343a8947cf",
+        "inconclusive": []
+      },
+      {
+        "key": "linked-small",
+        "screenshotSHA256": "03eba0d37aa4b3de813faf9a13a3a2ea76d7071b37f24904aed1da1c23093f1a",
+        "inconclusive": []
+      },
+      {
+        "key": "denied-desktop",
+        "screenshotSHA256": "93c65bac2039aa708c611eec0f68a0bf30f13b615414d1925fc57e888227c2e7",
+        "inconclusive": []
+      },
+      {
+        "key": "denied-mobile",
+        "screenshotSHA256": "915206a8e7d4e2855b91e7fcc8f7701189d20cfd669690819d4750d7d6102de4",
+        "inconclusive": []
+      },
+      {
+        "key": "denied-small",
+        "screenshotSHA256": "ccedd6579e29bbbbf5e8553d7f3db9a5fdd19df4bbb35fc8e3e0b4bfdb6654da",
+        "inconclusive": []
+      },
+      {
+        "key": "switched-desktop",
+        "screenshotSHA256": "47b784f4c89ed2482d01574faf8d1f84f7fc17cd0034b531ac7f756e4e4e9440",
+        "inconclusive": []
+      },
+      {
+        "key": "switched-mobile",
+        "screenshotSHA256": "b0625ca4c37f988f2a85978e1ad3fcce3bdd39f00edf2d17bdc860153154fbd3",
+        "inconclusive": []
+      },
+      {
+        "key": "switched-small",
+        "screenshotSHA256": "9331a1ed536818700a9043098c1aad8f8526f5fc7defb9f41263b5be1bdf0c88",
+        "inconclusive": []
+      }
+    ],
+    "manuallyAcceptedWCAG22AA": false,
+    "connectedQA": false
+  },
+  "scope": {
+    "serverBackendEdited": false,
+    "rhcApiCalls": 0,
+    "thirdwebSDKCalls": 0,
+    "providerRPC": 0,
+    "walletSigning": 0,
+    "transactions": 0,
+    "customerRoutesChanged": false,
+    "productionDeployment": false,
+    "realCustomerData": false
+  },
+  "historicalAcceptance": {
+    "originalW03Scenarios": 50,
+    "originalW03Executed": 0,
+    "w01Connected": "NOT_RUN"
+  },
+  "blockers": {
+    "bg01toBG12": "PENDING_JOINT_APPROVAL",
+    "issuerOFF25": "FAIL_BLOCKED",
+    "clickupWalletStatus": "TESTING",
+    "tokenIntegration": "BACKLOG_GATED"
+  },
+  "protectedWorktrees": [
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\PHC WEB3 DEVELOPMENT",
+      "sha": "04a726281c2ba153e2931201fb7a86af75bd6eb3",
+      "statusCount": 1,
+      "statusSHA256": "cd8144359a4fa5db11f939259631e764287ae90ecd4f03d8cf86cb12eeeed6df"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-frontend-web3",
+      "sha": "d951c91800f00d31a4ec4bd7b4da14e8a266e01d",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-off25-offline-20261012",
+      "sha": "72f1d68d87a4f0779c028813eb495f6c138cae2c",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-vercel-diagnostic-20261012",
+      "sha": "fe00106def73300d96c362685cce8e8217adeba8",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-w01-off16-20261010",
+      "sha": "10e902e2af0912044739d6982dd93e789105f0e6",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-w01-w02-readonly-20261010",
+      "sha": "7b142c726520373a28932d57acd600aedabca62c",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-w03-2-offline-wallet-view-20261013",
+      "sha": "fe00106def73300d96c362685cce8e8217adeba8",
+      "statusCount": 10,
+      "statusSHA256": "ce207b82957fa43eec505e19b961f61e5f03859e211e49d153ce120d6e6b89d5"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-w03-20261012",
+      "sha": "fe00106def73300d96c362685cce8e8217adeba8",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-w03-2a-a11y-offline-20261012",
+      "sha": "8407e0588cc07a7039f9369188ebe16f5cdf6325",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-w03-2b-react-offline-20261012",
+      "sha": "d0013612af6ce215dc0b07848819905e4c5164c9",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-w2b-offline-20261009",
+      "sha": "aeff8976f993a75d584d4e7a6b61b008b94ad02a",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-wallet-w2a-20261009",
+      "sha": "dcf2a81aa5158f2e56141dac8a2ebe60d7fd236b",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-combined-1.0",
+      "sha": "579a007bb56e247836d97d7c9adcc157f848071f",
+      "statusCount": 0,
+      "statusSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}
