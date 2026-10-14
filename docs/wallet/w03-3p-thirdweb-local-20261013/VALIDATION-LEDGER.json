@@ -1,0 +1,293 @@
+{
+  "schema": "rhc-w03-3p-reviewed-validation-v1",
+  "createdUtc": "2026-10-14T02:00:37.324Z",
+  "owner": "Boss Allen",
+  "base": "a247af0f85efbb0ef1d1697ef47cb2a23aaf06f7",
+  "branch": "allen/w03-3p-thirdweb-gated-qa-20261013",
+  "validation": {
+    "schema": "rhc-w03-3p-review-validation-v1",
+    "atUtc": "2026-10-14T01:57:46.032Z",
+    "status": "PASS",
+    "base": "a247af0f85efbb0ef1d1697ef47cb2a23aaf06f7",
+    "branch": "allen/w03-3p-thirdweb-gated-qa-20261013",
+    "results": [
+      {
+        "name": "01-TYPES-BUILD",
+        "exitCode": 0,
+        "signal": null,
+        "expectedCount": null,
+        "countOk": true,
+        "buildWarnings": false,
+        "start": "2026-10-14T01:54:47.711Z",
+        "end": "2026-10-14T01:54:50.367Z",
+        "log": "01-TYPES-BUILD.log",
+        "sha256": "a19d0f522f86320a7e9213f1a8b8e29cfed57ccc9dffa183f65fe9f79e4b112c"
+      },
+      {
+        "name": "02-UI-BUILD",
+        "exitCode": 0,
+        "signal": null,
+        "expectedCount": null,
+        "countOk": true,
+        "buildWarnings": false,
+        "start": "2026-10-14T01:54:50.370Z",
+        "end": "2026-10-14T01:54:54.268Z",
+        "log": "02-UI-BUILD.log",
+        "sha256": "1de292b1f0db929cf5a10c16fd937f655a2b93e7c5570cd7df329369aeb6ac31"
+      },
+      {
+        "name": "03-CUSTOMER-BUILD",
+        "exitCode": 0,
+        "signal": null,
+        "expectedCount": null,
+        "countOk": true,
+        "buildWarnings": false,
+        "start": "2026-10-14T01:54:54.270Z",
+        "end": "2026-10-14T01:56:35.705Z",
+        "log": "03-CUSTOMER-BUILD.log",
+        "sha256": "823d09a30cee51a81bf64b8369bd21e3e9a0fba5da05fe3ac8b88e45225f0e60"
+      },
+      {
+        "name": "04-ADMIN-BUILD",
+        "exitCode": 0,
+        "signal": null,
+        "expectedCount": null,
+        "countOk": true,
+        "buildWarnings": false,
+        "start": "2026-10-14T01:56:35.707Z",
+        "end": "2026-10-14T01:57:14.773Z",
+        "log": "04-ADMIN-BUILD.log",
+        "sha256": "52a6f1166ecb95a90e455c2fd9e197fd2a17c375cc14b018ac289e20a32c10f7"
+      },
+      {
+        "name": "05-GATE-TEST",
+        "exitCode": 0,
+        "signal": null,
+        "expectedCount": 67,
+        "countOk": true,
+        "buildWarnings": false,
+        "start": "2026-10-14T01:57:14.780Z",
+        "end": "2026-10-14T01:57:15.263Z",
+        "log": "05-GATE-TEST.log",
+        "sha256": "26bf1fc6d50899c95ec57b48bd2202a2991e26871ea36a7f704c26006079b9e4"
+      },
+      {
+        "name": "06-SDK-SSR",
+        "exitCode": 0,
+        "signal": null,
+        "expectedCount": 4,
+        "countOk": true,
+        "buildWarnings": false,
+        "start": "2026-10-14T01:57:15.265Z",
+        "end": "2026-10-14T01:57:25.300Z",
+        "log": "06-SDK-SSR.log",
+        "sha256": "6c1baa971f21ad4b6504667a67e954b349996af801d8c34883a217b5ce36b88d"
+      },
+      {
+        "name": "07-PROVIDER-VIEW",
+        "exitCode": 0,
+        "signal": null,
+        "expectedCount": 17,
+        "countOk": true,
+        "buildWarnings": false,
+        "start": "2026-10-14T01:57:25.303Z",
+        "end": "2026-10-14T01:57:25.746Z",
+        "log": "07-PROVIDER-VIEW.log",
+        "sha256": "bf29fc5a6960500b946153872ed330f2f03a87ac71b42544da4fe54a131ccac3"
+      },
+      {
+        "name": "08-CONTROLLER",
+        "exitCode": 0,
+        "signal": null,
+        "expectedCount": 95,
+        "countOk": true,
+        "buildWarnings": false,
+        "start": "2026-10-14T01:57:25.749Z",
+        "end": "2026-10-14T01:57:26.450Z",
+        "log": "08-CONTROLLER.log",
+        "sha256": "b504f0b39da30e8e94b1714d50ab9889a75f97d2e506f785ffb7402e83acbc5a"
+      },
+      {
+        "name": "09-REACT",
+        "exitCode": 0,
+        "signal": null,
+        "expectedCount": 37,
+        "countOk": true,
+        "buildWarnings": false,
+        "start": "2026-10-14T01:57:26.452Z",
+        "end": "2026-10-14T01:57:27.050Z",
+        "log": "09-REACT.log",
+        "sha256": "e0acc603ef1b6ddd72b1fda900f1a55d6aad38bea2d61eccb8a7be61ab31319c"
+      },
+      {
+        "name": "10-MODEL",
+        "exitCode": 0,
+        "signal": null,
+        "expectedCount": 54,
+        "countOk": true,
+        "buildWarnings": false,
+        "start": "2026-10-14T01:57:27.054Z",
+        "end": "2026-10-14T01:57:27.416Z",
+        "log": "10-MODEL.log",
+        "sha256": "37874e273a25c7f9d0ccd9df62f48261c278eb68f3f48c394b853d3b363ced92"
+      },
+      {
+        "name": "11-PRODUCTION-HTTP-DENIAL",
+        "exitCode": 0,
+        "signal": null,
+        "expectedCount": 2,
+        "countOk": true,
+        "buildWarnings": false,
+        "start": "2026-10-14T01:57:27.418Z",
+        "end": "2026-10-14T01:57:32.025Z",
+        "log": "11-PRODUCTION-HTTP-DENIAL.log",
+        "sha256": "78a7739fed8d8e18761f6ef624fba4a32775591123c5a2502df1c502a17bf08d"
+      },
+      {
+        "name": "12-TYPECHECK",
+        "exitCode": 0,
+        "signal": null,
+        "expectedCount": null,
+        "countOk": true,
+        "buildWarnings": false,
+        "start": "2026-10-14T01:57:32.027Z",
+        "end": "2026-10-14T01:57:39.681Z",
+        "log": "12-TYPECHECK.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "13-ESLINT",
+        "exitCode": 0,
+        "signal": null,
+        "expectedCount": null,
+        "countOk": true,
+        "buildWarnings": false,
+        "start": "2026-10-14T01:57:39.683Z",
+        "end": "2026-10-14T01:57:46.029Z",
+        "log": "13-ESLINT.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "offlineCases": 274,
+    "httpCases": 2,
+    "lockHash": "80a4e1215ac3ed9eb2053c008533bf8c6e05b5a660430c70e521830d17a7ad6b",
+    "customerBuildId": "cYMkFlSQonFexuzeXRprS",
+    "adminBuildId": "k_onGipCHvGK9YbCzGVd1",
+    "realProviderLogin": "NOT_RUN",
+    "transactions": 0,
+    "signatures": 0,
+    "productionDeployed": false
+  },
+  "dependencyReview": {
+    "newDevDependency": "pino-pretty@13.2.0",
+    "installScriptsDisabled": true,
+    "existingVersionsUnchanged": true,
+    "fullProductionSecurityAudit": false
+  },
+  "priorWorktrees": [
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/PHC WEB3 DEVELOPMENT",
+      "head": "04a726281c2ba153e2931201fb7a86af75bd6eb3",
+      "status": [
+        "?? docs/development-status-2026-10-05.md"
+      ]
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-frontend-web3",
+      "head": "d951c91800f00d31a4ec4bd7b4da14e8a266e01d",
+      "status": []
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-off25-offline-20261012",
+      "head": "72f1d68d87a4f0779c028813eb495f6c138cae2c",
+      "status": []
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-vercel-diagnostic-20261012",
+      "head": "fe00106def73300d96c362685cce8e8217adeba8",
+      "status": []
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w01-off16-20261010",
+      "head": "10e902e2af0912044739d6982dd93e789105f0e6",
+      "status": []
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w01-w02-readonly-20261010",
+      "head": "7b142c726520373a28932d57acd600aedabca62c",
+      "status": []
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w03-2-offline-wallet-view-20261013",
+      "head": "fe00106def73300d96c362685cce8e8217adeba8",
+      "status": [
+        "?? apps/customer-web/app/components/wallet-thirdweb/w03-offline-view/model.test.mjs",
+        "?? apps/customer-web/app/components/wallet-thirdweb/w03-offline-view/model.ts",
+        "?? apps/customer-web/app/components/wallet-thirdweb/w03-offline-view/preview.html",
+        "?? apps/customer-web/app/components/wallet-thirdweb/w03-offline-view/preview.mjs",
+        "?? apps/customer-web/app/components/wallet-thirdweb/w03-offline-view/render.ts",
+        "?? docs/wallet/w03-2-offline-view-20261013/IMPLEMENTATION-RESULT.md",
+        "?? docs/wallet/w03-2-offline-view-20261013/PRESERVATION.md",
+        "?? docs/wallet/w03-2-offline-view-20261013/SECURITY-AND-GAPS.md",
+        "?? docs/wallet/w03-2-offline-view-20261013/VALIDATION-LEDGER.json",
+        "?? docs/wallet/w03-2-offline-view-20261013/handoff-manifest.json"
+      ]
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w03-20261012",
+      "head": "fe00106def73300d96c362685cce8e8217adeba8",
+      "status": []
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w03-2a-a11y-offline-20261012",
+      "head": "8407e0588cc07a7039f9369188ebe16f5cdf6325",
+      "status": []
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w03-2b-react-offline-20261012",
+      "head": "d0013612af6ce215dc0b07848819905e4c5164c9",
+      "status": []
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w03-2c-contract-ready-offline-20261013",
+      "head": "a5bb6d3163695d9158d9b6ac7bdec2f63c915cfd",
+      "status": []
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w03-2d-hydrated-qa-20261013",
+      "head": "5fe08964a44f47f5be238ac5f2f14ef35b2a5513",
+      "status": []
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w03-2e-controller-fence-20261013",
+      "head": "a247af0f85efbb0ef1d1697ef47cb2a23aaf06f7",
+      "status": []
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w2b-offline-20261009",
+      "head": "aeff8976f993a75d584d4e7a6b61b008b94ad02a",
+      "status": []
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009",
+      "head": "dcf2a81aa5158f2e56141dac8a2ebe60d7fd236b",
+      "status": []
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-combined-1.0",
+      "head": "579a007bb56e247836d97d7c9adcc157f848071f",
+      "status": []
+    }
+  ],
+  "priorSealSHA256": "8aa50c9a6fa57159bf6f1bd752affcf9fbdf9184cd86b9aca674ebdf4e45a590",
+  "limitations": {
+    "actualProviderLogin": "NOT_RUN",
+    "realWalletEnrollment": "NOT_RUN",
+    "RHCBackendLink": "NOT_IMPLEMENTED",
+    "BG01toBG12": "PENDING",
+    "OFF25": "FAIL_BLOCKED",
+    "W01Connected": "NOT_RUN",
+    "originalW03Cases": "50_PLANNED_ZERO_RUN",
+    "featureDone": false
+  }
+}

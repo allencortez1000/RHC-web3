@@ -1,0 +1,202 @@
+{
+  "schema": "rhc-w03-3p-reviewed-handoff-v1",
+  "createdUtc": "2026-10-14T02:00:37.324Z",
+  "owner": "Boss Allen",
+  "worktree": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w03-3p-thirdweb-qa-20261013",
+  "branch": "allen/w03-3p-thirdweb-gated-qa-20261013",
+  "base": "a247af0f85efbb0ef1d1697ef47cb2a23aaf06f7",
+  "modifiedFiles": [
+    "apps/customer-web/package.json",
+    "package-lock.json"
+  ],
+  "newFiles": [
+    "apps/customer-web/app/components/wallet-thirdweb/real-provider-qa/gate.ts",
+    "apps/customer-web/app/components/wallet-thirdweb/real-provider-qa/gate.test.mjs",
+    "apps/customer-web/app/components/wallet-thirdweb/real-provider-qa/ThirdwebLocalQa.tsx",
+    "apps/customer-web/app/components/wallet-thirdweb/real-provider-qa/render.test.mjs",
+    "apps/customer-web/app/components/wallet-thirdweb/real-provider-qa/production-denial.test.mjs",
+    "apps/customer-web/app/components/wallet-thirdweb/real-provider-qa/provider-view.ts",
+    "apps/customer-web/app/components/wallet-thirdweb/real-provider-qa/provider-view.test.mjs",
+    "apps/customer-web/app/thirdweb-qa/page.tsx",
+    "apps/customer-web/middleware.ts",
+    "docs/wallet/w03-3p-thirdweb-local-20261013/LOCAL-THIRDWEB-CONNECTION-RUNBOOK.md",
+    "docs/wallet/w03-3p-thirdweb-local-20261013/SECURITY-AND-HANDOFF.md",
+    "docs/wallet/w03-3p-thirdweb-local-20261013/IMPLEMENTATION-RESULT.md",
+    "docs/wallet/w03-3p-thirdweb-local-20261013/VALIDATION-LEDGER.json",
+    "docs/wallet/w03-3p-thirdweb-local-20261013/handoff-manifest.json"
+  ],
+  "files": [
+    {
+      "path": "apps/customer-web/package.json",
+      "bytes": 1036,
+      "sha256": "0d7a6727f918db819488ab634d8a64002b6ab44d09275a813901c0bc1a73b631"
+    },
+    {
+      "path": "package-lock.json",
+      "bytes": 901757,
+      "sha256": "80a4e1215ac3ed9eb2053c008533bf8c6e05b5a660430c70e521830d17a7ad6b"
+    },
+    {
+      "path": "apps/customer-web/app/components/wallet-thirdweb/real-provider-qa/gate.ts",
+      "bytes": 3120,
+      "sha256": "d403b2fb466b7a8200bcd4e40a5b79a61d16e26a7cf8c2183210d564732587ef"
+    },
+    {
+      "path": "apps/customer-web/app/components/wallet-thirdweb/real-provider-qa/gate.test.mjs",
+      "bytes": 3580,
+      "sha256": "f4a4cb97051d23904e0fa2f07c2381947fab525064aa714ce67de028e78cd730"
+    },
+    {
+      "path": "apps/customer-web/app/components/wallet-thirdweb/real-provider-qa/ThirdwebLocalQa.tsx",
+      "bytes": 6307,
+      "sha256": "088fdf58880043dbbed02f5f3f959194437cc28489df56bdbaa59af538cb554f"
+    },
+    {
+      "path": "apps/customer-web/app/components/wallet-thirdweb/real-provider-qa/render.test.mjs",
+      "bytes": 1552,
+      "sha256": "8c9c9c2702e2541b82d19329edb0889a5194bca62107e3e6f9929bb03d948a4d"
+    },
+    {
+      "path": "apps/customer-web/app/components/wallet-thirdweb/real-provider-qa/production-denial.test.mjs",
+      "bytes": 5229,
+      "sha256": "1d0a834230d608a0a579391dace984fa2e1678d0f230f1bff88569748e79f844"
+    },
+    {
+      "path": "apps/customer-web/app/components/wallet-thirdweb/real-provider-qa/provider-view.ts",
+      "bytes": 2776,
+      "sha256": "e35d40fcd13296b84fdb369c46915a96f9a37c2e0b6eec209401dff07eda58af"
+    },
+    {
+      "path": "apps/customer-web/app/components/wallet-thirdweb/real-provider-qa/provider-view.test.mjs",
+      "bytes": 4993,
+      "sha256": "a7889b7306723b95a0a6051db9f90fe20ea391fd701b8d386d0753ce5cd37255"
+    },
+    {
+      "path": "apps/customer-web/app/thirdweb-qa/page.tsx",
+      "bytes": 1519,
+      "sha256": "d27301a6e1be961fb7bf846bda25ea01e4443747b8939539b337c54ef3cc7d93"
+    },
+    {
+      "path": "apps/customer-web/middleware.ts",
+      "bytes": 1579,
+      "sha256": "650fc096c004baa7779847da4542490b52b3842aa361a9a33480235d6686650a"
+    },
+    {
+      "path": "docs/wallet/w03-3p-thirdweb-local-20261013/LOCAL-THIRDWEB-CONNECTION-RUNBOOK.md",
+      "bytes": 6021,
+      "sha256": "dc5fcd6ce0bc6ea86369f56888bfca043b83ffef1ecc4e4f7d33514460c8ac7c"
+    },
+    {
+      "path": "docs/wallet/w03-3p-thirdweb-local-20261013/SECURITY-AND-HANDOFF.md",
+      "bytes": 6128,
+      "sha256": "a3eed8740d0b567a4a444f0cf0318949523814507855554f91a1f20615018d60"
+    },
+    {
+      "path": "docs/wallet/w03-3p-thirdweb-local-20261013/IMPLEMENTATION-RESULT.md",
+      "bytes": 5860,
+      "sha256": "6656d1472eb6e2a7fe392d6f65bf8bd9c920ed568badf9328100d3084481b5cc"
+    },
+    {
+      "path": "docs/wallet/w03-3p-thirdweb-local-20261013/VALIDATION-LEDGER.json",
+      "bytes": 10348,
+      "sha256": "f83480b2f6beacf83f69592946b3eca01a952f3457b717da8b440dc57632dfc2"
+    }
+  ],
+  "protectedWorktrees": [
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/PHC WEB3 DEVELOPMENT",
+      "head": "04a726281c2ba153e2931201fb7a86af75bd6eb3",
+      "status": [
+        "?? docs/development-status-2026-10-05.md"
+      ]
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-frontend-web3",
+      "head": "d951c91800f00d31a4ec4bd7b4da14e8a266e01d",
+      "status": []
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-off25-offline-20261012",
+      "head": "72f1d68d87a4f0779c028813eb495f6c138cae2c",
+      "status": []
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-vercel-diagnostic-20261012",
+      "head": "fe00106def73300d96c362685cce8e8217adeba8",
+      "status": []
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w01-off16-20261010",
+      "head": "10e902e2af0912044739d6982dd93e789105f0e6",
+      "status": []
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w01-w02-readonly-20261010",
+      "head": "7b142c726520373a28932d57acd600aedabca62c",
+      "status": []
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w03-2-offline-wallet-view-20261013",
+      "head": "fe00106def73300d96c362685cce8e8217adeba8",
+      "status": [
+        "?? apps/customer-web/app/components/wallet-thirdweb/w03-offline-view/model.test.mjs",
+        "?? apps/customer-web/app/components/wallet-thirdweb/w03-offline-view/model.ts",
+        "?? apps/customer-web/app/components/wallet-thirdweb/w03-offline-view/preview.html",
+        "?? apps/customer-web/app/components/wallet-thirdweb/w03-offline-view/preview.mjs",
+        "?? apps/customer-web/app/components/wallet-thirdweb/w03-offline-view/render.ts",
+        "?? docs/wallet/w03-2-offline-view-20261013/IMPLEMENTATION-RESULT.md",
+        "?? docs/wallet/w03-2-offline-view-20261013/PRESERVATION.md",
+        "?? docs/wallet/w03-2-offline-view-20261013/SECURITY-AND-GAPS.md",
+        "?? docs/wallet/w03-2-offline-view-20261013/VALIDATION-LEDGER.json",
+        "?? docs/wallet/w03-2-offline-view-20261013/handoff-manifest.json"
+      ]
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w03-20261012",
+      "head": "fe00106def73300d96c362685cce8e8217adeba8",
+      "status": []
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w03-2a-a11y-offline-20261012",
+      "head": "8407e0588cc07a7039f9369188ebe16f5cdf6325",
+      "status": []
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w03-2b-react-offline-20261012",
+      "head": "d0013612af6ce215dc0b07848819905e4c5164c9",
+      "status": []
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w03-2c-contract-ready-offline-20261013",
+      "head": "a5bb6d3163695d9158d9b6ac7bdec2f63c915cfd",
+      "status": []
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w03-2d-hydrated-qa-20261013",
+      "head": "5fe08964a44f47f5be238ac5f2f14ef35b2a5513",
+      "status": []
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w03-2e-controller-fence-20261013",
+      "head": "a247af0f85efbb0ef1d1697ef47cb2a23aaf06f7",
+      "status": []
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-w2b-offline-20261009",
+      "head": "aeff8976f993a75d584d4e7a6b61b008b94ad02a",
+      "status": []
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-allen-wallet-w2a-20261009",
+      "head": "dcf2a81aa5158f2e56141dac8a2ebe60d7fd236b",
+      "status": []
+    },
+    {
+      "path": "C:/Users/admin/Desktop/RHBC project/RHC-web3-combined-1.0",
+      "head": "579a007bb56e247836d97d7c9adcc157f848071f",
+      "status": []
+    }
+  ],
+  "evidence": "C:\\Users\\admin\\Desktop\\RHBC project\\RHC-web3-allen-wallet-w2a-20261009-evidence\\w03-3p-thirdweb-qa-20261013\\review-publication-20261014",
+  "stop": "DRAFT_REVIEW_ONLY_NO_MERGE_NO_LIVE_PROVIDER_NO_PRODUCTION"
+}
