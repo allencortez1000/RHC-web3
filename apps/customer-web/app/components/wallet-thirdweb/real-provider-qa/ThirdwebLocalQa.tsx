@@ -15,6 +15,7 @@ import {
 import { createWallet, inAppWallet } from "thirdweb/wallets";
 import type { LocalThirdwebQaMode } from "./gate";
 import { getQaProviderView, type QaLastAction } from "./provider-view";
+import { getQaWalletChoice, assertQaWalletPath, type QaWalletPath } from "./wallet-choice";
 
 type Props = Readonly<{
   clientId: string;
@@ -24,15 +25,7 @@ type Props = Readonly<{
 
 function QaWalletControls({ clientId, mode }: Pick<Props, "clientId" | "mode">) {
   const client = React.useMemo(() => createThirdwebClient({ clientId }), [clientId]);
-  const wallets = React.useMemo(() => {
-    if (mode === "embedded-email")
-      return [inAppWallet({ auth: { options: ["email"] } })];
-    if (mode === "external-metamask") return [createWallet("io.metamask")];
-    return [
-      createWallet("io.metamask"),
-      inAppWallet({ auth: { options: ["email"] } }),
-    ];
-  }, [mode]);
+  const choice = getQaWalletChoice(mode);
 
   const { connect, isConnecting } = useConnectModal();
   const { disconnect } = useDisconnect();
@@ -42,6 +35,8 @@ function QaWalletControls({ clientId, mode }: Pick<Props, "clientId" | "mode">) 
   const connectionStatus = useActiveWalletConnectionStatus();
   const [lastAction, setLastAction] = React.useState<QaLastAction>("idle");
   const connectLock = React.useRef(false);
+  const [clientReady, setClientReady] = React.useState(false);
+  React.useEffect(() => { setClientReady(true); }, []);
   const view = getQaProviderView({
     connectionStatus,
     isConnecting,
@@ -51,19 +46,24 @@ function QaWalletControls({ clientId, mode }: Pick<Props, "clientId" | "mode">) 
     lastAction,
   });
 
-  async function connectForQa() {
-    if (connectLock.current || !view.canConnect) return;
+  async function connectForQa(requested: QaWalletPath) {
+    if (!clientReady || connectLock.current || !view.canConnect) return;
+    const selected = assertQaWalletPath(mode, requested);
     connectLock.current = true;
     setLastAction("connecting");
     try {
+      // Only instantiate the method selected by the user. Email never requires MetaMask.
+      const wallet = selected === "embedded-email"
+        ? inAppWallet({ auth: { options: ["email"] } })
+        : createWallet("io.metamask");
       await connect({
         client,
-        wallets,
+        wallets: [wallet],
         chain: sepolia,
         showAllWallets: false,
         setActive: true,
         size: "compact",
-        title: "RHC Provider Connection QA (test only)",
+        title: selected === "embedded-email" ? "RHC in-app wallet - email verification" : "Optional external wallet - QA",
         theme: "light",
       });
       // Never treat a wallet address, Thirdweb auth session or email as RHC identity.
@@ -76,7 +76,7 @@ function QaWalletControls({ clientId, mode }: Pick<Props, "clientId" | "mode">) 
   }
 
   function disconnectForQa() {
-    if (!activeWallet || !view.canDisconnect) return;
+    if (!clientReady || !activeWallet || !view.canDisconnect) return;
     try {
       disconnect(activeWallet);
       // A void SDK call is a request, not proof that the wallet disconnected.
@@ -89,6 +89,7 @@ function QaWalletControls({ clientId, mode }: Pick<Props, "clientId" | "mode">) 
   return (
     <section
       data-rhc-thirdweb-qa="local-real-sdk"
+      data-qa-hydrated={clientReady ? "true" : "false"}
       aria-label="RHC local Thirdweb provider QA"
       className="mx-auto w-full max-w-3xl rounded-2xl border border-[var(--rhc-border)] bg-[var(--rhc-surface)] p-5 text-[var(--rhc-heading)] sm:p-8"
     >
@@ -98,12 +99,16 @@ function QaWalletControls({ clientId, mode }: Pick<Props, "clientId" | "mode">) 
       <h1 className="mt-3 text-2xl font-black">
         Thirdweb wallet connection test
       </h1>
-      <p className="mt-3 text-sm leading-6 text-[var(--rhc-muted)]">
-        This page uses the real thirdweb v5 SDK in a locally approved QA
-        environment. It can prompt a test wallet to connect, including an
-        approved email-embedded wallet when selected. No RHC login, RHC wallet
-        linking, token balance, RHC Points lookup, transaction or signature
-        is implemented by this page.
+      <p className="mt-3 text-sm leading-6 text-[var(--rhc-muted)]" data-qa-primary-method={choice.primary}>
+        {choice.primary === "embedded-email"
+          ? "Use an in-app wallet with email verification. MetaMask and browser extensions are not required."
+          : "External-wallet-only QA mode. Use your approved dedicated test wallet."}
+        {choice.optional && " An existing external wallet is available as an optional advanced choice."}
+      </p>
+      <p className="mt-2 text-sm leading-6 text-[var(--rhc-muted)]" data-qa-auth-boundary>
+        This is provider-only QA, not RHC account login. Email verification is
+        handled by Thirdweb; use an approved test mailbox. No automatic RHC
+        wallet link, Points lookup, token action or transaction is performed.
       </p>
       <dl className="mt-6 grid gap-3 text-sm sm:grid-cols-2">
         <div className="rounded-xl border p-3">
@@ -128,20 +133,39 @@ function QaWalletControls({ clientId, mode }: Pick<Props, "clientId" | "mode">) 
       </p>
       <div className="mt-4 flex flex-wrap gap-3">
         <button
-          type="button" onClick={() => void connectForQa()}
-          disabled={!view.canConnect}
+          data-qa-connect-primary={choice.primary}
+          type="button" onClick={() => void connectForQa(choice.primary)}
+          disabled={!clientReady || !view.canConnect}
           className="min-h-11 rounded-xl border border-[var(--rhc-border)] px-5 py-2 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {view.busy ? "Connecting test wallet…" : "Connect approved test wallet"}
+          {view.busy ? "Connecting test wallet..." : choice.primaryLabel}
         </button>
         <button
           type="button" onClick={disconnectForQa}
-          disabled={!view.canDisconnect}
+          disabled={!clientReady || !view.canDisconnect}
           className="min-h-11 rounded-xl border border-[var(--rhc-border)] px-5 py-2 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-50"
         >
           Disconnect test wallet
         </button>
       </div>
+      {choice.optional && (
+        <details className="mt-4 rounded-xl border p-3" data-qa-advanced-wallet>
+          <summary className="min-h-11 cursor-pointer py-3 text-sm font-semibold">
+            Advanced: use an existing wallet (optional)
+          </summary>
+          <p className="mt-2 text-sm text-[var(--rhc-muted)]">
+            This option is only for users who already have MetaMask. It is not
+            required for the email-based in-app wallet. Disconnect the current
+            wallet before choosing a different method; wallets are not merged or linked.
+          </p>
+          <button type="button" data-qa-connect-external
+            onClick={() => { if (choice.optional) void connectForQa(choice.optional); }}
+            disabled={!clientReady || !view.canConnect}
+            className="mt-3 min-h-11 rounded-xl border border-[var(--rhc-border)] px-5 py-2 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-50">
+            Connect MetaMask (optional)
+          </button>
+        </details>
+      )}
       <p className="mt-5 text-xs leading-5 text-[var(--rhc-muted)]">
         Connected wallet is not an authenticated RHC user. RHC wallet link,
         custody, spending, balances, RHC Points, and Mainnet tokens are unavailable.

@@ -44,10 +44,10 @@ try {
   await page.goto(new URL('/thirdweb-qa', base).href, { waitUntil: 'domcontentloaded', timeout: 60000 });
   const panel = page.locator('[data-rhc-thirdweb-qa="local-real-sdk"]');
   await panel.waitFor({ state: 'visible', timeout: 30000 });
-  await page.waitForTimeout(500);
+  await page.locator('[data-qa-hydrated="true"]').waitFor({ state: 'visible', timeout: 30000 });
   check('Authorized local provider QA does not redirect to RHC login', new URL(page.url()).pathname === '/thirdweb-qa');
   check('Actual SDK provider UI renders without an RHC session', await panel.isVisible());
-  check('Connection control is available but never clicked by this test', await page.getByRole('button', { name: 'Connect approved test wallet', exact: true }).isEnabled());
+  check('Connection control is available but never clicked by this test', await page.locator('[data-qa-connect-primary]').isEnabled());
   check('No wallet is connected by route rendering', (await page.locator('[data-qa-wallet-address]').innerText()) === 'Not connected');
   check('Disconnect is disabled with no wallet', !(await page.getByRole('button', { name: 'Disconnect test wallet', exact: true }).isEnabled()));
 
