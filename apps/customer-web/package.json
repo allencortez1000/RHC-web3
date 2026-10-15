@@ -27,7 +27,7 @@
     "tailwindcss": "^3.4.4"
   },
   "scripts": {
-    "dev": "next dev -p 3002",
+    "dev": "next dev -p 3002 -H 127.0.0.1",
     "dev:demo": "next dev -p 3002 -H 127.0.0.1",
     "build": "next build",
     "start": "next start -p 3002",
