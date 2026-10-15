@@ -50,7 +50,7 @@
     "@typescript-eslint/parser": "8.70.0",
     "concurrently": "^10.0.5",
     "eslint": "8.57.1",
-    "eslint-config-next": "15.5.25",
+    "eslint-config-next": "15.5.27",
     "kill-port": "^2.0.1",
     "prettier": "^3.3.2",
     "typescript": "5.9.3"
@@ -59,7 +59,9 @@
     "@nestjs/platform-express@11.2.3": {
       "multer": "2.3.0"
     },
-    "postcss@8.4.31": "8.5.28"
+    "postcss@8.4.31": "8.5.28",
+    "sharp": "0.35.5",
+    "source-map-js": "1.2.2"
   },
   "engines": {
     "node": ">=22.13.0",
