@@ -38,6 +38,7 @@ function QaWalletControls({ clientId, mode }: Pick<Props, "clientId" | "mode">) 
   const [clientReady, setClientReady] = React.useState(false);
   React.useEffect(() => { setClientReady(true); }, []);
   const view = getQaProviderView({
+    mode,
     connectionStatus,
     isConnecting,
     walletId: activeWallet?.id,
@@ -90,6 +91,7 @@ function QaWalletControls({ clientId, mode }: Pick<Props, "clientId" | "mode">) 
     <section
       data-rhc-thirdweb-qa="local-real-sdk"
       data-qa-hydrated={clientReady ? "true" : "false"}
+      data-qa-method-eligible={view.qaEligible ? "true" : "false"}
       aria-label="RHC local Thirdweb provider QA"
       className="mx-auto w-full max-w-3xl rounded-2xl border border-[var(--rhc-border)] bg-[var(--rhc-surface)] p-5 text-[var(--rhc-heading)] sm:p-8"
     >
@@ -117,7 +119,7 @@ function QaWalletControls({ clientId, mode }: Pick<Props, "clientId" | "mode">) 
         </div>
         <div className="rounded-xl border p-3">
           <dt className="font-semibold">Wallet provider</dt>
-          <dd data-qa-provider-id className="mt-1 break-all">{activeWallet?.id ?? "None"}</dd>
+          <dd data-qa-provider-id className="mt-1 break-all">{view.providerIdLabel}</dd>
         </div>
         <div className="rounded-xl border p-3">
           <dt className="font-semibold">Test wallet address (masked)</dt>

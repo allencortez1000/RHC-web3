@@ -4,8 +4,8 @@ import { getQaProviderView } from './provider-view.ts';
 
 // Invented addresses only. This suite calls no SDK/provider and opens no wallet.
 const fixtureAddress = '0x' + '1'.repeat(40);
-const connected = { connectionStatus: 'connected', isConnecting: false, walletId: 'io.metamask', address: fixtureAddress, chainId: 11155111, lastAction: 'idle' };
-const disconnected = { connectionStatus: 'disconnected', isConnecting: false, lastAction: 'idle' };
+const connected = { mode: 'both', connectionStatus: 'connected', isConnecting: false, walletId: 'io.metamask', address: fixtureAddress, chainId: 11155111, lastAction: 'idle' };
+const disconnected = { mode: 'both', connectionStatus: 'disconnected', isConnecting: false, lastAction: 'idle' };
 
 test('connected display is based on observed SDK status, never an earlier success string', () => {
   const v = getQaProviderView(connected);
