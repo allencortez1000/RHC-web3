@@ -6,7 +6,7 @@
     "@rhc/types": "0.1.0",
     "@rhc/ui": "0.1.0",
     "@supabase/supabase-js": "^2.49.8",
-    "next": "15.5.25",
+    "next": "15.5.27",
     "react": "19.3.0",
     "react-dom": "19.3.0"
   },
